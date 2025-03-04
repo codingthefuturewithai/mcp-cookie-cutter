@@ -1,0 +1,8 @@
+{
+  "project_name": "MCP Server Project",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+  "description": "An MCP-compatible server implementation",
+  "author_name": "Your Name",
+  "author_email": "your.email@example.com",
+  "server_port": "3001"
+}

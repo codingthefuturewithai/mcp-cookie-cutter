@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{ cookiecutter.project_slug }}"
+version = "0.1.0"
+description = "{{ cookiecutter.description }}"
+readme = "README.md"
+authors = [
+    {name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "mcp>=1.0.0",
+    "mcp[cli]>=1.0.0",
+    "anyio>=4.5",
+    "starlette>=0.36.0",
+    "uvicorn>=0.27.0",
+]
+
+[project.scripts]
+{{ cookiecutter.project_slug }}-server = "{{ cookiecutter.project_slug }}.server:main"
+
+[tool.setuptools.packages.find]
+include = ["{{ cookiecutter.project_slug }}*"]
+namespaces = true 
