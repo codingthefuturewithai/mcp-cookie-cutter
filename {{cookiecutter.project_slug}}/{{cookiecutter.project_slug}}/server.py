@@ -1,6 +1,7 @@
 """MCP server implementation with Echo tool"""
 
 from mcp.server.fastmcp import FastMCP
+from mcp import types
 import logging
 import sys
 import asyncio
@@ -36,7 +37,7 @@ def register_tools(mcp_server: FastMCP) -> None:
         name="echo",
         description="Echo back the input text with optional case transformation",
     )
-    def echo(text: str, transform: Optional[str] = None) -> str:
+    def echo(text: str, transform: Optional[str] = None) -> types.TextContent:
         """
         Echo the input text back to the caller with optional case transformation.
         
@@ -45,13 +46,20 @@ def register_tools(mcp_server: FastMCP) -> None:
             transform: Optional case transformation ('upper' or 'lower')
             
         Returns:
-            The transformed text
+            TextContent: The transformed text as MCP TextContent
         """
         if transform == "upper":
-            return text.upper()
+            result = text.upper()
         elif transform == "lower":
-            return text.lower()
-        return text
+            result = text.lower()
+        else:
+            result = text
+            
+        return types.TextContent(
+            type="text",
+            text=result,
+            format="text/plain"
+        )
 
 # Create a server instance that can be imported by the MCP CLI
 server = create_mcp_server()
