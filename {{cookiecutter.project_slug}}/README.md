@@ -4,31 +4,34 @@
 
 ## Overview
 
-**[⚠️ CUSTOMIZE THIS SECTION: Replace with a description of your specific MCP server's purpose and capabilities]**
+This is a foundational MCP (Model Control Protocol) server project that provides the basic structure and plumbing needed to build your own MCP server. It includes:
 
-This is a simple MCP (Model Control Protocol) server that provides an echo service. It demonstrates the basic principles of MCP server implementation and can be used as a testing tool for MCP clients or as a simple echo service in your infrastructure.
+- A complete MCP server implementation structure
+- Built-in support for both stdio and SSE (Server-Sent Events) transport modes
+- A simple echo tool as a reference implementation
+- All necessary configuration and entry points
+
+The project is ready for you to:
+
+- Add your own MCP tools and functionality
+- Customize the server configuration
+- Build upon the existing transport handling
 
 ## Features
 
 **[⚠️ CUSTOMIZE THIS SECTION: Replace these features with your MCP server's specific capabilities]**
 
-- Echo service that returns any text sent to it
-- Support for both SSE and stdio communication modes
-- Asynchronous operation
-- Type-safe responses
-- Included reference client for easy testing
+- Complete MCP server infrastructure
+- Built-in transport handling (stdio and SSE)
+- Asynchronous operation support
+- Type-safe request/response handling
+- Example echo tool implementation
 
 ## Installation
 
 ### Local Development Setup
 
-1. Clone or navigate to your project directory:
-
-   ```bash
-   cd {{ cookiecutter.project_slug }}
-   ```
-
-2. (Recommended) Create and activate a virtual environment:
+1. Create and activate a virtual environment:
 
    ```bash
    # Optional but recommended
@@ -36,27 +39,19 @@ This is a simple MCP (Model Control Protocol) server that provides an echo servi
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install the package in development mode:
+2. Install the package in development mode:
 
    ```bash
    # This will install the package in "editable" mode
-   pip install -e .
+   uv pip install -e .
    ```
 
-4. Test the installation:
+3. Test the installation:
 
-   First, start the server in one terminal:
-
-   ```bash
-   {{ cookiecutter.project_slug }}-server
-   ```
-
-   You should see log output indicating the server has started.
-
-   Then, in a new terminal (with the virtual environment activated if you're using one):
+   The scaffolding includes a simple echo server for testing. Try it with the echo client:
 
    ```bash
-   {{ cookiecutter.project_slug }}-client "Hello, World!"
+   echo-with-transform-client "Hello, World"
    ```
 
    You should see "Hello, World!" echoed back.
@@ -64,11 +59,15 @@ This is a simple MCP (Model Control Protocol) server that provides an echo servi
    Try the case transformation options:
 
    ```bash
-   {{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
+   echo-with-transform-client "Hello, World" --transform upper
    # Should output: HELLO, WORLD!
-   {{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
-   # Should output: hello, world!
+   echo-with-transform-client "Hello, World" --transform lower
+   # Should output: hello, world
    ```
+
+## Development
+
+Now that you've verified the scaffolding works, you can start building your own MCP server...
 
 ### Building and Installing from Wheel
 
@@ -77,7 +76,7 @@ If you want to build a wheel for distribution or local installation:
 1. Install build tools:
 
    ```bash
-   pip install build
+   uv pip install build
    ```
 
 2. Build the wheel:
@@ -90,7 +89,7 @@ If you want to build a wheel for distribution or local installation:
 
 3. Install the wheel:
    ```bash
-   pip install dist/{{ cookiecutter.project_slug }}*.whl
+   uv pip install dist/your-mcp-server*.whl
    ```
 
 ### Alternative Installation Methods
@@ -99,7 +98,7 @@ If you want to build a wheel for distribution or local installation:
 
 ```bash
 # Install directly in your Python environment
-pip install .
+uv pip install .
 ```
 
 #### From PyPI (if published)
@@ -107,7 +106,7 @@ pip install .
 If you choose to publish your package to PyPI:
 
 ```bash
-pip install {{ cookiecutter.project_slug }}
+uv pip install your-mcp-server
 ```
 
 ## Usage
@@ -118,23 +117,23 @@ The client uses stdio to communicate with the server, so you don't need to start
 
 ```bash
 # Basic usage (just the message)
-{{ cookiecutter.project_slug }}-client "Hello, World!"
+your-mcp-server-client "Hello, World!"
 
 # With case transformation
-{{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
-{{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
+your-mcp-server-client "Hello, World!" --transform upper
+your-mcp-server-client "Hello, World!" --transform lower
 ```
 
 Expected output examples:
 
 ```bash
-$ {{ cookiecutter.project_slug }}-client "Hello, World!"
+$ your-mcp-server-client "Hello, World!"
 Hello, World!
 
-$ {{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
+$ your-mcp-server-client "Hello, World!" --transform upper
 HELLO, WORLD!
 
-$ {{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
+$ your-mcp-server-client "Hello, World!" --transform lower
 hello, world!
 ```
 
@@ -149,7 +148,7 @@ from mcp.client.stdio import stdio_client
 async def echo_message(message: str, transform: Optional[str] = None) -> str:
     # Create server parameters for stdio connection
     server_params = StdioServerParameters(
-        command="{{ cookiecutter.project_slug }}-server",
+        command="your-mcp-server",
         args=[],
         env=None
     )
@@ -193,13 +192,13 @@ For testing and development, we recommend using:
 1. The included command-line client:
 
    ```bash
-   {{ cookiecutter.project_slug }}-client "Your message here"
+   your-mcp-server-client "Your message here"
    ```
 
 2. The MCP Inspector tool for interactive testing and debugging:
 
    ```bash
-   mcp inspect {{ cookiecutter.project_slug }}-server
+   mcp inspect your-mcp-server
    ```
 
 3. The Python client library for programmatic access:
@@ -210,7 +209,7 @@ For testing and development, we recommend using:
 
    async def echo_message(message: str) -> str:
        server_params = StdioServerParameters(
-           command="{{ cookiecutter.project_slug }}-server",
+           command="your-mcp-server",
            args=[],
            env=None
        )
@@ -231,7 +230,7 @@ These tools provide type-safe, reliable ways to interact with the server without
 The server can be configured using command-line options:
 
 ```bash
-{{ cookiecutter.project_slug }}-server --port PORT  # Run on a different port (default: {{ cookiecutter.server_port }})
+your-mcp-server --port PORT  # Run on a different port (default: {{ cookiecutter.server_port }})
 ```
 
 The server uses the following defaults:
@@ -249,7 +248,7 @@ The server uses the following defaults:
 1. **Port Already in Use**
 
    ```bash
-   {{ cookiecutter.project_slug }}-server --port DIFFERENT_PORT
+   your-mcp-server --port DIFFERENT_PORT
    ```
 
 2. **Connection Issues**
@@ -259,7 +258,7 @@ The server uses the following defaults:
    - Ensure no firewall restrictions
 
 3. **Import Errors**
-   - Verify installation: `pip list | grep {{ cookiecutter.project_slug }}`
+   - Verify installation: `uv pip list | grep your-mcp-server`
    - Check Python version compatibility
 
 ### Getting Help
