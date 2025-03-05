@@ -8,6 +8,8 @@ import asyncio
 import click
 from typing import Optional
 
+from {{cookiecutter.project_slug}}.tools.echo import echo
+
 # Configure logging to write to stderr
 logging.basicConfig(
     stream=sys.stderr,
@@ -36,29 +38,9 @@ def register_tools(mcp_server: FastMCP) -> None:
         name="echo",
         description="Echo back the input text with optional case transformation",
     )
-    def echo(text: str, transform: Optional[str] = None) -> types.TextContent:
-        """
-        Echo the input text back to the caller with optional case transformation.
-        
-        Args:
-            text: The text to echo back
-            transform: Optional case transformation ('upper' or 'lower')
-            
-        Returns:
-            TextContent: The transformed text as MCP TextContent
-        """
-        if transform == "upper":
-            result = text.upper()
-        elif transform == "lower":
-            result = text.lower()
-        else:
-            result = text
-            
-        return types.TextContent(
-            type="text",
-            text=result,
-            format="text/plain"
-        )
+    def echo_tool(text: str, transform: Optional[str] = None) -> types.TextContent:
+        """Wrapper around the echo tool implementation"""
+        return echo(text, transform)
 
 # Create a server instance that can be imported by the MCP CLI
 server = create_mcp_server()
