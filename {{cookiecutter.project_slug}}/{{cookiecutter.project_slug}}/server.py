@@ -1,7 +1,6 @@
 """MCP server implementation with Echo tool"""
 
-from typing import Dict, List, Optional, Union
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import FastMCP
 from mcp.server.stdio import stdio_server
 import logging
 import sys
