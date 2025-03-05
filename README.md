@@ -1,143 +1,177 @@
 # MCP Server Cookie Cutter Template
 
-This cookie cutter template helps you quickly scaffold a new MCP (Model Control Protocol) server project with a basic working implementation. The template includes a simple echo server with optional text transformation capabilities, demonstrating both required and optional parameters in MCP tools.
+This template helps you create a new MCP (Model Control Protocol) server with minimal setup. MCP is a protocol that enables AI models to communicate with tools and services. This template provides a working example server that demonstrates MCP functionality through a simple echo service.
+
+## What is MCP?
+
+MCP (Model Control Protocol) is a protocol that allows AI models to:
+
+- Call tools and functions
+- Access resources
+- Handle different types of content (text, files, etc.)
+- Communicate over different transports (stdio, SSE)
+
+The template creates a server that supports both stdio (standard input/output) and SSE (Server-Sent Events) communication.
+
+## What is Cookie Cutter?
+
+Cookie Cutter is a tool that creates projects from templates. Think of it like a project generator - you answer a few questions, and it creates a fully working project structure for you.
 
 ## Prerequisites
 
-- Python 3.8 or higher
-- pip (Python package installer)
-- cookiecutter (`pip install cookiecutter`)
+Before you start, you need:
 
-## Usage
-
-### Option 1: Using the GitHub Repository
-
-```bash
-cookiecutter gh:codingthefuturewithai/mcp-cookie-cutter
-```
-
-### Option 2: Using Local Template
-
-If you have the template locally:
-
-```bash
-cookiecutter path/to/mcp-cookie-cutter
-```
-
-## Template Configuration
-
-During project creation, you'll be prompted for several values:
-
-- `project_name`: The human-readable name of your project
-- `project_slug`: The Python package name for your project (lowercase, no spaces)
-- `server_port`: The port number for the SSE server (default: 8080)
-
-## Project Structure
-
-The generated project will have this structure:
-
-```
-your-project-name/
-├── pyproject.toml           # Project dependencies and metadata
-├── README.md               # Project documentation
-└── your_project_name/      # Main package directory
-    ├── __init__.py
-    ├── server.py           # MCP server implementation
-    └── client.py           # Example client implementation
-```
-
-## Getting Started with Your New MCP Server
-
-1. Change into your new project directory:
+1. Python 3.10 or higher installed
 
    ```bash
-   cd your-project-name
+   python --version  # Should be 3.10 or higher
+   ```
+
+2. pip (Python package installer)
+
+   ```bash
+   pip --version  # Verify pip is installed
+   ```
+
+3. Cookie Cutter installed:
+   ```bash
+   pip install cookiecutter
+   ```
+
+## Creating Your MCP Server Project
+
+1. Create a new project using this template:
+
+   ```bash
+   cookiecutter gh:codingthefuturewithai/mcp-cookie-cutter
+   ```
+
+2. You'll be asked several questions:
+
+   - `project_name`: A human-readable name (e.g., "My Echo Server")
+   - `project_slug`: Python package name (e.g., "my_echo_server")
+   - `description`: Short description of your project
+   - `author_name`: Your name
+   - `author_email`: Your email
+   - `server_port`: Port for SSE server (default: 3001)
+
+3. This creates a new directory named after your project_slug containing a working MCP server.
+
+## Setting Up Your New Project
+
+1. Go to your new project directory:
+
+   ```bash
+   cd your-project-slug  # Replace with actual name
    ```
 
 2. Create and activate a virtual environment:
 
    ```bash
+   # On macOS/Linux:
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
+
+   # On Windows:
+   python -m venv venv
+   venv\Scripts\activate
    ```
 
-3. Install the project in development mode:
-
+3. Install your project:
    ```bash
    pip install -e .
    ```
 
-4. Test the server:
+## Running Your MCP Server
+
+Your project creates two server commands and a client:
+
+1. Standard IO Server (default):
 
    ```bash
-   # Terminal 1: Start the server
-   your-project-name-server
-
-   # Terminal 2: Run the client
-   your-project-name-client "Hello, World!"
-
-   # Try the optional case transformation
-   your-project-name-client "Hello, World!" --transform upper
-   your-project-name-client "Hello, World!" --transform lower
+   your-project-slug-server
    ```
 
-## Example Server Features
+2. SSE Server (for MCP Inspector):
 
-The template includes a simple echo server that demonstrates:
+   ```bash
+   # Default port (from cookie cutter config)
+   your-project-slug-server-sse
 
-1. Basic MCP server setup
-2. Tool registration with FastMCP
-3. Required and optional parameters
-4. SSE (Server-Sent Events) support
-5. Logging configuration
-6. Client implementation with Click CLI
+   # Custom port
+   your-project-slug-server-sse --port 4000
+   ```
 
-### Echo Tool API
+3. Test Client:
+   ```bash
+   your-project-slug-client "Hello, World!"
+   your-project-slug-client "Hello, World!" --transform upper
+   ```
 
-The server implements an echo tool with the following parameters:
+## Testing with MCP Inspector
 
-- `text` (required): The text to echo back
-- `transform` (optional): Case transformation option ('upper' or 'lower')
+1. Start the SSE server:
 
-## Customizing Your Server
+   ```bash
+   your-project-slug-server-sse  # Uses default port from config
+   # OR
+   your-project-slug-server-sse --port 4000  # Use custom port
+   ```
 
-To add your own tools:
+2. Open MCP Inspector in your browser
+3. Connect to `http://localhost:3001` (or your specified port)
+4. Try the echo tool with different inputs
 
-1. Open `server.py`
-2. Add new tools in the `register_tools()` function using the `@mcp_server.tool` decorator
-3. Update the client implementation in `client.py` as needed
+## Project Structure
 
-Example of adding a new tool:
-
-```python
-@mcp_server.tool(
-    name="your_tool",
-    description="Description of your tool",
-)
-def your_tool(param1: str, param2: Optional[int] = None) -> str:
-    """
-    Your tool implementation
-
-    Args:
-        param1: Description of param1
-        param2: Description of param2
-    """
-    # Your implementation here
-    return result
+```
+your-project-slug/
+├── pyproject.toml           # Project configuration and dependencies
+├── README.md               # Project documentation
+└── your_project_slug/      # Main package directory
+    ├── __init__.py        # Package initialization
+    ├── server.py          # Main server implementation
+    ├── server_stdio.py    # Standard IO server entry point
+    ├── server_sse.py      # SSE server entry point
+    └── client.py          # Example client implementation
 ```
 
-## Development Best Practices
+## Understanding the Code
 
-1. Always include descriptive docstrings for your tools
-2. Implement proper error handling
-3. Use type hints for parameters and return values
-4. Add logging for important operations
-5. Consider adding tests for your tools
+- `server.py`: Main server logic and tool definitions
+- `server_stdio.py`: Entry point for stdio mode (terminal usage)
+- `server_sse.py`: Entry point for SSE mode (MCP Inspector)
+- `client.py`: Example client showing how to use the server
 
-## Contributing
+## Echo Tool API
 
-If you find bugs or have suggestions for improving this template, please open an issue or submit a pull request on GitHub.
+The template includes an echo tool that:
+
+- Takes text input
+- Optionally transforms it (upper/lower case)
+- Returns the result
+
+Parameters:
+
+- `text` (required): Text to echo back
+- `transform` (optional): Case transformation ('upper' or 'lower')
+
+## Next Steps
+
+1. Try the example commands above to verify everything works
+2. Look at server.py to see how tools are defined
+3. Add your own tools following the echo example
+4. Update the README.md in your project with your specific details
+
+## Getting Help
+
+If you encounter issues:
+
+1. Check the logs (the server prints debug information)
+2. Ensure you're using the correct Python version
+3. Verify all dependencies are installed
+4. Open an issue on GitHub if you need help
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This template is licensed under the MIT License - see the LICENSE file for details.
