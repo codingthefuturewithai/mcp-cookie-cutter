@@ -22,7 +22,7 @@ dependencies = [
 
 [project.scripts]
 {{ cookiecutter.project_slug }}-server = "{{ cookiecutter.project_slug }}.server_stdio:main"
-{{ cookiecutter.project_slug }}-server-sse = "{{ cookiecutter.project_slug }}.server:main"
+{{ cookiecutter.project_slug }}-server-sse = "{{ cookiecutter.project_slug }}.server_sse:main"
 {{ cookiecutter.project_slug }}-client = "{{ cookiecutter.project_slug }}.client:main"
 
 [tool.setuptools.packages.find]
