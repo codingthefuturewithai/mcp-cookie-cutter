@@ -1,11 +1,11 @@
 """MCP server implementation with Echo tool"""
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.stdio import stdio_server
 import logging
 import sys
 import asyncio
 import click
+from typing import Optional
 
 # Configure logging to write to stderr
 logging.basicConfig(
@@ -34,34 +34,51 @@ def register_tools(mcp_server: FastMCP) -> None:
 
     @mcp_server.tool(
         name="echo",
-        description="Echo back the input text",
+        description="Echo back the input text with optional case transformation",
     )
-    def echo(text: str) -> str:
-        """Echo the input text back to the caller"""
+    def echo(text: str, transform: Optional[str] = None) -> str:
+        """
+        Echo the input text back to the caller with optional case transformation.
+        
+        Args:
+            text: The text to echo back
+            transform: Optional case transformation ('upper' or 'lower')
+            
+        Returns:
+            The transformed text
+        """
+        if transform == "upper":
+            return text.upper()
+        elif transform == "lower":
+            return text.lower()
         return text
-
-def run_sse_server(port: int = {{ cookiecutter.server_port }}) -> None:
-    """Run the server in SSE mode using FastMCP's built-in SSE support."""
-    logger.info(f"Starting SSE server on port {port}")
-
-    # Create a new server instance for SSE
-    sse_server = create_mcp_server()
-    sse_server.settings.port = port
-
-    # Run the server in SSE mode
-    asyncio.run(sse_server.run_sse_async())
 
 # Create a server instance that can be imported by the MCP CLI
 server = create_mcp_server()
 
-# Create stdio server for MCP clients
-app = stdio_server(server)
-
 @click.command()
 @click.option("--port", default={{ cookiecutter.server_port }}, help="Port to listen on for SSE")
-def main(port: int) -> None:
-    """Run the server directly in SSE mode."""
-    run_sse_server(port)
+@click.option(
+    "--transport",
+    type=click.Choice(["stdio", "sse"]),
+    default="stdio",
+    help="Transport type (stdio or sse)",
+)
+def main(port: int, transport: str) -> int:
+    """Run the server with specified transport."""
+    try:
+        if transport == "stdio":
+            asyncio.run(server.run_stdio_async())
+        else:
+            server.settings.port = port
+            asyncio.run(server.run_sse_async())
+        return 0
+    except KeyboardInterrupt:
+        logger.info("Server stopped by user")
+        return 0
+    except Exception as e:
+        logger.error(f"Failed to start server: {e}", exc_info=True)
+        return 1
 
 if __name__ == "__main__":
-    main() 
+    sys.exit(main()) 

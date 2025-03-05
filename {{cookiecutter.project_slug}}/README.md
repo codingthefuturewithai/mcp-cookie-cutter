@@ -20,77 +20,134 @@ This is a simple MCP (Model Control Protocol) server that provides an echo servi
 
 ## Installation
 
-### From PyPI
+### Local Development Setup
+
+1. Clone or navigate to your project directory:
+
+   ```bash
+   cd {{ cookiecutter.project_slug }}
+   ```
+
+2. (Recommended) Create and activate a virtual environment:
+
+   ```bash
+   # Optional but recommended
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install the package in development mode:
+
+   ```bash
+   # This will install the package in "editable" mode
+   pip install -e .
+   ```
+
+4. Test the installation:
+
+   First, start the server in one terminal:
+
+   ```bash
+   {{ cookiecutter.project_slug }}-server
+   ```
+
+   You should see log output indicating the server has started.
+
+   Then, in a new terminal (with the virtual environment activated if you're using one):
+
+   ```bash
+   {{ cookiecutter.project_slug }}-client "Hello, World!"
+   ```
+
+   You should see "Hello, World!" echoed back.
+
+   Try the case transformation options:
+
+   ```bash
+   {{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
+   # Should output: HELLO, WORLD!
+   {{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
+   # Should output: hello, world!
+   ```
+
+### Building and Installing from Wheel
+
+If you want to build a wheel for distribution or local installation:
+
+1. Install build tools:
+
+   ```bash
+   pip install build
+   ```
+
+2. Build the wheel:
+
+   ```bash
+   python -m build
+   ```
+
+   This will create both a source distribution (.tar.gz) and a wheel (.whl) in the `dist/` directory.
+
+3. Install the wheel:
+   ```bash
+   pip install dist/{{ cookiecutter.project_slug }}*.whl
+   ```
+
+### Alternative Installation Methods
+
+#### From Source (without virtual environment)
 
 ```bash
-# Create and activate a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install from PyPI
-pip install {{ cookiecutter.project_slug }}
+# Install directly in your Python environment
+pip install .
 ```
 
-### From Source
+#### From PyPI (if published)
+
+If you choose to publish your package to PyPI:
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd {{ cookiecutter.project_slug }}
-
-# Create and activate a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install from source
-pip install .
+pip install {{ cookiecutter.project_slug }}
 ```
 
 ## Usage
 
-### Running the Server
-
-The server can be run in SSE (Server-Sent Events) mode for web-based clients:
-
-```bash
-{{ cookiecutter.project_slug }}-server [--port PORT]
-```
-
-By default, the server runs on:
-
-- Host: localhost
-- Port: {{ cookiecutter.server_port }}
-- Log Level: DEBUG (outputs to stderr)
-
 ### Using the Client
 
-**[⚠️ CUSTOMIZE THIS SECTION: Update these examples to demonstrate your server's specific functionality]**
-
-A command-line client is included for easy testing and demonstration:
+The client uses stdio to communicate with the server, so you don't need to start the server separately. Simply use the client:
 
 ```bash
-# Basic usage
+# Basic usage (just the message)
 {{ cookiecutter.project_slug }}-client "Hello, World!"
 
-# Examples
-$ {{ cookiecutter.project_slug }}-client "Hello, MCP!"
-Hello, MCP!
-
-$ {{ cookiecutter.project_slug }}-client "Testing the echo server"
-Testing the echo server
+# With case transformation
+{{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
+{{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
 ```
 
-### Integrating with Your Applications
+Expected output examples:
 
-#### Python Integration
+```bash
+$ {{ cookiecutter.project_slug }}-client "Hello, World!"
+Hello, World!
 
-**[⚠️ CUSTOMIZE THIS SECTION: Update this integration example to show how to use your server's specific tools]**
+$ {{ cookiecutter.project_slug }}-client "Hello, World!" --transform upper
+HELLO, WORLD!
+
+$ {{ cookiecutter.project_slug }}-client "Hello, World!" --transform lower
+hello, world!
+```
+
+### Python Integration
+
+Here's how to use the echo server in your Python code:
 
 ```python
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-async def echo_message(message: str) -> str:
+async def echo_message(message: str, transform: Optional[str] = None) -> str:
+    # Create server parameters for stdio connection
     server_params = StdioServerParameters(
         command="{{ cookiecutter.project_slug }}-server",
         args=[],
@@ -100,21 +157,19 @@ async def echo_message(message: str) -> str:
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
-            result = await session.call_tool("echo", arguments={"text": message})
+
+            # Call the echo tool with optional transform
+            arguments = {"text": message}
+            if transform:
+                arguments["transform"] = transform
+
+            result = await session.call_tool("echo", arguments=arguments)
             return str(result)
 
 # Usage
-message = await echo_message("Hello from Python!")
-print(message)  # Outputs: Hello from Python!
+message = await echo_message("Hello from Python!")  # Basic usage
+upper_message = await echo_message("Hello from Python!", transform="upper")  # With transform
 ```
-
-#### Available Tools
-
-**[⚠️ CUSTOMIZE THIS SECTION: Replace with your server's available tools and their descriptions]**
-
-| Tool Name | Description                                | Parameters     | Returns |
-| --------- | ------------------------------------------ | -------------- | ------- |
-| `echo`    | Returns the input text exactly as provided | `text`: string | string  |
 
 ## API Reference
 
