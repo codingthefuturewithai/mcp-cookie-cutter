@@ -10,7 +10,7 @@ async def _main_async(port: int):
     await server.run_sse_async()
 
 @click.command()
-@click.option("--port", default={{ cookiecutter.server_port }}, help="Port to listen on")
+@click.option("--port", default={{cookiecutter.server_port}}, help="Port to listen on")
 def main(port: int):
     """Entry point for the SSE server."""
     return asyncio.run(_main_async(port)) 
