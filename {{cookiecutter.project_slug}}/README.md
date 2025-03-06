@@ -1,287 +1,110 @@
-# {{ cookiecutter.project_name }}
+# Echo MCP Server
 
-{{ cookiecutter.description }}
+A simple MCP server that provides text echo capabilities with optional case transformation.
+
+**[➡️ REPLACE: Update with your MCP server's name and short description]**
 
 ## Overview
 
-This is a foundational MCP (Model Control Protocol) server project that provides the basic structure and plumbing needed to build your own MCP server. It includes:
+This MCP server provides a text echo service that can return text exactly as provided or transform its case. It's designed to integrate with AI coding assistants and other tools that need simple text manipulation capabilities.
 
-- A complete MCP server implementation structure
-- Built-in support for both stdio and SSE (Server-Sent Events) transport modes
-- A simple echo tool as a reference implementation
-- All necessary configuration and entry points
-
-The project is ready for you to:
-
-- Add your own MCP tools and functionality
-- Customize the server configuration
-- Build upon the existing transport handling
+**[➡️ REPLACE: Describe your MCP server's purpose and capabilities]**
 
 ## Features
 
-**[⚠️ CUSTOMIZE THIS SECTION: Replace these features with your MCP server's specific capabilities]**
+- Echo text with exact preservation of input
+- Optional case transformation (upper, lower)
+- Support for both short and long text inputs
+- Fast, lightweight text processing
 
-- Complete MCP server infrastructure
-- Built-in transport handling (stdio and SSE)
-- Asynchronous operation support
-- Type-safe request/response handling
-- Example echo tool implementation
+**[➡️ REPLACE: List your MCP server's key features]**
 
 ## Installation
 
-### Local Development Setup
-
-1. Create and activate a virtual environment:
-
-   ```bash
-   # Optional but recommended
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-2. Install the package in development mode:
-
-   ```bash
-   # This will install the package in "editable" mode
-   uv pip install -e .
-   ```
-
-3. Test the installation:
-
-   The scaffolding includes a simple echo server for testing. Try it with the echo client:
-
-   ```bash
-   echo-with-transform-client "Hello, World"
-   ```
-
-   You should see "Hello, World!" echoed back.
-
-   Try the case transformation options:
-
-   ```bash
-   echo-with-transform-client "Hello, World" --transform upper
-   # Should output: HELLO, WORLD!
-   echo-with-transform-client "Hello, World" --transform lower
-   # Should output: hello, world
-   ```
-
-## Development
-
-Now that you've verified the scaffolding works, you can start building your own MCP server...
-
-### Building and Installing from Wheel
-
-If you want to build a wheel for distribution or local installation:
-
-1. Install build tools:
-
-   ```bash
-   uv pip install build
-   ```
-
-2. Build the wheel:
-
-   ```bash
-   python -m build
-   ```
-
-   This will create both a source distribution (.tar.gz) and a wheel (.whl) in the `dist/` directory.
-
-3. Install the wheel:
-   ```bash
-   uv pip install dist/your-mcp-server*.whl
-   ```
-
-### Alternative Installation Methods
-
-#### From Source (without virtual environment)
+### From PyPI
 
 ```bash
-# Install directly in your Python environment
-uv pip install .
+# Install using UV (recommended)
+uv pip install echo-mcp-server
+
+# Or using pip
+pip install echo-mcp-server
 ```
 
-#### From PyPI (if published)
-
-If you choose to publish your package to PyPI:
+### From Source
 
 ```bash
-uv pip install your-mcp-server
+# Clone the repository
+git clone https://github.com/username/echo-mcp-server.git
+cd echo-mcp-server
+
+# Build the wheel
+python -m build --wheel
+
+# Install the wheel
+uv pip install dist/*.whl
 ```
+
+**[➡️ REPLACE: Update package name, repository URL, and installation instructions for your MCP server]**
+
+## Available Tools
+
+### echo
+
+Description: Returns the input text, optionally transforming its case.
+
+Parameters:
+
+- `text` (str): The text to echo back
+- `transform` (str, optional): Case transformation to apply. Options: "upper", "lower". Default: None
+
+Returns:
+
+- Text content with the original or transformed text
+
+Example Response:
+
+```json
+{
+  "type": "text",
+  "text": "Hello, World!",
+  "format": "text/plain"
+}
+```
+
+**[➡️ REPLACE: Document your MCP server's tools, including their parameters and return values]**
 
 ## Usage
 
-### Using the Client
+After installation, you'll need to configure your AI tool to use this MCP server:
 
-The client uses stdio to communicate with the server, so you don't need to start the server separately. Simply use the client:
-
-```bash
-# Basic usage (just the message)
-your-mcp-server-client "Hello, World!"
-
-# With case transformation
-your-mcp-server-client "Hello, World!" --transform upper
-your-mcp-server-client "Hello, World!" --transform lower
-```
-
-Expected output examples:
-
-```bash
-$ your-mcp-server-client "Hello, World!"
-Hello, World!
-
-$ your-mcp-server-client "Hello, World!" --transform upper
-HELLO, WORLD!
-
-$ your-mcp-server-client "Hello, World!" --transform lower
-hello, world!
-```
-
-### Python Integration
-
-Here's how to use the echo server in your Python code:
-
-```python
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-
-async def echo_message(message: str, transform: Optional[str] = None) -> str:
-    # Create server parameters for stdio connection
-    server_params = StdioServerParameters(
-        command="your-mcp-server",
-        args=[],
-        env=None
-    )
-
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-
-            # Call the echo tool with optional transform
-            arguments = {"text": message}
-            if transform:
-                arguments["transform"] = transform
-
-            result = await session.call_tool("echo", arguments=arguments)
-            return str(result)
-
-# Usage
-message = await echo_message("Hello from Python!")  # Basic usage
-upper_message = await echo_message("Hello from Python!", transform="upper")  # With transform
-```
-
-## API Reference
-
-**[⚠️ CUSTOMIZE THIS SECTION: Document your server's specific tools and their parameters]**
-
-### Echo Tool
-
-```python
-Tool: echo
-Description: Returns the input text exactly as provided
-Parameters:
-    - text (str): The text to echo back
-Returns:
-    str: The exact input text
-```
-
-### Testing and Development
-
-For testing and development, we recommend using:
-
-1. The included command-line client:
+1. Locate the MCP server wrapper script:
 
    ```bash
-   your-mcp-server-client "Your message here"
+   which echo-mcp-server
+   # Example output: /Users/username/.local/bin/echo-mcp-server
    ```
 
-2. The MCP Inspector tool for interactive testing and debugging:
+2. Configure your AI tool (like Claude Desktop, Cursor, Windsurf, etc.) to use this MCP server. Refer to your AI tool's documentation for specific instructions on configuring MCP servers.
 
-   ```bash
-   mcp inspect your-mcp-server
-   ```
-
-3. The Python client library for programmatic access:
-
-   ```python
-   from mcp import ClientSession, StdioServerParameters
-   from mcp.client.stdio import stdio_client
-
-   async def echo_message(message: str) -> str:
-       server_params = StdioServerParameters(
-           command="your-mcp-server",
-           args=[],
-           env=None
-       )
-
-       async with stdio_client(server_params) as (read, write):
-           async with ClientSession(read, write) as session:
-               await session.initialize()
-               result = await session.call_tool("echo", arguments={"text": message})
-               return str(result)
-   ```
-
-These tools provide type-safe, reliable ways to interact with the server without dealing with low-level protocol details.
-
-## Configuration
-
-**[⚠️ CUSTOMIZE THIS SECTION: Document your server's specific configuration options]**
-
-The server can be configured using command-line options:
-
-```bash
-your-mcp-server --port PORT  # Run on a different port (default: {{ cookiecutter.server_port }})
-```
-
-The server uses the following defaults:
-
-- Host: localhost
-- Port: {{ cookiecutter.server_port }}
-- Logging: DEBUG level to stderr
-
-## Troubleshooting
-
-### Common Issues
-
-**[⚠️ CUSTOMIZE THIS SECTION: Add troubleshooting specific to your server's functionality]**
-
-1. **Port Already in Use**
-
-   ```bash
-   your-mcp-server --port DIFFERENT_PORT
-   ```
-
-2. **Connection Issues**
-
-   - Verify the server is running
-   - Check if the port is accessible
-   - Ensure no firewall restrictions
-
-3. **Import Errors**
-   - Verify installation: `uv pip list | grep your-mcp-server`
-   - Check Python version compatibility
-
-### Getting Help
-
-**[⚠️ CUSTOMIZE THIS SECTION: Update with your support channels]**
-
-- File issues on our GitHub repository
-- Contact: {{ cookiecutter.author_email }}
-- Check logs using stderr output
+**[➡️ REPLACE: Update the wrapper script name to match your MCP server's name]**
 
 ## Requirements
 
 - Python 3.10 or later (< 3.13)
 - Operating Systems: Linux, macOS, Windows
-- Dependencies:
-  - mcp>=1.0.0
-  - anyio>=4.5
-  - starlette>=0.36.0
-  - uvicorn>=0.27.0
 
-## Contributing
+**[➡️ REPLACE: Update with any additional requirements specific to your MCP server]**
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+## Configuration
+
+**[➡️ REPLACE: Document any environment variables, configuration files, or command-line options your MCP server supports. Remove this section if your server requires no configuration.]**
+
+## Troubleshooting
+
+Common issues and their solutions:
+
+**[➡️ REPLACE: Add troubleshooting guidance specific to your MCP server. Remove this section if not needed.]**
 
 ## License
 
@@ -289,10 +112,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-{{ cookiecutter.author_name }} <{{ cookiecutter.author_email }}>
+**[➡️ REPLACE: Add your name and contact information]**
 
 ---
 
-_A simple, reliable MCP echo server for your testing and development needs._
-
-**[⚠️ FINAL REMINDER: This README template provides a structure for documenting your MCP server. Replace all sections marked with [⚠️ CUSTOMIZE THIS SECTION] with information specific to your implementation. Remove this reminder when done.]**
+[Replace this example Echo server README with documentation specific to your MCP server. Use this structure as a template, but customize all sections to describe your server's actual functionality, tools, and configuration options.]

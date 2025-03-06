@@ -29,56 +29,65 @@ This guide will help you get started with developing your own MCP server using t
 
 ## Project Structure
 
-The scaffolding provides a basic MCP server structure:
+The scaffolding provides a well-organized MCP server structure:
 
 ```
 your-project/
-├── server.py         # Main server implementation
-├── pyproject.toml    # Package configuration and entry points
-└── README.md        # Template for your server's documentation
+├── your_project/
+│   ├── __init__.py      # Package initialization
+│   ├── client/          # Client implementations
+│   │   └── app.py       # Convenience client app for testing the MCP server
+│   ├── server/          # Server implementations
+│   │   ├── app.py       # Main MCP server implementation
+│   │   ├── sse.py       # SSE transport implementation
+│   │   └── stdio.py     # stdio transport implementation
+│   └── tools/           # MCP tool implementations
+│       ├── __init__.py  # Tool module initialization
+│       └── echo.py      # Example echo tool implementation
+├── pyproject.toml       # Package configuration and entry points
+├── README.md           # Project documentation
+└── DEVELOPMENT.md      # Development guide (this file)
 ```
 
 Key files and their purposes:
 
-- `server.py`: Contains the MCP server implementation and tool definitions
+- `your_project/server/app.py`: Core MCP server implementation with tool registration
+- `your_project/tools/`: Directory containing individual tool implementations
+- `your_project/client/app.py`: Convenience client application for testing your MCP server
 - `pyproject.toml`: Defines package metadata, dependencies, and command-line entry points
 
 ## Adding Your Own Tools
 
-1. Open `server.py` and locate the tool registration section:
+1. Create a new file in the `tools/` directory for your tool:
 
    ```python
-   def register_tools(mcp_server: FastMCP) -> None:
-       """Register all MCP tools with the server"""
-   ```
-
-2. Add your own tool using the `@mcp_server.tool` decorator:
-
-   ```python
+   # tools/your_tool.py
+   from typing import Optional
    from mcp import types
 
-   @mcp_server.tool(
-       name="your_tool_name",
-       description="What your tool does"
-   )
-   def your_tool(param1: str, param2: int) -> types.TextContent:
-       """
-       Your tool's implementation.
-
-       Args:
-           param1: Description of param1
-           param2: Description of param2
-
-       Returns:
-           TextContent: The result as MCP TextContent
-       """
+   def your_tool(param1: str, param2: Optional[int] = None) -> types.TextContent:
+       """Your tool implementation"""
        result = process_your_data(param1, param2)
-
        return types.TextContent(
            type="text",
            text=result,
-           format="text/plain"  # or "text/markdown", etc.
+           format="text/plain"
        )
+   ```
+
+2. Register your tool in `server/app.py`:
+
+   ```python
+   from your_project.tools.your_tool import your_tool
+
+   def register_tools(mcp_server: FastMCP) -> None:
+       @mcp_server.tool(
+           name="your_tool_name",
+           description="What your tool does"
+       )
+       def your_tool_wrapper(param1: str, param2: Optional[int] = None) -> types.TextContent:
+           """Wrapper around your tool implementation"""
+           return your_tool(param1, param2)
    ```
 
 ### MCP Content Types
@@ -90,13 +99,6 @@ The MCP SDK defines the following content types for tool responses:
 - `JsonContent`: For structured JSON data
 - `FileContent`: For file data with filename and MIME type
 - `BinaryContent`: For raw binary data with optional MIME type
-
-These types ensure:
-
-- Proper type information in responses
-- Consistent behavior across MCP implementations
-- Better client compatibility
-- Clear content format specification
 
 Examples using different content types:
 
@@ -137,15 +139,52 @@ return types.BinaryContent(
 )
 ```
 
-3. Test your new tool:
+## Testing Your MCP Server
 
-   ```bash
-   # Using stdio mode (default)
-   your-mcp-server-client '{"tool": "your_tool_name", "arguments": {"param1": "value", "param2": 42}}'
+The MCP Inspector provides a web-based interface for testing and debugging your MCP server during development.
 
-   # Using the MCP Inspector
-   mcp inspect your-mcp-server
-   ```
+### Starting the Inspector
+
+```bash
+# Install the package in development mode first
+uv pip install -e .
+
+# Start the MCP Inspector pointing to your server module
+mcp dev your_project/server/app.py
+```
+
+This will:
+
+1. Load your MCP server module
+2. Start a development server
+3. Launch the MCP Inspector web UI at http://localhost:5173
+
+### Using the Inspector
+
+In the MCP Inspector web interface:
+
+1. Select the "Tools" tab to see all available tools
+2. Choose a tool to test
+3. Fill in the tool's parameters
+4. Click "Run Tool" to execute
+5. View the results in the response panel
+
+The Inspector provides a convenient way to:
+
+- Verify tool registration
+- Test parameter validation
+- Check response formatting
+- Debug tool execution
+
+### Example: Testing the Echo Tool
+
+1. Select the "Tools" tab
+2. Choose the "echo" tool
+3. Parameters:
+   - Enter text in the "text" field (e.g., "Hello, World!")
+   - Optionally select a transform ("upper" or "lower")
+4. Click "Run Tool"
+5. Verify the response matches expectations
 
 ## Transport Modes
 
@@ -166,82 +205,27 @@ Your MCP server supports two transport modes:
   ```
 - Clients can connect via HTTP to `http://localhost:3001`
 
-## Testing Your Server
+## Deploying Your MCP Server
 
-1. Unit Tests
+Once you've completed and tested your MCP server, you can make it available to AI coding assistants and other MCP clients:
 
-   - Add tests in the `tests/` directory
-   - Test each tool's functionality
-   - Test error cases and edge conditions
+1. Build a wheel distribution:
 
-2. Integration Testing
+   ```bash
+   python -m build --wheel
+   ```
 
-   - Use the MCP Inspector for interactive testing:
-     ```bash
-     mcp inspect your-mcp-server
-     ```
-   - Test both stdio and SSE modes
-   - Verify error handling and responses
+2. Install the wheel on your system:
 
-3. Client Testing
-   - Test with the command-line client
-   - Test with Python client library
-   - Test with web clients (for SSE mode)
+   ```bash
+   uv pip install dist/your_project-0.1.0-py3-none-any.whl
+   ```
 
-## Documentation
+3. Locate the installed MCP server wrapper script:
 
-1. Update the README.md template:
+   ```bash
+   which your-mcp-server
+   # Example output: /Users/username/.local/bin/your-mcp-server
+   ```
 
-   - Replace all sections marked with [⚠️ CUSTOMIZE THIS SECTION]
-   - Document your server's specific features
-   - Update installation instructions if needed
-   - Document your tools' API
-
-2. Document your tools:
-   - Clear descriptions
-   - Parameter types and constraints
-   - Return value specifications
-   - Example usage
-
-## Best Practices
-
-1. Tool Implementation
-
-   - Use type hints for all parameters
-   - Provide clear docstrings
-   - Handle errors gracefully
-   - Return appropriate types
-
-2. Error Handling
-
-   - Use appropriate exception types
-   - Provide helpful error messages
-   - Handle both expected and unexpected errors
-
-3. Configuration
-
-   - Use environment variables for sensitive data
-   - Provide clear configuration options
-   - Document all settings
-
-4. Testing
-   - Write tests for all tools
-   - Test error conditions
-   - Test both transport modes
-   - Verify type safety
-
-## Next Steps
-
-1. Remove the example echo tool once you have your own tools
-2. Update package metadata in pyproject.toml
-3. Add your own configuration options
-4. Write comprehensive tests
-5. Update documentation for your specific implementation
-
-## Getting Help
-
-- MCP Documentation: [Link to MCP docs]
-- File issues on the repository
-- Join the community [where applicable]
-
-Remember: The echo server implementation is provided as a reference. Once you've implemented your own tools, you can remove it and update the documentation accordingly.
+4. Configure your AI coding assistant or other MCP clients to use this path when they need to access your MCP server's functionality.
