@@ -1,13 +1,22 @@
 # MCP Server Cookie Cutter Template
 
-A cookie cutter template for creating new MCP (Model Control Protocol) servers. This template generates a fully functional MCP server with both stdio and SSE support, demonstrated through a simple echo service.
+A cookie cutter template for creating new MCP (Machine Control Protocol) servers. This template generates a fully functional MCP server with unified transport handling (stdio and SSE) and MCP Inspector compatibility, demonstrated through a simple echo service.
+
+## Features
+
+- Unified transport handling (stdio and SSE in a single implementation)
+- Full MCP Inspector compatibility
+- Example echo tool implementation
+- Proper absolute imports throughout
+- Development environment setup
+- Comprehensive documentation templates
 
 ## Prerequisites
 
-1. Python 3.10 or higher
+1. Python 3.11 or higher
 
    ```bash
-   python --version  # Should be 3.10 or higher
+   python --version  # Should be 3.11 or higher
    ```
 
 2. uv (Fast Python package installer)
@@ -29,7 +38,7 @@ You can create a new MCP server either directly from GitHub or from a local copy
 ### Option 1: Directly from GitHub
 
 ```bash
-cookiecutter gh:codingthefuturewithai/mcp-cookie-cutter
+cookiecutter gh:codeium/mcp-cookie-cutter
 ```
 
 ### Option 2: From Local Copy
@@ -37,7 +46,7 @@ cookiecutter gh:codingthefuturewithai/mcp-cookie-cutter
 1. Clone this template:
 
    ```bash
-   git clone https://github.com/codingthefuturewithai/mcp-cookie-cutter
+   git clone https://github.com/codeium/mcp-cookie-cutter
    ```
 
 2. Create a project using the local template:
@@ -49,20 +58,45 @@ cookiecutter gh:codingthefuturewithai/mcp-cookie-cutter
 
 You'll be asked for:
 
-- `project_name`: Human-readable name (e.g., "My Echo Server")
-- `project_slug`: Python package name (e.g., "my_echo_server")
+- `project_name`: Human-readable name (e.g., "My MCP Server")
+- `project_slug`: Python package name (e.g., "my_mcp_server")
 - `description`: Short description of your project
 - `author_name`: Your name
 - `author_email`: Your email
 - `server_port`: Port for SSE server (default: 3001)
 
-Once generated, follow the instructions in your new project's README.md for:
+## Generated Project Structure
 
-- Setting up the development environment
-- Installing dependencies
-- Running the server
-- Testing with the example client
-- Using the MCP Inspector
+```
+my_mcp_server/              # Your project directory
+├── my_mcp_server/          # Python package directory
+│   ├── __init__.py
+│   ├── client/             # Client implementations
+│   │   ├── __init__.py
+│   │   └── app.py         # Test client implementation
+│   ├── server/            # Server implementation
+│   │   ├── __init__.py
+│   │   └── app.py        # Unified MCP server implementation
+│   └── tools/             # Tool implementations
+│       ├── __init__.py
+│       └── echo.py       # Example tool implementation
+├── pyproject.toml         # Project configuration
+├── README.md             # Project documentation template
+└── DEVELOPMENT.md        # Development guide template
+```
+
+## Next Steps
+
+Once your project is generated:
+
+1. Review and customize the README.md template
+2. Follow DEVELOPMENT.md for:
+   - Setting up the development environment
+   - Installing dependencies
+   - Running the server
+   - Testing with the example client
+   - Using MCP Inspector
+3. Start adding your own tools in the `tools/` directory
 
 ## License
 

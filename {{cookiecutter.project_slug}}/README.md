@@ -1,104 +1,116 @@
-# Echo MCP Server
+# {{ cookiecutter.project_name }}
 
-A simple MCP server that provides text echo capabilities with optional case transformation.
-
-**[➡️ REPLACE: Update with your MCP server's name and short description]**
+**[➡️ REPLACE: Write a clear, concise description of your MCP server's purpose. What problems does it solve? What capabilities does it provide to AI tools?]**
 
 ## Overview
 
-This MCP server provides a text echo service that can return text exactly as provided or transform its case. It's designed to integrate with AI coding assistants and other tools that need simple text manipulation capabilities.
-
-**[➡️ REPLACE: Describe your MCP server's purpose and capabilities]**
+**[➡️ REPLACE: Provide a more detailed explanation of your MCP server's architecture, key components, and how it integrates with AI tools. What makes it unique or valuable?]**
 
 ## Features
 
-- Echo text with exact preservation of input
-- Optional case transformation (upper, lower)
-- Support for both short and long text inputs
-- Fast, lightweight text processing
-
-**[➡️ REPLACE: List your MCP server's key features]**
+**[➡️ REPLACE: List the key features of your MCP server. Some examples:]
+- What unique tools does it provide?
+- What data sources can it access?
+- What special capabilities does it have?
+- What performance characteristics are notable?
+- What integrations does it support?**
 
 ## Installation
 
-### From PyPI
+### From PyPI (if published)
 
 ```bash
 # Install using UV (recommended)
-uv pip install echo-mcp-server
+uv pip install {{ cookiecutter.project_slug }}
 
 # Or using pip
-pip install echo-mcp-server
+pip install {{ cookiecutter.project_slug }}
 ```
 
 ### From Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/echo-mcp-server.git
-cd echo-mcp-server
+git clone <your-repository-url>
+cd {{ cookiecutter.project_slug }}
 
-# Build the wheel
-python -m build --wheel
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install the wheel
-uv pip install dist/*.whl
+# Install in development mode
+uv pip install -e .
 ```
 
-**[➡️ REPLACE: Update package name, repository URL, and installation instructions for your MCP server]**
+**[➡️ REPLACE: Update installation instructions. If you plan to publish to PyPI, keep the PyPI section. Otherwise, remove it and focus on source installation.]**
 
 ## Available Tools
 
-### echo
+### tool_name
 
-Description: Returns the input text, optionally transforming its case.
+**[➡️ REPLACE: For each tool in your MCP server, document:]
+- What the tool does
+- Its parameters and their types
+- What it returns
+- Example usage and expected output
+- Any limitations or important notes**
 
-Parameters:
+Example:
+```bash
+# Using stdio transport (default)
+{{ cookiecutter.project_slug }}-client "your command here"
 
-- `text` (str): The text to echo back
-- `transform` (str, optional): Case transformation to apply. Options: "upper", "lower". Default: None
-
-Returns:
-
-- Text content with the original or transformed text
-
-Example Response:
-
-```json
-{
-  "type": "text",
-  "text": "Hello, World!",
-  "format": "text/plain"
-}
+# Using SSE transport
+{{ cookiecutter.project_slug }}-server --transport sse
+curl http://localhost:{{ cookiecutter.server_port }}/sse
 ```
-
-**[➡️ REPLACE: Document your MCP server's tools, including their parameters and return values]**
 
 ## Usage
 
-After installation, you'll need to configure your AI tool to use this MCP server:
+This MCP server provides two entry points:
 
-1. Locate the MCP server wrapper script:
-
+1. `{{ cookiecutter.project_slug }}-server`: The MCP server that handles tool requests
    ```bash
-   which echo-mcp-server
-   # Example output: /Users/username/.local/bin/echo-mcp-server
+   # Run with stdio transport (default)
+   {{ cookiecutter.project_slug }}-server
+
+   # Run with SSE transport
+   {{ cookiecutter.project_slug }}-server --transport sse
    ```
 
-2. Configure your AI tool (like Claude Desktop, Cursor, Windsurf, etc.) to use this MCP server. Refer to your AI tool's documentation for specific instructions on configuring MCP servers.
+2. `{{ cookiecutter.project_slug }}-client`: A convenience client for testing
+   ```bash
+   {{ cookiecutter.project_slug }}-client "your command here"
+   ```
 
-**[➡️ REPLACE: Update the wrapper script name to match your MCP server's name]**
+**[➡️ REPLACE: Add any additional usage examples, common patterns, or best practices specific to your tools]**
 
 ## Requirements
 
-- Python 3.10 or later (< 3.13)
+- Python 3.11 or later (< 3.13)
 - Operating Systems: Linux, macOS, Windows
 
-**[➡️ REPLACE: Update with any additional requirements specific to your MCP server]**
+**[➡️ REPLACE: Add any additional requirements specific to your MCP server:]
+- Special system dependencies
+- External services or APIs needed
+- Network access requirements
+- Hardware requirements (if any)**
 
 ## Configuration
 
-**[➡️ REPLACE: Document any environment variables, configuration files, or command-line options your MCP server supports. Remove this section if your server requires no configuration.]**
+**[➡️ REPLACE: Document any configuration options your MCP server supports:]
+- Environment variables
+- Configuration files
+- Command-line options
+- API keys or credentials needed
+
+Remove this section if your server requires no configuration.**
+
+## Development
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
+
+**[➡️ REPLACE: Add any project-specific development notes, guidelines, or requirements]**
 
 ## Troubleshooting
 
