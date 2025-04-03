@@ -19,21 +19,20 @@ logging.basicConfig(
 
 logger = logging.getLogger("{{cookiecutter.project_slug}}.mcp")
 
+
 def create_mcp_server() -> FastMCP:
     """Create and configure the MCP server instance"""
-    server = FastMCP(
-        "{{cookiecutter.project_name}}",
-        host="localhost",
-        port={{cookiecutter.server_port}}
-    )
+    server = FastMCP("{{cookiecutter.project_name}}", host="localhost", port={{cookiecutter.server_port}})
 
     # Register all tools with the server
     register_tools(server)
 
     return server
 
+
 def register_tools(mcp_server: FastMCP) -> None:
     """Register all MCP tools with the server"""
+
     @mcp_server.tool(
         name="echo",
         description="Echo back the input text with optional case transformation",
@@ -42,8 +41,10 @@ def register_tools(mcp_server: FastMCP) -> None:
         """Wrapper around the echo tool implementation"""
         return echo(text, transform)
 
+
 # Create a server instance that can be imported by the MCP CLI
 server = create_mcp_server()
+
 
 @click.command()
 @click.option("--port", default={{cookiecutter.server_port}}, help="Port to listen on for SSE")
@@ -69,5 +70,6 @@ def main(port: int, transport: str) -> int:
         logger.error(f"Failed to start server: {e}", exc_info=True)
         return 1
 
+
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

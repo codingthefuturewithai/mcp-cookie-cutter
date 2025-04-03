@@ -20,11 +20,16 @@ This guide will help you get started with developing your own MCP server using t
 3. Verify the scaffolding works by testing the included echo server:
 
    ```bash
-   echo-with-transform-client "Hello, World"
+   # Test with stdio transport (default)
+   {{ cookiecutter.project_slug }}-client "Hello, World"
    # Should output: Hello, World
 
-   echo-with-transform-client "Hello, World" --transform upper
+   {{ cookiecutter.project_slug }}-client "Hello, World" --transform upper
    # Should output: HELLO, WORLD
+
+   # Test with SSE transport
+   {{ cookiecutter.project_slug }}-server --transport sse &  # Start server in background
+   curl http://localhost:{{ cookiecutter.server_port }}/sse  # Test SSE endpoint
    ```
 
 ## Project Structure
@@ -32,15 +37,15 @@ This guide will help you get started with developing your own MCP server using t
 The scaffolding provides a well-organized MCP server structure:
 
 ```
-your-project/
-├── your_project/
+{{ cookiecutter.project_slug }}/
+├── {{ cookiecutter.project_slug }}/
 │   ├── __init__.py      # Package initialization
 │   ├── client/          # Client implementations
-│   │   └── app.py       # Convenience client app for testing the MCP server
-│   ├── server/          # Server implementations
-│   │   ├── app.py       # Main MCP server implementation
-│   │   ├── sse.py       # SSE transport implementation
-│   │   └── stdio.py     # stdio transport implementation
+│   │   ├── __init__.py  # Client module initialization
+│   │   └── app.py       # Convenience client app for testing
+│   ├── server/          # Server implementation
+│   │   ├── __init__.py  # Server module initialization
+│   │   └── app.py       # Unified MCP server implementation
 │   └── tools/           # MCP tool implementations
 │       ├── __init__.py  # Tool module initialization
 │       └── echo.py      # Example echo tool implementation
@@ -51,9 +56,9 @@ your-project/
 
 Key files and their purposes:
 
-- `your_project/server/app.py`: Core MCP server implementation with tool registration
-- `your_project/tools/`: Directory containing individual tool implementations
-- `your_project/client/app.py`: Convenience client application for testing your MCP server
+- `{{ cookiecutter.project_slug }}/server/app.py`: Core MCP server implementation with unified transport handling and tool registration
+- `{{ cookiecutter.project_slug }}/tools/`: Directory containing individual tool implementations
+- `{{ cookiecutter.project_slug }}/client/app.py`: Convenience client application for testing your MCP server
 - `pyproject.toml`: Defines package metadata, dependencies, and command-line entry points
 
 ## Adding Your Own Tools
@@ -78,7 +83,7 @@ Key files and their purposes:
 2. Register your tool in `server/app.py`:
 
    ```python
-   from your_project.tools.your_tool import your_tool
+   from {{ cookiecutter.project_slug }}.tools.your_tool import your_tool
 
    def register_tools(mcp_server: FastMCP) -> None:
        @mcp_server.tool(
@@ -150,7 +155,7 @@ The MCP Inspector provides a web-based interface for testing and debugging your 
 uv pip install -e .
 
 # Start the MCP Inspector pointing to your server module
-mcp dev your_project/server/app.py
+mcp dev {{ cookiecutter.project_slug }}/server/app.py
 ```
 
 This will:
@@ -201,9 +206,9 @@ Your MCP server supports two transport modes:
 - Ideal for web applications and long-running services
 - Requires running the server explicitly:
   ```bash
-  your-mcp-server --transport sse --port 3001
+  {{ cookiecutter.project_slug }}-server --transport sse --port {{ cookiecutter.server_port }}
   ```
-- Clients can connect via HTTP to `http://localhost:3001`
+- Clients can connect via HTTP to `http://localhost:{{ cookiecutter.server_port }}`
 
 ## Deploying Your MCP Server
 
