@@ -21,13 +21,15 @@ wheels/
 *.egg
 MANIFEST
 
-# Virtual Environment
+# Virtual Environment (ignore all common and any directory containing a Python venv)
 venv/
 ENV/
 env/
 .env
 .venv/
 .python-version
+# Ignore any directory containing a Python virtual environment marker
+**/pyvenv.cfg
 
 # IDE
 .idea/

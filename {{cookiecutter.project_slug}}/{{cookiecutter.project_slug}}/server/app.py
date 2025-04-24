@@ -1,28 +1,26 @@
 """MCP server implementation with Echo tool"""
 
-from mcp.server.fastmcp import FastMCP
-from mcp import types
-import logging
-import sys
 import asyncio
 import click
 from typing import Optional
 
+from mcp import types
+from mcp.server.fastmcp import FastMCP
+
+from {{cookiecutter.project_slug}}.config import ServerConfig, load_config
+from {{cookiecutter.project_slug}}.logging_config import setup_logging, logger
 from {{cookiecutter.project_slug}}.tools.echo import echo
 
-# Configure logging to write to stderr
-logging.basicConfig(
-    stream=sys.stderr,
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
 
-logger = logging.getLogger("{{cookiecutter.project_slug}}.mcp")
-
-
-def create_mcp_server() -> FastMCP:
+def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     """Create and configure the MCP server instance"""
-    server = FastMCP("{{cookiecutter.project_name}}", host="localhost", port={{cookiecutter.server_port}})
+    if config is None:
+        config = load_config()
+    
+    # Set up logging first
+    setup_logging(config)
+    
+    server = FastMCP(config.name)
 
     # Register all tools with the server
     register_tools(server)
