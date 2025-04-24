@@ -78,6 +78,26 @@ This MCP server provides two entry points:
    {{ cookiecutter.project_slug }}-server --transport sse
    ```
 
+## Logging
+
+The server logs all activity to both stderr and a rotating log file. Log files are stored in OS-specific locations:
+
+- **macOS**: `~/Library/Logs/mcp-servers/{{ cookiecutter.project_slug }}.log`
+- **Linux**: 
+  - Root user: `/var/log/mcp-servers/{{ cookiecutter.project_slug }}.log`
+  - Non-root: `~/.local/state/mcp-servers/logs/{{ cookiecutter.project_slug }}.log`
+- **Windows**: `%USERPROFILE%\AppData\Local\mcp-servers\logs\{{ cookiecutter.project_slug }}.log`
+
+Log files are automatically rotated when they reach 10MB, with up to 5 backup files kept.
+
+You can configure the log level using the `LOG_LEVEL` environment variable:
+```bash
+# Set log level to DEBUG for more detailed logging
+LOG_LEVEL=DEBUG {{ cookiecutter.project_slug }}-server
+```
+
+Valid log levels are: DEBUG, INFO (default), WARNING, ERROR, CRITICAL
+
 2. `{{ cookiecutter.project_slug }}-client`: A convenience client for testing
    ```bash
    {{ cookiecutter.project_slug }}-client "your command here"
