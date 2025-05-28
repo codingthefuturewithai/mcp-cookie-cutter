@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import sys
-from .server.app import server, create_mcp_server
+from {{cookiecutter.project_slug}}.server.app import server, create_mcp_server
 
 __version__ = "0.1.0"
 __all__ = ["server", "create_mcp_server"]

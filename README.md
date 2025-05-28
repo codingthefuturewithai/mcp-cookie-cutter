@@ -38,7 +38,7 @@ You can create a new MCP server either directly from GitHub or from a local copy
 ### Option 1: Directly from GitHub
 
 ```bash
-cookiecutter gh:codeium/mcp-cookie-cutter
+cookiecutter gh:codingthefuture/mcp-cookie-cutter
 ```
 
 ### Option 2: From Local Copy
@@ -46,7 +46,7 @@ cookiecutter gh:codeium/mcp-cookie-cutter
 1. Clone this template:
 
    ```bash
-   git clone https://github.com/codeium/mcp-cookie-cutter
+   git clone https://github.com/codingthefuture/mcp-cookie-cutter
    ```
 
 2. Create a project using the local template:

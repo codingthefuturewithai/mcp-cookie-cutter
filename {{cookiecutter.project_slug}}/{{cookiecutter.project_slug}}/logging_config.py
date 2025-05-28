@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .config import ServerConfig
+from {{cookiecutter.project_slug}}.config import ServerConfig
 
 
 def get_default_log_dir() -> Path:
@@ -105,6 +105,14 @@ def setup_logging(server_config: Optional[ServerConfig] = None) -> None:
         logger.setLevel(effective_level)
         # Ensure propagation is enabled
         logger.propagate = True
+
+    # Log startup information
+    project_logger.info(f"Log File: {log_file}")
+    project_logger.info("Logging Enabled for:")
+    project_logger.info(f"- {project_logger.name} (Project Logger)")
+    project_logger.info("- MCP Framework (mcp.*)")
+    project_logger.info("- Uvicorn Server (uvicorn)")
+    project_logger.info(f"Log Level: {log_level}")
 
 
 # Export the logger for use in other modules

@@ -19,13 +19,36 @@
 
 ### From PyPI (if published)
 
+There are two main ways to use the server if it's published on PyPI:
+
+**Option 1: Install and then Run (Recommended for regular use)**
+
+First, install the package into your Python environment using UV:
 ```bash
-# Install using UV (recommended)
+# Install using UV
 uv pip install {{ cookiecutter.project_slug }}
 
-# Or using pip
-pip install {{ cookiecutter.project_slug }}
+# If you don't have UV, you can use pip:
+# pip install {{ cookiecutter.project_slug }}
 ```
+
+Once installed, you can run the server from your terminal:
+```bash
+{{ cookiecutter.project_slug }}-server
+```
+
+**Option 2: Run Directly with `uvx` (For quick use without permanent installation)**
+
+If you want to run the server without installing it into your current environment (or to run a specific version easily), you can use `uvx`. This is handy for one-off tasks or testing.
+
+```bash
+# Run the latest version of the server directly from PyPI
+uvx {{ cookiecutter.project_slug }} {{ cookiecutter.project_slug }}-server
+
+# You can also specify a version:
+# uvx {{ cookiecutter.project_slug }}==1.2.3 {{ cookiecutter.project_slug }}-server
+```
+This command tells `uvx` to fetch the `{{ cookiecutter.project_slug }}` package and execute its `{{ cookiecutter.project_slug }}-server` command.
 
 ### From Source
 
@@ -34,15 +57,13 @@ pip install {{ cookiecutter.project_slug }}
 git clone <your-repository-url>
 cd {{ cookiecutter.project_slug }}
 
-# Create and activate a virtual environment
-python -m venv venv
+# Create and activate a virtual environment using UV
+uv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install in development mode
+# Install in development mode using UV
 uv pip install -e .
 ```
-
-**[➡️ REPLACE: Update installation instructions. If you plan to publish to PyPI, keep the PyPI section. Otherwise, remove it and focus on source installation.]**
 
 ## Available Tools
 

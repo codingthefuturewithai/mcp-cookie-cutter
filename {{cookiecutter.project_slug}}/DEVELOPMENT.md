@@ -7,7 +7,7 @@ This guide will help you get started with developing your own MCP server using t
 1. Create and activate a virtual environment:
 
    ```bash
-   python -m venv venv
+   uv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
@@ -28,8 +28,12 @@ This guide will help you get started with developing your own MCP server using t
    # Should output: HELLO, WORLD
 
    # Test with SSE transport
-   {{ cookiecutter.project_slug }}-server --transport sse &  # Start server in background
-   curl http://localhost:{{ cookiecutter.server_port }}/sse  # Test SSE endpoint
+   {{ cookiecutter.project_slug }}-server --transport sse --port {{ cookiecutter.server_port }} &  # Start server in background
+   # Wait a moment for the server to start, then:
+   curl -s -N http://localhost:{{ cookiecutter.server_port }}/tools/echo -X POST -H "Content-Type: application/json" -d '{"text": "Hello SSE"}'
+   # The output will be an SSE stream. Look for a data event like:
+   # data: {"type":"text","text":"Hello SSE","format":"text/plain"}
+   # Then, kill the background server job (e.g., 'kill %1' or 'fg' then Ctrl+C)
    ```
 
 ## Project Structure
@@ -37,16 +41,16 @@ This guide will help you get started with developing your own MCP server using t
 The scaffolding provides a well-organized MCP server structure:
 
 ```
-{{ cookiecutter.project_slug }}/
-├── {{ cookiecutter.project_slug }}/
+{{ cookiecutter.project_slug }}/              # Project Root
+├── {{ cookiecutter.project_slug }}/          # Python package directory
 │   ├── __init__.py      # Package initialization
-│   ├── client/          # Client implementations
+│   ├── client/
 │   │   ├── __init__.py  # Client module initialization
 │   │   └── app.py       # Convenience client app for testing
-│   ├── server/          # Server implementation
+│   ├── server/
 │   │   ├── __init__.py  # Server module initialization
 │   │   └── app.py       # Unified MCP server implementation
-│   └── tools/           # MCP tool implementations
+│   └── tools/
 │       ├── __init__.py  # Tool module initialization
 │       └── echo.py      # Example echo tool implementation
 ├── pyproject.toml       # Package configuration and entry points
@@ -56,9 +60,9 @@ The scaffolding provides a well-organized MCP server structure:
 
 Key files and their purposes:
 
-- `{{ cookiecutter.project_slug }}/server/app.py`: Core MCP server implementation with unified transport handling and tool registration
-- `{{ cookiecutter.project_slug }}/tools/`: Directory containing individual tool implementations
-- `{{ cookiecutter.project_slug }}/client/app.py`: Convenience client application for testing your MCP server
+- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/server/app.py`: Core MCP server implementation with unified transport handling and tool registration. This is the main server application module.
+- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/tools/`: Directory containing individual tool implementations (e.g., `echo.py`).
+- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/client/app.py`: Convenience client application for testing your MCP server.
 - `pyproject.toml`: Defines package metadata, dependencies, and command-line entry points
 
 ## Adding Your Own Tools
@@ -193,22 +197,30 @@ The Inspector provides a convenient way to:
 
 ## Transport Modes
 
-Your MCP server supports two transport modes:
+Your MCP server uses a single entry point, `{{ cookiecutter.project_slug }}-server`, and supports two transport modes, selectable via the `--transport` flag.
 
 ### stdio Mode (Default)
 
-- Perfect for command-line tools and scripting
-- No need to run a separate server process
-- Automatically used by the client unless specified otherwise
+- **How it works**: The server communicates over standard input/output using JSON messages.
+- **Use cases**: Ideal for command-line tools, scripting, and direct integration with other processes.
+- **Invocation**: 
+  - When you run `{{ cookiecutter.project_slug }}-client`, it automatically starts and communicates with `{{ cookiecutter.project_slug }}-server` in stdio mode.
+  - To run the server directly in stdio mode (e.g., for testing with `mcp-cli` or other tools that manage the process):
+    ```bash
+    {{ cookiecutter.project_slug }}-server --transport stdio
+    # Or simply, as stdio is the default:
+    {{ cookiecutter.project_slug }}-server
+    ```
 
-### SSE Mode
+### SSE (Server-Sent Events) Mode
 
-- Ideal for web applications and long-running services
-- Requires running the server explicitly:
+- **How it works**: The server runs an HTTP server (using Uvicorn/Starlette) to handle MCP requests over Server-Sent Events.
+- **Use cases**: Suitable for web-based clients, persistent connections, or when you need the server to be accessible over a network.
+- **Invocation**:
   ```bash
   {{ cookiecutter.project_slug }}-server --transport sse --port {{ cookiecutter.server_port }}
   ```
-- Clients can connect via HTTP to `http://localhost:{{ cookiecutter.server_port }}`
+  This starts the HTTP server, typically making it available at `http://localhost:{{ cookiecutter.server_port }}`. The MCP Inspector also connects to the server when it's running in this mode (or by pointing the Inspector directly to the `server/app.py` module).
 
 ## Deploying Your MCP Server
 

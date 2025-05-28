@@ -26,5 +26,6 @@ dependencies = [
 {{ cookiecutter.project_slug }}-client = "{{ cookiecutter.project_slug }}.client.app:main"
 
 [tool.setuptools.packages.find]
+where = ["."]
 include = ["{{ cookiecutter.project_slug }}*"]
-namespaces = true 
+namespaces = false 
