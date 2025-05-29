@@ -1,6 +1,6 @@
 # MCP Server Cookie Cutter Template
 
-A cookie cutter template for creating new MCP (Machine Control Protocol) servers. This template generates a fully functional MCP server with unified transport handling (stdio and SSE) and MCP Inspector compatibility, demonstrated through a simple echo service.
+A cookie cutter template for creating new MCP (Model Context Protocol) servers. This template generates a fully functional MCP server with unified transport handling (stdio and SSE) and MCP Inspector compatibility, demonstrated through a simple echo service.
 
 ## Features
 
