@@ -17,6 +17,8 @@ This guide will help you get started with developing your own MCP server using t
    uv pip install -e .
    ```
 
+   **Note**: This step is REQUIRED before using `mcp dev` or running any server commands. Without it, you'll get `ModuleNotFoundError` when trying to import your package.
+
 3. Verify the scaffolding works by testing the included echo server:
 
    ```bash
@@ -154,13 +156,18 @@ The MCP Inspector provides a web-based interface for testing and debugging your 
 
 ### Starting the Inspector
 
+**IMPORTANT**: You must install the package in development mode before using `mcp dev`:
+
 ```bash
-# Install the package in development mode first
+# Step 1: Install the package in development mode (REQUIRED)
 uv pip install -e .
 
-# Start the MCP Inspector pointing to your server module
-mcp dev {{ cookiecutter.project_slug }}/server/app.py
+# Step 2: Start the MCP Inspector pointing to your server module
+# NOTE: You must set PYTHONPATH to the current directory for mcp dev to work
+PYTHONPATH=. mcp dev {{ cookiecutter.project_slug }}/server/app.py
 ```
+
+If you skip the installation step, you'll get a `ModuleNotFoundError` because Python won't be able to find your package imports.
 
 This will:
 
