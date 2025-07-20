@@ -6,9 +6,22 @@
 
 ## Quick Start for MCP Clients
 
-### 1. Configure your MCP client
+### 1. Install the MCP server (Recommended)
 
-Add this configuration to your MCP client settings:
+For the most reliable setup, first install the server as an isolated tool:
+
+```bash
+# Install the MCP server
+uv tool install {{ cookiecutter.project_slug }}
+
+# Find the installed binary path
+which {{ cookiecutter.project_slug }}-server  # macOS/Linux
+where {{ cookiecutter.project_slug }}-server  # Windows
+```
+
+### 2. Configure your MCP client
+
+Add this configuration to your MCP client settings using the absolute path from step 1:
 
 **For Claude Desktop**: Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
 
@@ -17,8 +30,7 @@ Add this configuration to your MCP client settings:
 ```json
 {
   "{{ cookiecutter.project_slug }}": {
-    "command": "uvx",
-    "args": ["{{ cookiecutter.project_slug }}-server"]
+    "command": "/absolute/path/to/{{ cookiecutter.project_slug }}-server"
   }
 }
 ```
@@ -27,8 +39,7 @@ Add this configuration to your MCP client settings:
 ```json
 {
   "{{ cookiecutter.project_slug }}": {
-    "command": "uvx",
-    "args": ["{{ cookiecutter.project_slug }}-server"],
+    "command": "/absolute/path/to/{{ cookiecutter.project_slug }}-server",
     "env": {
       "API_KEY": "your-api-key-here",
       "BASE_URL": "https://api.example.com"
@@ -38,14 +49,24 @@ Add this configuration to your MCP client settings:
 ```
 **[End of optional environment variables section]**
 
-### 2. Get your credentials (if needed)
+**Alternative: Quick start with uvx** (may have dependency conflicts):
+```json
+{
+  "{{ cookiecutter.project_slug }}": {
+    "command": "uvx",
+    "args": ["{{ cookiecutter.project_slug }}-server"]
+  }
+}
+```
+
+### 3. Get your credentials (if needed)
 
 **[➡️ REPLACE: If your server requires API keys or credentials, explain how to obtain them:]
 - **API Key**: Get from https://example.com/api-keys
 - **Base URL**: Your instance URL (e.g., https://api.example.com)
 **[End of optional credentials section]**
 
-### 3. Start using the tools
+### 4. Start using the tools
 
 Once configured, you can ask your AI assistant to:
 **[➡️ REPLACE: Add 2-3 example requests users might make:]
