@@ -1,163 +1,290 @@
 # {{ cookiecutter.project_name }}
 
-**[➡️ REPLACE: Write a clear, concise description of your MCP server's purpose. What problems does it solve? What capabilities does it provide to AI tools?]**
+{{ cookiecutter.description }}
 
-## Overview
+**[➡️ REPLACE: Expand on the description above. What problems does it solve? What capabilities does it provide to AI tools?]**
 
-**[➡️ REPLACE: Provide a more detailed explanation of your MCP server's architecture, key components, and how it integrates with AI tools. What makes it unique or valuable?]**
+## Quick Start for MCP Clients
+
+### 1. Configure your MCP client
+
+Add this configuration to your MCP client settings:
+
+**For Claude Desktop**: Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
+
+**For Cline**: Add to `.vscode/settings.json` in your project
+
+```json
+{
+  "{{ cookiecutter.project_slug }}": {
+    "command": "uvx",
+    "args": ["{{ cookiecutter.project_slug }}-server"]
+  }
+}
+```
+
+**[➡️ REPLACE: If your server requires environment variables, show them here:]
+```json
+{
+  "{{ cookiecutter.project_slug }}": {
+    "command": "uvx",
+    "args": ["{{ cookiecutter.project_slug }}-server"],
+    "env": {
+      "API_KEY": "your-api-key-here",
+      "BASE_URL": "https://api.example.com"
+    }
+  }
+}
+```
+**[End of optional environment variables section]**
+
+### 2. Get your credentials (if needed)
+
+**[➡️ REPLACE: If your server requires API keys or credentials, explain how to obtain them:]
+- **API Key**: Get from https://example.com/api-keys
+- **Base URL**: Your instance URL (e.g., https://api.example.com)
+**[End of optional credentials section]**
+
+### 3. Start using the tools
+
+Once configured, you can ask your AI assistant to:
+**[➡️ REPLACE: Add 2-3 example requests users might make:]
+- "Use the echo tool to test the connection"
+- "Transform 'hello world' to uppercase"
 
 ## Features
 
-**[➡️ REPLACE: List the key features of your MCP server. Some examples:]
-- What unique tools does it provide?
-- What data sources can it access?
-- What special capabilities does it have?
-- What performance characteristics are notable?
-- What integrations does it support?**
-
-## Installation
-
-### From PyPI (if published)
-
-There are two main ways to use the server if it's published on PyPI:
-
-**Option 1: Install and then Run (Recommended for regular use)**
-
-First, install the package into your Python environment using UV:
-```bash
-# Install using UV
-uv pip install {{ cookiecutter.project_slug }}
-
-# If you don't have UV, you can use pip:
-# pip install {{ cookiecutter.project_slug }}
-```
-
-Once installed, you can run the server from your terminal:
-```bash
-{{ cookiecutter.project_slug }}-server
-```
-
-**Option 2: Run Directly with `uvx` (For quick use without permanent installation)**
-
-If you want to run the server without installing it into your current environment (or to run a specific version easily), you can use `uvx`. This is handy for one-off tasks or testing.
-
-```bash
-# Run the latest version of the server directly from PyPI
-uvx {{ cookiecutter.project_slug }} {{ cookiecutter.project_slug }}-server
-
-# You can also specify a version:
-# uvx {{ cookiecutter.project_slug }}==1.2.3 {{ cookiecutter.project_slug }}-server
-```
-This command tells `uvx` to fetch the `{{ cookiecutter.project_slug }}` package and execute its `{{ cookiecutter.project_slug }}-server` command.
-
-### From Source
-
-```bash
-# Clone the repository
-git clone <your-repository-url>
-cd {{ cookiecutter.project_slug }}
-
-# Create and activate a virtual environment using UV
-uv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install in development mode using UV
-uv pip install -e .
-```
+**[➡️ REPLACE: List the key features of your MCP server:]
+- Example echo tool with text transformation
+- Support for both stdio and SSE transports
+- Comprehensive logging with automatic rotation
+- Cross-platform compatibility (Linux, macOS, Windows)
 
 ## Available Tools
 
-### tool_name
+**[➡️ REPLACE: Document each tool your server provides. Follow this format for each tool:]
 
-**[➡️ REPLACE: For each tool in your MCP server, document:]
-- What the tool does
-- Its parameters and their types
-- What it returns
-- Example usage and expected output
-- Any limitations or important notes**
+### echo
 
-Example:
-```bash
-# Using stdio transport (default)
-{{ cookiecutter.project_slug }}-client "your command here"
+A simple tool for testing that echoes back the input text with optional transformations.
 
-# Using SSE transport
-{{ cookiecutter.project_slug }}-server --transport sse
-curl http://localhost:{{ cookiecutter.server_port }}/sse
+**Parameters:**
+- `text` (required, string): The text to echo back
+- `transform` (optional, string): Transform to apply - either "upper" or "lower"
+
+**Returns:**
+- JSON object containing:
+  - `text`: The echoed text (possibly transformed)
+
+**Examples:**
+
+Basic echo:
+```json
+// Request
+{
+  "text": "Hello, World!"
+}
+
+// Response
+{
+  "text": "Hello, World!"
+}
 ```
 
-## Usage
+With transformation:
+```json
+// Request
+{
+  "text": "Hello, World!",
+  "transform": "upper"
+}
 
-This MCP server provides two entry points:
-
-1. `{{ cookiecutter.project_slug }}-server`: The MCP server that handles tool requests
-   ```bash
-   # Run with stdio transport (default)
-   {{ cookiecutter.project_slug }}-server
-
-   # Run with SSE transport
-   {{ cookiecutter.project_slug }}-server --transport sse
-   ```
-
-## Logging
-
-The server logs all activity to both stderr and a rotating log file. Log files are stored in OS-specific locations:
-
-- **macOS**: `~/Library/Logs/mcp-servers/{{ cookiecutter.project_slug }}.log`
-- **Linux**: 
-  - Root user: `/var/log/mcp-servers/{{ cookiecutter.project_slug }}.log`
-  - Non-root: `~/.local/state/mcp-servers/logs/{{ cookiecutter.project_slug }}.log`
-- **Windows**: `%USERPROFILE%\AppData\Local\mcp-servers\logs\{{ cookiecutter.project_slug }}.log`
-
-Log files are automatically rotated when they reach 10MB, with up to 5 backup files kept.
-
-You can configure the log level using the `LOG_LEVEL` environment variable:
-```bash
-# Set log level to DEBUG for more detailed logging
-LOG_LEVEL=DEBUG {{ cookiecutter.project_slug }}-server
+// Response
+{
+  "text": "HELLO, WORLD!"
+}
 ```
 
-Valid log levels are: DEBUG, INFO (default), WARNING, ERROR, CRITICAL
+## Alternative Configuration Methods
 
-2. `{{ cookiecutter.project_slug }}-client`: A convenience client for testing
+### Using a different MCP client
+
+The configuration above works for Claude Desktop and Cline. For other MCP clients:
+
+1. Use `uvx {{ cookiecutter.project_slug }}-server` as the command
+2. Set any required environment variables
+3. Consult your MCP client's documentation for specific configuration format
+
+### Using uv tool (Recommended for AI Assistants)
+
+For isolated installation that avoids dependency conflicts:
+
+```bash
+# Install as an isolated tool
+uv tool install {{ cookiecutter.project_slug }}
+
+# Find the installed binary location
+uv tool list | grep {{ cookiecutter.project_slug }}
+# Or on macOS/Linux:
+which {{ cookiecutter.project_slug }}-server
+# Or on Windows:
+where {{ cookiecutter.project_slug }}-server
+```
+
+Then use this configuration with the absolute path:
+```json
+{
+  "{{ cookiecutter.project_slug }}": {
+    "command": "/path/to/{{ cookiecutter.project_slug }}-server"
+  }
+}
+```
+
+**Note**: Replace `/path/to/` with the actual path from the commands above.
+
+### Running from source
+
+For development or testing from source code:
+
+```json
+{
+  "{{ cookiecutter.project_slug }}": {
+    "command": "python",
+    "args": ["-m", "{{ cookiecutter.project_slug }}.server.app"],
+    "env": {
+      "PYTHONPATH": "/path/to/{{ cookiecutter.project_slug }}"
+    }
+  }
+}
+```
+
+## Installation Options
+
+### Quick Start with uvx (Simplest)
+
+The configuration above using `uvx` will automatically download and run the server without installation. This is the simplest option but may have conflicts if you have other Python packages installed globally.
+
+### Isolated Installation with uv tool (Most Reliable)
+
+For a clean, isolated installation that prevents dependency conflicts:
+
+```bash
+# Install the MCP server as an isolated tool
+uv tool install {{ cookiecutter.project_slug }}
+
+# Verify installation and find the binary path
+uv tool list | grep {{ cookiecutter.project_slug }}
+
+# Platform-specific path discovery:
+# macOS/Linux:
+which {{ cookiecutter.project_slug }}-server
+# Example output: /Users/username/.local/bin/{{ cookiecutter.project_slug }}-server
+
+# Windows:
+where {{ cookiecutter.project_slug }}-server
+# Example output: C:\Users\username\.local\bin\{{ cookiecutter.project_slug }}-server.exe
+```
+
+**Important**: After installation, update your MCP client configuration to use the absolute path returned by the `which` or `where` command.
+
+### Install from Source (Development)
+
+For development or testing from source code:
+
+```bash
+git clone <repository-url>
+cd {{ cookiecutter.project_slug }}
+
+# Create and activate virtual environment
+uv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+uv pip install -e .
+```
+
+Note: This requires the package to be published to PyPI. See [DEVELOPMENT.md](DEVELOPMENT.md#publishing-to-pypi) for publishing instructions.
+
+## Troubleshooting
+
+### Common Issues
+
+**[➡️ REPLACE: Add common issues users might face. Here are some examples:]
+
+1. **"Tool not found" error**
+   - Ensure the server is running and properly configured
+   - Check that the tool name is spelled correctly
+   - Verify your MCP client is connected to the server
+
+2. **Connection errors**
+   - Check that no other process is using port {{ cookiecutter.server_port }} (for SSE transport)
+   - Verify your MCP client configuration is correct
+   - Try restarting your MCP client
+
+3. **Missing environment variables**
+   - Ensure all required environment variables are set in your configuration
+   - Check for typos in variable names
+   - Verify credentials are valid and not expired
+
+**[End of examples - customize based on your server's specific issues]**
+
+### Dependency Conflicts
+
+If you encounter dependency conflicts when using `uvx`:
+
+1. **Use isolated installation instead**:
    ```bash
-   {{ cookiecutter.project_slug }}-client "your command here"
+   # Install as an isolated tool to avoid conflicts
+   uv tool install {{ cookiecutter.project_slug }}
+   
+   # Find the binary path
+   which {{ cookiecutter.project_slug }}-server  # macOS/Linux
+   where {{ cookiecutter.project_slug }}-server  # Windows
    ```
 
-**[➡️ REPLACE: Add any additional usage examples, common patterns, or best practices specific to your tools]**
+2. **Update your MCP client configuration** to use the absolute path from step 1
+
+3. **If conflicts persist**, check for conflicting global packages:
+   ```bash
+   # List all globally installed packages
+   uv pip list
+   
+   # Consider using a virtual environment for development
+   ```
 
 ## Requirements
 
-- Python 3.11 or later (< 3.13)
+- Python 3.11 or 3.12
 - Operating Systems: Linux, macOS, Windows
 
 **[➡️ REPLACE: Add any additional requirements specific to your MCP server:]
 - Special system dependencies
 - External services or APIs needed
 - Network access requirements
-- Hardware requirements (if any)**
+- Hardware requirements (if any)
+**[End of optional requirements]**
 
-## Configuration
+## Logging
 
-**[➡️ REPLACE: Document any configuration options your MCP server supports:]
-- Environment variables
-- Configuration files
-- Command-line options
-- API keys or credentials needed
+The server logs all activity to both stderr and a rotating log file. Log files are stored in OS-specific locations:
 
-Remove this section if your server requires no configuration.**
+- **macOS**: `~/Library/Logs/mcp-servers/{{ cookiecutter.project_slug }}.log`
+- **Linux**: `~/.local/state/mcp-servers/logs/{{ cookiecutter.project_slug }}.log`
+- **Windows**: `%LOCALAPPDATA%\mcp-servers\logs\{{ cookiecutter.project_slug }}.log`
+
+Logs rotate at 10MB with 5 backups kept. Control verbosity with `LOG_LEVEL`:
+
+```bash
+LOG_LEVEL=DEBUG uvx {{ cookiecutter.project_slug }}-server
+```
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
+For development setup, testing, and contribution guidelines, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-**[➡️ REPLACE: Add any project-specific development notes, guidelines, or requirements]**
+## AI Assistant Configuration
 
-## Troubleshooting
-
-Common issues and their solutions:
-
-**[➡️ REPLACE: Add troubleshooting guidance specific to your MCP server. Remove this section if not needed.]**
+For detailed setup instructions for AI coding assistants (Claude, Cline, etc.), see [SETUP_PROMPT.md](SETUP_PROMPT.md).
 
 ## License
 
@@ -165,8 +292,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-**[➡️ REPLACE: Add your name and contact information]**
+{{ cookiecutter.author_name }} - {{ cookiecutter.author_email }}
 
 ---
 
-[Replace this example Echo server README with documentation specific to your MCP server. Use this structure as a template, but customize all sections to describe your server's actual functionality, tools, and configuration options.]
+**[➡️ FINAL REMINDER: Replace all sections marked with ➡️ with content specific to your MCP server. Remove this reminder when done.]**
