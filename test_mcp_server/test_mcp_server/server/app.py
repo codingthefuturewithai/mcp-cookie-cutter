@@ -1,4 +1,4 @@
-"""{{ cookiecutter.project_name }} - MCP Server with Decorators
+"""Test MCP Server Auto - MCP Server with Decorators
 
 This module implements the core MCP server using FastMCP with multi-transport support
 (STDIO, SSE, and Streamable HTTP) and automatic application of decorators 
@@ -13,15 +13,15 @@ import click
 from mcp import types
 from mcp.server.fastmcp import FastMCP
 
-from {{ cookiecutter.project_slug }}.config import ServerConfig, get_config
-from {{ cookiecutter.project_slug }}.logging_config import setup_logging, logger
-from {{ cookiecutter.project_slug }}.log_system.correlation import (
+from test_mcp_server.config import ServerConfig, get_config
+from test_mcp_server.logging_config import setup_logging, logger
+from test_mcp_server.log_system.correlation import (
     generate_correlation_id,
     set_initialization_correlation_id,
     clear_initialization_correlation_id
 )
-from {{ cookiecutter.project_slug }}.log_system.unified_logger import UnifiedLogger
-from {{ cookiecutter.project_slug }}.tools.example_tools import example_tools, parallel_example_tools
+from test_mcp_server.log_system.unified_logger import UnifiedLogger
+from test_mcp_server.tools.example_tools import example_tools, parallel_example_tools
 
 
 def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
@@ -42,7 +42,7 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     
     # Initialize unified logging using factory pattern
     # Convert logging_destinations dict to DestinationConfig objects
-    from {{ cookiecutter.project_slug }}.log_system.destinations import DestinationConfig
+    from test_mcp_server.log_system.destinations import DestinationConfig
     
     destinations_list = []
     if config.logging_destinations and 'destinations' in config.logging_destinations:
@@ -62,11 +62,11 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     
     # Log startup info using unified logger
     import logging
-    unified_logger = logging.getLogger('{{ cookiecutter.project_slug }}')
+    unified_logger = logging.getLogger('test_mcp_server')
     unified_logger.info(f"Unified logging initialized with {len(UnifiedLogger.get_available_destinations())} available destination types")
     unified_logger.info(f"Server config: {config.name} at log level {config.log_level}")
     
-    mcp_server = FastMCP(config.name or "{{ cookiecutter.project_name }}")
+    mcp_server = FastMCP(config.name or "Test MCP Server Auto")
     
     # Register all tools with the server
     register_tools(mcp_server, config)
@@ -87,13 +87,13 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
     
     # Get unified logger for registration logs
     import logging
-    unified_logger = logging.getLogger('{{ cookiecutter.project_slug }}')
+    unified_logger = logging.getLogger('test_mcp_server')
     
     # Import decorators
-    from {{ cookiecutter.project_slug }}.decorators.exception_handler import exception_handler
-    from {{ cookiecutter.project_slug }}.decorators.tool_logger import tool_logger
-    from {{ cookiecutter.project_slug }}.decorators.type_converter import type_converter
-    from {{ cookiecutter.project_slug }}.decorators.parallelize import parallelize
+    from test_mcp_server.decorators.exception_handler import exception_handler
+    from test_mcp_server.decorators.tool_logger import tool_logger
+    from test_mcp_server.decorators.type_converter import type_converter
+    from test_mcp_server.decorators.parallelize import parallelize
     
     # Register regular tools with decorators
     for tool_func in example_tools:
@@ -137,7 +137,7 @@ server = create_mcp_server()
 @click.command()
 @click.option(
     "--port",
-    default={{ cookiecutter.server_port }},
+    default=3001,
     help="Port to listen on for SSE or Streamable HTTP transport"
 )
 @click.option(
@@ -147,7 +147,7 @@ server = create_mcp_server()
     help="Transport type (stdio, sse, or streamable-http)"
 )
 def main(port: int, transport: str) -> int:
-    """Run the {{ cookiecutter.project_name }} server with specified transport."""
+    """Run the Test MCP Server Auto server with specified transport."""
     async def run_server():
         """Inner async function to run the server and manage the event loop."""
         # Set the event loop in UnifiedLogger for async operations
@@ -184,15 +184,15 @@ def main(port: int, transport: str) -> int:
 
 def main_stdio() -> int:
     """Entry point for STDIO transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="stdio")
+    return main.callback(port=3001, transport="stdio")
 
 def main_http() -> int:
     """Entry point for Streamable HTTP transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="streamable-http")
+    return main.callback(port=3001, transport="streamable-http")
 
 def main_sse() -> int:
     """Entry point for SSE transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="sse")
+    return main.callback(port=3001, transport="sse")
 
 
 if __name__ == "__main__":

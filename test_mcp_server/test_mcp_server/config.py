@@ -1,4 +1,4 @@
-"""Configuration management for {{cookiecutter.project_name}}
+"""Configuration management for Test MCP Server Auto
 
 This module provides platform-aware configuration management using platformdirs
 to ensure configuration files are stored in appropriate locations across different
@@ -19,8 +19,8 @@ class ServerConfig:
     """Configuration class for the MCP server."""
     
     # Server settings
-    name: str = "{{cookiecutter.project_name}}"
-    description: str = "{{cookiecutter.description}}"
+    name: str = "Test MCP Server Auto"
+    description: str = "Test server with auto setup"
     
     # Logging configuration
     log_level: str = "INFO"
@@ -32,7 +32,7 @@ class ServerConfig:
     # Server transport settings
     default_transport: str = "stdio"
     default_host: str = "127.0.0.1"
-    default_port: int = {{cookiecutter.server_port}}
+    default_port: int = 3001
     
     # Platform-aware paths
     config_dir: Path = None
@@ -47,11 +47,11 @@ class ServerConfig:
     def __post_init__(self):
         """Initialize platform-aware paths after dataclass creation."""
         if self.config_dir is None:
-            self.config_dir = Path(platformdirs.user_config_dir("{{cookiecutter.project_slug}}"))
+            self.config_dir = Path(platformdirs.user_config_dir("test_mcp_server"))
         if self.data_dir is None:
-            self.data_dir = Path(platformdirs.user_data_dir("{{cookiecutter.project_slug}}"))
+            self.data_dir = Path(platformdirs.user_data_dir("test_mcp_server"))
         if self.log_dir is None:
-            self.log_dir = Path(platformdirs.user_log_dir("{{cookiecutter.project_slug}}"))
+            self.log_dir = Path(platformdirs.user_log_dir("test_mcp_server"))
         
         # Ensure directories exist
         self.config_dir.mkdir(parents=True, exist_ok=True)
@@ -60,8 +60,8 @@ class ServerConfig:
         
         # Set file paths
         self.config_file_path = self.config_dir / "config.yaml"
-        self.log_file_path = self.log_dir / "{{cookiecutter.project_slug}}.log"
-        self.database_path = self.data_dir / "{{cookiecutter.project_slug}}.db"
+        self.log_file_path = self.log_dir / "test_mcp_server.log"
+        self.database_path = self.data_dir / "test_mcp_server.db"
         
         # Initialize default logging destinations if not set
         if self.logging_destinations is None:
@@ -92,14 +92,14 @@ class ServerConfig:
     def from_dict(cls, data: Dict[str, Any]) -> "ServerConfig":
         """Create configuration from dictionary."""
         return cls(
-            name=data.get("name", "{{cookiecutter.project_name}}"),
-            description=data.get("description", "{{cookiecutter.description}}"),
+            name=data.get("name", "Test MCP Server Auto"),
+            description=data.get("description", "Test server with auto setup"),
             log_level=data.get("log_level", "INFO"),
             log_retention_days=data.get("log_retention_days", 30),
             logging_destinations=data.get("logging_destinations"),
             default_transport=data.get("default_transport", "stdio"),
             default_host=data.get("default_host", "127.0.0.1"),
-            default_port=data.get("default_port", {{cookiecutter.server_port}}),
+            default_port=data.get("default_port", 3001),
         )
     
     def save(self) -> None:
@@ -164,10 +164,10 @@ def reload_config() -> ServerConfig:
 def get_platform_info() -> Dict[str, str]:
     """Get platform-specific directory information."""
     return {
-        "config_dir": str(platformdirs.user_config_dir("{{cookiecutter.project_slug}}")),
-        "data_dir": str(platformdirs.user_data_dir("{{cookiecutter.project_slug}}")),
-        "log_dir": str(platformdirs.user_log_dir("{{cookiecutter.project_slug}}")),
-        "cache_dir": str(platformdirs.user_cache_dir("{{cookiecutter.project_slug}}")),
+        "config_dir": str(platformdirs.user_config_dir("test_mcp_server")),
+        "data_dir": str(platformdirs.user_data_dir("test_mcp_server")),
+        "log_dir": str(platformdirs.user_log_dir("test_mcp_server")),
+        "cache_dir": str(platformdirs.user_cache_dir("test_mcp_server")),
     }
 
 

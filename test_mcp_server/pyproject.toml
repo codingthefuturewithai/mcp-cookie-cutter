@@ -3,12 +3,12 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "{{ cookiecutter.project_slug }}"
+name = "test_mcp_server"
 version = "0.1.0"
-description = "{{ cookiecutter.description }}"
+description = "Test server with auto setup"
 readme = "README.md"
 authors = [
-    {name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}"}
+    {name = "Test Author", email = "test@example.com"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.11,<3.13"
@@ -33,13 +33,13 @@ ui = ["streamlit>=1.29.0"]
 
 [project.scripts]
 # Single entry point for server that handles both transports
-{{ cookiecutter.project_slug }}-server = "{{ cookiecutter.project_slug }}.server.app:main"
-{{ cookiecutter.project_slug }}-server-stdio = "{{ cookiecutter.project_slug }}.server.app:main_stdio"
-{{ cookiecutter.project_slug }}-server-http = "{{ cookiecutter.project_slug }}.server.app:main_http"
-{{ cookiecutter.project_slug }}-server-sse = "{{ cookiecutter.project_slug }}.server.app:main_sse"
-{{ cookiecutter.project_slug }}-client = "{{ cookiecutter.project_slug }}.client.app:main"
+test_mcp_server-server = "test_mcp_server.server.app:main"
+test_mcp_server-server-stdio = "test_mcp_server.server.app:main_stdio"
+test_mcp_server-server-http = "test_mcp_server.server.app:main_http"
+test_mcp_server-server-sse = "test_mcp_server.server.app:main_sse"
+test_mcp_server-client = "test_mcp_server.client.app:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["{{ cookiecutter.project_slug }}*"]
+include = ["test_mcp_server*"]
 namespaces = false 
