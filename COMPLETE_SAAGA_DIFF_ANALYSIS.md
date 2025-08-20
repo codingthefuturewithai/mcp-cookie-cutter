@@ -64,7 +64,7 @@
 - Lines 145-165 in SAAGA template (oauth tool registration) - ALREADY REMOVED
 
 ### Other Differences:
-- Template variables ({{ cookiecutter.project_slug }}) replaced with mcp_server_project - CORRECT
+- Template variables ({{ cookiecutter.__project_slug }}) replaced with mcp_server_project - CORRECT
 - Template conditionals removed (since we're in generated project) - CORRECT
 
 ## 2. tools/example_tools.py

@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tim_mcp_server"
+version = "0.1.0"
+description = "MCP server with decorators, unified logging, and multiple transports"
+readme = "README.md"
+authors = [
+    {name = "Tim K", email = "timkitch@gmail.com"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "mcp>=1.0.0",
+    "mcp[cli]>=1.0.0",
+    "anyio>=4.5",
+    "starlette>=0.36.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "platformdirs>=4.0.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.0.0",
+    "pyyaml>=6.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+monitoring = ["psutil>=5.9.0"]
+ui = ["streamlit>=1.29.0"]
+
+[project.scripts]
+# Single entry point for server that handles both transports
+tim_mcp_server-server = "tim_mcp_server.server.app:main"
+tim_mcp_server-server-stdio = "tim_mcp_server.server.app:main_stdio"
+tim_mcp_server-server-http = "tim_mcp_server.server.app:main_http"
+tim_mcp_server-server-sse = "tim_mcp_server.server.app:main_sse"
+tim_mcp_server-client = "tim_mcp_server.client.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tim_mcp_server*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=tim_mcp_server --cov-report=html --cov-report=term-missing" 

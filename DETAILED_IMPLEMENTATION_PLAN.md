@@ -18,7 +18,7 @@ VERIFY: Status shows "success" or "already current"
 ### Step 0.2: Verify Current State
 ```
 ACTION: Check our current server/app.py
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 VERIFY: Line 8 shows "from mcp.server.fastmcp import FastMCP" (already using FastMCP)
 VERIFY: Has register_tools() function starting around line 31
 ```
@@ -31,13 +31,13 @@ VERIFY: Has register_tools() function starting around line 31
 ```
 ACTION: Read SAAGA file using code-understanding
 SOURCE: example_server/example_server/tools/example_tools.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/tools/example_tools.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/tools/example_tools.py
 ```
 
 ### Step 1.2: Create example_tools.py with ALL 10 Tools
 ```
 ACTION: Write new file
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/tools/example_tools.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/tools/example_tools.py
 CONTENT: Copy ENTIRE file from SAAGA INCLUDING:
   - Lines 1-14: Imports (MUST include "from mcp.server.fastmcp import Context")
   - Lines 15-28: echo_tool function
@@ -63,7 +63,7 @@ VERIFY: All tools have ctx: Context parameter
 ### Step 1.3: Update tools/__init__.py
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/tools/__init__.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/tools/__init__.py
 CONTENT:
 from .example_tools import example_tools, parallel_example_tools
 
@@ -79,14 +79,14 @@ VERIFY: Only exports the two lists, not individual tools
 ### Step 2.1: Create decorators directory
 ```
 ACTION: Create directory
-PATH: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/
+PATH: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/
 ```
 
 ### Step 2.2: Get exception_handler.py from SAAGA
 ```
 ACTION: Read from SAAGA using code-understanding
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/exception_handler.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/exception_handler.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/exception_handler.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/exception_handler.py
 COPY: Entire file
 VERIFY: Has exception_handler function that returns wrapper
 ```
@@ -94,8 +94,8 @@ VERIFY: Has exception_handler function that returns wrapper
 ### Step 2.3: Get tool_logger.py from SAAGA
 ```
 ACTION: Read from SAAGA using code-understanding
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/tool_logger.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/tool_logger.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/tool_logger.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/tool_logger.py
 COPY: Entire file
 VERIFY: Function signature has (func, config: dict = None)
 VERIFY: Uses config parameter for logging settings
@@ -104,8 +104,8 @@ VERIFY: Uses config parameter for logging settings
 ### Step 2.4: Get type_converter.py from SAAGA (CRITICAL!)
 ```
 ACTION: Read from SAAGA using code-understanding
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/type_converter.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/type_converter.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/type_converter.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/type_converter.py
 COPY: Entire file
 VERIFY: Handles conversion between MCP types and Python types
 VERIFY: Has type_converter function
@@ -114,8 +114,8 @@ VERIFY: Has type_converter function
 ### Step 2.5: Get parallelize.py from SAAGA
 ```
 ACTION: Read from SAAGA using code-understanding
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/parallelize.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/parallelize.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/parallelize.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/parallelize.py
 COPY: Entire file
 VERIFY: Uses ThreadPoolExecutor
 VERIFY: Has parallelize function that returns async wrapper
@@ -124,7 +124,7 @@ VERIFY: Has parallelize function that returns async wrapper
 ### Step 2.6: Create decorators/__init__.py
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/decorators/__init__.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/decorators/__init__.py
 CONTENT:
 from .exception_handler import exception_handler
 from .tool_logger import tool_logger
@@ -143,11 +143,11 @@ VERIFY: Exports all 4 decorators
 ### Step 3.1: Update server/app.py - Imports Section
 ```
 ACTION: Read SAAGA's server/app.py
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py (from SAAGA)
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py (from SAAGA)
 FOCUS: Lines 1-25 (imports section)
 
 ACTION: Update our server/app.py imports
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 CHANGES:
   Line 6: Keep "import asyncio"
   Line 7: Keep "import sys"
@@ -156,15 +156,15 @@ CHANGES:
   Line 12: Keep "from mcp import types"
   Line 13: Keep "from mcp.server.fastmcp import FastMCP"
   Line 15-20: Update to:
-    from {{ cookiecutter.project_slug }}.config import ServerConfig, get_config
-    from {{ cookiecutter.project_slug }}.logging_config import setup_logging, logger
-    from {{ cookiecutter.project_slug }}.log_system.correlation import (
+    from {{ cookiecutter.__project_slug }}.config import ServerConfig, get_config
+    from {{ cookiecutter.__project_slug }}.logging_config import setup_logging, logger
+    from {{ cookiecutter.__project_slug }}.log_system.correlation import (
         generate_correlation_id,
         set_initialization_correlation_id,
         clear_initialization_correlation_id
     )
-    from {{ cookiecutter.project_slug }}.log_system.unified_logger import UnifiedLogger
-    from {{ cookiecutter.project_slug }}.tools.example_tools import example_tools, parallel_example_tools
+    from {{ cookiecutter.__project_slug }}.log_system.unified_logger import UnifiedLogger
+    from {{ cookiecutter.__project_slug }}.tools.example_tools import example_tools, parallel_example_tools
 
 VERIFY: Imports log_system not logging
 VERIFY: Imports example_tools and parallel_example_tools lists
@@ -173,7 +173,7 @@ VERIFY: Imports example_tools and parallel_example_tools lists
 ### Step 3.2: Update create_mcp_server function
 ```
 ACTION: Replace create_mcp_server function
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 LOCATION: Lines 28-85 in SAAGA
 COPY: Entire create_mcp_server function from SAAGA
 EXCLUDE: Skip lines mentioning oauth_passthrough
@@ -191,7 +191,7 @@ VERIFY: Calls register_tools with config parameter
 ### Step 3.3: Update register_tools function (MOST CRITICAL)
 ```
 ACTION: Replace entire register_tools function
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 SOURCE: SAAGA lines 91-147
 CONTENT:
 def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
@@ -199,13 +199,13 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
     
     # Get unified logger for registration logs
     import logging
-    unified_logger = logging.getLogger('{{ cookiecutter.project_slug }}')
+    unified_logger = logging.getLogger('{{ cookiecutter.__project_slug }}')
     
     # Import decorators AT REGISTRATION TIME
-    from {{ cookiecutter.project_slug }}.decorators.exception_handler import exception_handler
-    from {{ cookiecutter.project_slug }}.decorators.tool_logger import tool_logger
-    from {{ cookiecutter.project_slug }}.decorators.type_converter import type_converter
-    from {{ cookiecutter.project_slug }}.decorators.parallelize import parallelize
+    from {{ cookiecutter.__project_slug }}.decorators.exception_handler import exception_handler
+    from {{ cookiecutter.__project_slug }}.decorators.tool_logger import tool_logger
+    from {{ cookiecutter.__project_slug }}.decorators.type_converter import type_converter
+    from {{ cookiecutter.__project_slug }}.decorators.parallelize import parallelize
     
     # Register regular tools with decorators
     for tool_func in example_tools:
@@ -248,7 +248,7 @@ VERIFY: NO OAuth section
 ### Step 3.4: Update main() function for 3 transports
 ```
 ACTION: Replace main() function
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 SOURCE: SAAGA lines 165-214
 KEY CHANGES:
   - Add streamable-http to transport choices
@@ -312,7 +312,7 @@ VERIFY: Sets streamable_http_path = "/mcp"
 ### Step 3.5: Add convenience entry points
 ```
 ACTION: Add after main() function
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/server/app.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/server/app.py
 SOURCE: SAAGA lines 216-226
 CONTENT:
 def main_stdio() -> int:
@@ -338,15 +338,15 @@ VERIFY: All 3 convenience functions exist
 ```
 ACTION: Create directories
 PATHS:
-  {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/
-  {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/
+  {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/
+  {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/
 ```
 
 ### Step 4.2: Copy correlation.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/correlation.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/correlation.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/correlation.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/correlation.py
 COPY: Entire file
 VERIFY: Has generate_correlation_id, set/get/clear functions
 VERIFY: Has CorrelationContext class
@@ -355,8 +355,8 @@ VERIFY: Has CorrelationContext class
 ### Step 4.3: Copy unified_logger.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/unified_logger.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/unified_logger.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/unified_logger.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/unified_logger.py
 COPY: Entire file
 VERIFY: Has UnifiedLogger class
 VERIFY: Has initialize_from_config and initialize_default methods
@@ -365,8 +365,8 @@ VERIFY: Has initialize_from_config and initialize_default methods
 ### Step 4.4: Copy destinations/base.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/base.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/base.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/base.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/base.py
 COPY: Entire file
 VERIFY: Has LogDestination abstract base class
 ```
@@ -374,8 +374,8 @@ VERIFY: Has LogDestination abstract base class
 ### Step 4.5: Copy destinations/sqlite.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/sqlite.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/sqlite.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/sqlite.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/sqlite.py
 COPY: Entire file
 VERIFY: Has SQLiteDestination class
 ```
@@ -383,8 +383,8 @@ VERIFY: Has SQLiteDestination class
 ### Step 4.6: Copy destinations/factory.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/factory.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/factory.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/factory.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/factory.py
 COPY: Entire file
 EXCLUDE: Remove any OAuth or SAAGA-specific destination types
 VERIFY: Has DestinationFactory class
@@ -393,7 +393,7 @@ VERIFY: Has DestinationFactory class
 ### Step 4.7: Create destinations/__init__.py
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/destinations/__init__.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/destinations/__init__.py
 CONTENT:
 from .base import LogDestination, LogEntry, DestinationConfig
 from .sqlite import SQLiteDestination
@@ -405,7 +405,7 @@ __all__ = ["LogDestination", "LogEntry", "DestinationConfig", "SQLiteDestination
 ### Step 4.8: Create log_system/__init__.py
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/log_system/__init__.py
+FILE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/log_system/__init__.py
 CONTENT:
 from .correlation import generate_correlation_id, set_correlation_id, get_correlation_id, clear_correlation_id
 from .unified_logger import UnifiedLogger
@@ -426,8 +426,8 @@ __all__ = [
 ### Step 5.1: Update config.py
 ```
 ACTION: Read SAAGA's config.py
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/config.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/config.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/config.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/config.py
 KEY ADDITIONS:
   - Add logging_destinations field
   - Add get_config() function
@@ -439,7 +439,7 @@ VERIFY: Has get_config() function
 ### Step 5.2: Update pyproject.toml dependencies
 ```
 ACTION: Edit file
-FILE: {{cookiecutter.project_slug}}/pyproject.toml
+FILE: {{cookiecutter.__project_slug}}/pyproject.toml
 ADD to dependencies:
   - "pydantic>=2.0.0"
   - "pydantic-settings>=2.0.0"
@@ -451,9 +451,9 @@ ADD to optional-dependencies:
   monitoring = ["psutil>=5.9.0"]
   ui = ["streamlit>=1.29.0"]
 ADD to scripts:
-  {{ cookiecutter.project_slug }}-server-stdio = "{{ cookiecutter.project_slug }}.server.app:main_stdio"
-  {{ cookiecutter.project_slug }}-server-http = "{{ cookiecutter.project_slug }}.server.app:main_http"
-  {{ cookiecutter.project_slug }}-server-sse = "{{ cookiecutter.project_slug }}.server.app:main_sse"
+  {{ cookiecutter.__project_slug }}-server-stdio = "{{ cookiecutter.__project_slug }}.server.app:main_stdio"
+  {{ cookiecutter.__project_slug }}-server-http = "{{ cookiecutter.__project_slug }}.server.app:main_http"
+  {{ cookiecutter.__project_slug }}-server-sse = "{{ cookiecutter.__project_slug }}.server.app:main_sse"
 ```
 
 ---
@@ -464,16 +464,16 @@ ADD to scripts:
 ```
 ACTION: Create directories
 PATHS:
-  {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/ui/
-  {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/ui/pages/
-  {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/ui/lib/
+  {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/ui/
+  {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/ui/pages/
+  {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/ui/lib/
 ```
 
 ### Step 6.2: Copy ui/app.py
 ```
 ACTION: Read from SAAGA and write
-SOURCE: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/ui/app.py
-TARGET: {{cookiecutter.project_slug}}/{{cookiecutter.project_slug}}/ui/app.py
+SOURCE: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/ui/app.py
+TARGET: {{cookiecutter.__project_slug}}/{{cookiecutter.__project_slug}}/ui/app.py
 COPY: Entire file
 REPLACE: "SAAGA" with "{{ cookiecutter.project_name }}"
 ```
@@ -505,9 +505,9 @@ FILES:
 ```
 ACTION: Create directories
 PATHS:
-  {{cookiecutter.project_slug}}/tests/
-  {{cookiecutter.project_slug}}/tests/unit/
-  {{cookiecutter.project_slug}}/tests/integration/
+  {{cookiecutter.__project_slug}}/tests/
+  {{cookiecutter.__project_slug}}/tests/unit/
+  {{cookiecutter.__project_slug}}/tests/integration/
 ```
 
 ### Step 7.2: Copy test files
@@ -528,13 +528,13 @@ FILES:
 ### Step 8.1: Create .claude directory
 ```
 ACTION: Create directory
-PATH: {{cookiecutter.project_slug}}/.claude/
+PATH: {{cookiecutter.__project_slug}}/.claude/
 ```
 
 ### Step 8.2: Add Your 4 Custom Claude Commands
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/.claude/mcp_commands.md
+FILE: {{cookiecutter.__project_slug}}/.claude/mcp_commands.md
 CONTENT: [THE 4 CUSTOM COMMANDS YOU PROVIDED - NEED YOU TO SPECIFY THESE]
 NOTE: You mentioned 4 specific Claude commands to include - please provide them
 ```
@@ -639,7 +639,7 @@ PURPOSE: Tests correlation ID tracking across tool calls
 ### Step 9.3: Create .env.example file
 ```
 ACTION: Write file
-FILE: {{cookiecutter.project_slug}}/.env.example
+FILE: {{cookiecutter.__project_slug}}/.env.example
 CONTENT:
 # {{ cookiecutter.project_name }} Configuration
 LOG_LEVEL=INFO
@@ -651,7 +651,7 @@ ENABLE_METRICS=true
 ### Step 9.4: Update README.md template
 ```
 ACTION: Update template README
-FILE: {{cookiecutter.project_slug}}/README.md
+FILE: {{cookiecutter.__project_slug}}/README.md
 INCLUDE:
   - All 3 transport examples
   - List of all 10 tools
@@ -663,8 +663,8 @@ INCLUDE:
 ### Step 9.5: Create DEVELOPMENT.md
 ```
 ACTION: Copy from SAAGA and modify
-SOURCE: {{cookiecutter.project_slug}}/DEVELOPMENT.md
-TARGET: {{cookiecutter.project_slug}}/DEVELOPMENT.md
+SOURCE: {{cookiecutter.__project_slug}}/DEVELOPMENT.md
+TARGET: {{cookiecutter.__project_slug}}/DEVELOPMENT.md
 CONTENT:
   - How to add new tools
   - Decorator pattern explanation

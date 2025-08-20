@@ -21,21 +21,30 @@ def run_command(cmd, description, check=True):
             cmd,
             capture_output=True,
             text=True,
-            check=check
+            check=False  # Don't raise exception on non-zero exit code
         )
         if result.returncode == 0:
             print(f"   ✅ {description} completed")
             return True
         else:
-            print(f"   ⚠️  {description} failed")
+            print(f"   ⚠️  {description} failed with exit code {result.returncode}")
+            # Show stderr if available
             if result.stderr:
-                print(f"      Error: {result.stderr}")
+                print(f"\n   Error details:")
+                # Indent each line of the error for readability
+                for line in result.stderr.strip().split('\n'):
+                    print(f"      {line}")
+            # Also show stdout if it contains error info (some tools output errors to stdout)
+            elif result.stdout and 'error' in result.stdout.lower():
+                print(f"\n   Output:")
+                for line in result.stdout.strip().split('\n'):
+                    print(f"      {line}")
             return False
     except FileNotFoundError:
         print(f"   ⚠️  Command not found: {cmd[0]}")
         return False
     except Exception as e:
-        print(f"   ⚠️  {description} failed: {e}")
+        print(f"   ⚠️  {description} failed with unexpected error: {e}")
         return False
 
 
@@ -104,7 +113,7 @@ def install_dependencies():
 def show_next_steps():
     """Show helpful next steps to the user."""
     project_name = "{{ cookiecutter.project_name }}"
-    project_slug = "{{ cookiecutter.project_slug }}"
+    project_slug = "{{ cookiecutter.__project_slug }}"
     
     print("\n" + "=" * 60)
     print(f"🎉 {project_name} created successfully!")

@@ -14,20 +14,20 @@ This is a Python Cookiecutter template for creating MCP (Model Context Protocol)
 cookiecutter .
 
 # Install template dependencies (for development)
-cd {{cookiecutter.project_slug}}
+cd {{cookiecutter.__project_slug}}
 uv pip install -e .
 ```
 
 ### Generated Project Commands
 ```bash
 # Test with stdio transport (default)
-{{cookiecutter.project_slug}}-client "Hello, World"
+{{cookiecutter.__project_slug}}-client "Hello, World"
 
 # Test with SSE transport
-{{cookiecutter.project_slug}}-server --transport sse --port 3001
+{{cookiecutter.__project_slug}}-server --transport sse --port 3001
 
 # Test with MCP Inspector
-mcp dev {{cookiecutter.project_slug}}/server/app.py
+mcp dev {{cookiecutter.__project_slug}}/server/app.py
 
 # Build distribution
 python -m build --wheel
@@ -46,7 +46,7 @@ The template generates projects with this structure:
 
 1. **Unified Transport Handling**: Single server codebase supports multiple transports via command-line arguments
 2. **Tool Registration**: Tools are implemented separately and registered with the server
-3. **Absolute Imports**: All imports use the full package path (e.g., `from {{cookiecutter.project_slug}}.tools.echo import ...`)
+3. **Absolute Imports**: All imports use the full package path (e.g., `from {{cookiecutter.__project_slug}}.tools.echo import ...`)
 
 ### Adding New Tools
 
