@@ -15,7 +15,7 @@ This guide covers development practices, architecture, and contribution guidelin
 1. **Clone and create virtual environment:**
    ```bash
    git clone <repository-url>
-   cd mcp_server_project
+   cd {{ cookiecutter.project_slug }}
    
    # Create and activate virtual environment
    uv venv
@@ -35,15 +35,15 @@ This guide covers development practices, architecture, and contribution guidelin
 3. **Verify installation:**
    ```bash
    # Test the server
-   mcp_server_project-server --help
+   {{ cookiecutter.project_slug }}-server --help
    
    # Test the client
-   mcp_server_project-client "Hello, World!"
+   {{ cookiecutter.project_slug }}-client "Hello, World!"
    
    # Test different transports
-   mcp_server_project-server --transport stdio
-   mcp_server_project-server --transport sse --port 3001
-   mcp_server_project-server --transport streamable-http --port 3001
+   {{ cookiecutter.project_slug }}-server --transport stdio
+   {{ cookiecutter.project_slug }}-server --transport sse --port 3001
+   {{ cookiecutter.project_slug }}-server --transport streamable-http --port 3001
    ```
 
 ### Development Dependencies
@@ -75,8 +75,8 @@ The MCP Server Project is built with a modular architecture featuring:
 ### Project Structure
 
 ```
-mcp_server_project/
-├── mcp_server_project/           # Main package
+{{ cookiecutter.project_slug }}/
+├── {{ cookiecutter.project_slug }}/           # Main package
 │   ├── __init__.py
 │   ├── config.py                 # Configuration management
 │   ├── logging_config.py         # OS-specific logging setup
@@ -154,7 +154,7 @@ All tools are automatically decorated with:
 #### 2. Factory Pattern
 Log destinations use a factory pattern for flexibility:
 ```python
-from mcp_server_project.log_system.destinations.factory import create_destination
+from {{ cookiecutter.project_slug }}.log_system.destinations.factory import create_destination
 
 # Creates appropriate destination based on type
 destination = create_destination("sqlite", settings)
@@ -207,7 +207,7 @@ All requests are tracked with unique correlation IDs:
 2. **Register tool in server:**
    ```python
    # server/app.py
-   from mcp_server_project.tools.my_tool import my_tool
+   from {{ cookiecutter.project_slug }}.tools.my_tool import my_tool
    
    # Add to appropriate list
    example_tools = [
@@ -340,7 +340,7 @@ def parallelize(func):
 pytest
 
 # Run with coverage
-pytest --cov=mcp_server_project
+pytest --cov={{ cookiecutter.project_slug }}
 
 # Run specific test types
 pytest tests/unit/
@@ -365,7 +365,7 @@ python test_unified_logging.py
 ```python
 # tests/unit/test_my_tool.py
 import pytest
-from mcp_server_project.tools.my_tool import my_tool
+from {{ cookiecutter.project_slug }}.tools.my_tool import my_tool
 
 @pytest.mark.asyncio
 async def test_my_tool_basic():
@@ -389,7 +389,7 @@ async def test_my_tool_defaults():
 ```python
 # tests/integration/test_my_tool_integration.py
 import pytest
-from mcp_server_project.server.app import create_mcp_server
+from {{ cookiecutter.project_slug }}.server.app import create_mcp_server
 
 @pytest.mark.asyncio
 async def test_tool_through_server():
@@ -409,7 +409,7 @@ async def test_tool_through_server():
 ```python
 # tests/conftest.py
 import pytest
-from mcp_server_project.config import ServerConfig
+from {{ cookiecutter.project_slug }}.config import ServerConfig
 
 @pytest.fixture
 def test_config():
@@ -442,16 +442,16 @@ def mock_context():
 
 ```bash
 # Format code
-black mcp_server_project/
-isort mcp_server_project/
+black {{ cookiecutter.project_slug }}/
+isort {{ cookiecutter.project_slug }}/
 
 # Check formatting
-black --check mcp_server_project/
-isort --check-only mcp_server_project/
+black --check {{ cookiecutter.project_slug }}/
+isort --check-only {{ cookiecutter.project_slug }}/
 
 # Lint code
-flake8 mcp_server_project/
-mypy mcp_server_project/
+flake8 {{ cookiecutter.project_slug }}/
+mypy {{ cookiecutter.project_slug }}/
 ```
 
 ### Git Workflow
@@ -509,7 +509,7 @@ Use conventional commit format:
 uv pip install -e .
 
 # Start MCP Inspector
-PYTHONPATH=. mcp dev mcp_server_project/server/app.py
+PYTHONPATH=. mcp dev {{ cookiecutter.project_slug }}/server/app.py
 ```
 
 Access at http://localhost:5173 to:
@@ -524,7 +524,7 @@ Access at http://localhost:5173 to:
 uv pip install -e ".[ui]"
 
 # Start Streamlit interface
-streamlit run mcp_server_project/ui/app.py
+streamlit run {{ cookiecutter.project_slug }}/ui/app.py
 ```
 
 Features:
@@ -537,12 +537,12 @@ Features:
 
 ```bash
 # Test different transports
-mcp_server_project-server --transport stdio
-mcp_server_project-server --transport sse --port 3001
-mcp_server_project-server --transport streamable-http --port 3001
+{{ cookiecutter.project_slug }}-server --transport stdio
+{{ cookiecutter.project_slug }}-server --transport sse --port 3001
+{{ cookiecutter.project_slug }}-server --transport streamable-http --port 3001
 
 # Test client
-mcp_server_project-client "Hello, World!"
+{{ cookiecutter.project_slug }}-client "Hello, World!"
 
 # Test with curl (SSE transport)
 curl -X POST http://localhost:3001/tools/echo \
@@ -555,11 +555,11 @@ curl -X POST http://localhost:3001/tools/echo \
 ```bash
 # Set debug logging
 export LOG_LEVEL=DEBUG
-mcp_server_project-server
+{{ cookiecutter.project_slug }}-server
 
 # View logs
-tail -f ~/.local/state/mcp-servers/logs/mcp_server_project.log  # Linux
-tail -f ~/Library/Logs/mcp-servers/mcp_server_project.log       # macOS
+tail -f ~/.local/state/mcp-servers/logs/{{ cookiecutter.project_slug }}.log  # Linux
+tail -f ~/Library/Logs/mcp-servers/{{ cookiecutter.project_slug }}.log       # macOS
 
 # Test correlation ID tracking
 python test_correlation_id_integration.py
@@ -618,13 +618,13 @@ async def async_tool(data: str, ctx: Context = None) -> Dict[str, Any]:
 uv pip install -e .
 
 # Check PYTHONPATH for MCP Inspector
-PYTHONPATH=. mcp dev mcp_server_project/server/app.py
+PYTHONPATH=. mcp dev {{ cookiecutter.project_slug }}/server/app.py
 ```
 
 ### Import Errors
 
 - Verify all `__init__.py` files exist
-- Use absolute imports: `from mcp_server_project.tools import my_tool`
+- Use absolute imports: `from {{ cookiecutter.project_slug }}.tools import my_tool`
 - Check virtual environment is activated
 
 ### Transport Issues

@@ -12,8 +12,9 @@ from typing import List, Dict, Any
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
 from pydantic import BaseModel, Field
+from {{cookiecutter.project_slug}}.log_system.unified_logger import UnifiedLogger
 
-async def echo_tool(message: str, ctx: Context = None) -> str:
+async def echo(message: str, ctx: Context = None) -> str:
     """Echo back the input message.
     
     This is a simple example tool that demonstrates basic MCP tool functionality.
@@ -26,6 +27,8 @@ async def echo_tool(message: str, ctx: Context = None) -> str:
     Returns:
         The echoed message with a prefix
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"echo called with message: {message}")
     return f"Echo: {message}"
 
 
@@ -37,6 +40,8 @@ async def get_time(ctx: Context = None) -> str:
     Returns:
         Current time as a string
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info("get_time called to retrieve current time")
     return f"Current time: {time.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
@@ -50,6 +55,8 @@ async def random_number(min_value: int = 1, max_value: int = 100, ctx: Context =
     Returns:
         Dictionary containing the random number and range info
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"random_number called with range {min_value}-{max_value}")
     if min_value > max_value:
         raise ValueError("min_value must be less than or equal to max_value")
     
@@ -73,6 +80,8 @@ async def calculate_fibonacci(n: int, ctx: Context = None) -> Dict[str, Any]:
     Returns:
         Dictionary containing the Fibonacci number and calculation info
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"calculate_fibonacci called for position {n}")
     if n < 0:
         raise ValueError("n must be non-negative")
     
@@ -117,6 +126,8 @@ async def search_tool(
     Returns:
         Search results with applied filters
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"search_tool called with query: {query}")
     # Handle empty directories list -> use default directory
     actual_dirs = directories if directories else ["default_dir"]
     
@@ -151,6 +162,8 @@ class BookingPreferences(BaseModel):
 
 async def elicit_example(date: str, time: str, party_size: int, ctx: Context = None) -> str:
     """Book a table with date availability check."""
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"elicit_example called for date: {date}, party_size: {party_size}")
     # Check if date is available
     if date == "2024-12-25":
         # Date unavailable - ask user for alternative
@@ -170,6 +183,8 @@ async def elicit_example(date: str, time: str, party_size: int, ctx: Context = N
 
 async def notification_example(data: str, ctx: Context = None) -> str:
     """Process data with logging."""
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"notification_example called with data: {data}")
     # Different log levels
     await ctx.debug(f"Debug: Processing '{data}'")
     await ctx.info("Info: Starting processing")
@@ -183,6 +198,8 @@ async def notification_example(data: str, ctx: Context = None) -> str:
 
 async def progress_example(task_name: str, ctx: Context = None, steps: int = 5) -> str:
     """Execute a task with progress updates."""
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"progress_example called for task: {task_name}")
     await ctx.info(f"Starting: {task_name}")
 
     for i in range(steps):
@@ -190,7 +207,6 @@ async def progress_example(task_name: str, ctx: Context = None, steps: int = 5) 
         await ctx.report_progress(
             progress=progress,
             total=1.0,
-            message=f"Step {i + 1}/{steps}",
         )
         await ctx.debug(f"Completed step {i + 1}")
 
@@ -211,6 +227,8 @@ async def process_batch_data(items: List[str], operation: str = "upper", ctx: Co
     Returns:
         Processed items with metadata
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"process_batch_data called with {len(items)} items, operation: {operation}")
     # Simulate some processing time
     import asyncio
     await asyncio.sleep(0.1)
@@ -247,6 +265,8 @@ async def simulate_heavy_computation(complexity: int = 5, ctx: Context = None) -
     Returns:
         Dictionary containing computation results
     """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"simulate_heavy_computation called with complexity: {complexity}")
     if complexity < 1 or complexity > 10:
         raise ValueError("complexity must be between 1 and 10")
     
@@ -282,7 +302,7 @@ parallel_example_tools = [
 
 # List of regular example tools
 example_tools = [
-    echo_tool,
+    echo,
     get_time,
     random_number,
     calculate_fibonacci,
@@ -318,7 +338,7 @@ if __name__ == "__main__":
         print(await get_tool_info())
         
         print("\nTesting example tools:")
-        print(await echo_tool("Hello, World!"))
+        print(await echo("Hello, World!"))
         print(await get_time())
         print(await random_number(1, 10))
         print(await calculate_fibonacci(10))

@@ -1,9 +1,8 @@
-"""Tests for MCP Server Project decorators.
+"""Tests for decorators.
 
 This test suite validates all decorator functionality including:
 - Exception handling with proper error formatting
-- Tool logging with correlation IDs
-- Type conversion between MCP and Python types
+- SQLite logging with thread-safe connections
 - Parallelization with signature transformation
 - Decorator chaining compatibility
 - MCP parameter introspection preservation
@@ -12,22 +11,31 @@ Critical validations:
 - Function signatures preserved for MCP compatibility
 - No "kwargs" fields appear in tool signatures
 - Decorator chaining works in correct order
-- Correlation IDs properly tracked
+- Thread-safe database operations
 """
 
 import asyncio
 import inspect
 import json
+import sqlite3
+import tempfile
+import threading
+from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Any
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 import pytest
 
-# Import decorators from our project
-from mcp_server_project.decorators.exception_handler import exception_handler
-from mcp_server_project.decorators.tool_logger import tool_logger
-from mcp_server_project.decorators.type_converter import type_converter
-from mcp_server_project.decorators.parallelize import parallelize
-from mcp_server_project.config import ServerConfig
+# Import decorators from template
+from {{cookiecutter.project_slug}}.decorators.exception_handler import exception_handler
+from {{cookiecutter.project_slug}}.decorators.tool_logger import tool_logger
+from {{cookiecutter.project_slug}}.decorators.parallelize import parallelize
+from {{cookiecutter.project_slug}}.decorators.sqlite_logger import (
+    SQLiteLoggerSink, 
+    initialize_sqlite_logging,
+    log_tool_execution
+)
+from {{cookiecutter.project_slug}}.config import ServerConfig
 
 
 class TestExceptionHandler:
@@ -91,25 +99,30 @@ class TestExceptionHandler:
 class TestToolLogger:
     """Test tool_logger decorator functionality."""
     
+    @pytest.fixture
+    def temp_db_config(self):
+        """Create temporary database for testing."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = ServerConfig()
+            # Override database path for testing
+            config.log_retention_days = 7
+            yield config
+    
     @pytest.mark.asyncio
-    async def test_successful_logging(self):
+    async def test_successful_logging(self, temp_db_config):
         """Test that successful execution is logged correctly."""
-        
-        config = {"log_level": "INFO"}
         
         @tool_logger
         async def test_tool(param: str) -> str:
             return f"result_{param}"
         
-        # Apply with config
-        decorated = tool_logger(test_tool, config)
-        result = await decorated("test_input")
+        result = await test_tool("test_input")
         
         # Just verify the function works correctly with the decorator
         assert result == "result_test_input"
     
     @pytest.mark.asyncio
-    async def test_error_logging(self):
+    async def test_error_logging(self, temp_db_config):
         """Test that errors are logged correctly."""
         
         @tool_logger
@@ -125,47 +138,17 @@ class TestToolLogger:
         
         config = {"test_config": "value"}
         
+        @tool_logger
         async def test_tool(param1: str, param2: int) -> Dict[str, Any]:
             return {"param1": param1, "param2": param2}
         
-        decorated = tool_logger(test_tool, config)
-        
-        sig = inspect.signature(decorated)
+        sig = inspect.signature(test_tool)
         params = list(sig.parameters.keys())
         
         # Verify original parameters are preserved
         assert params == ["param1", "param2"]
         assert "kwargs" not in params
         assert sig.return_annotation == Dict[str, Any]
-
-
-class TestTypeConverter:
-    """Test type_converter decorator functionality."""
-    
-    @pytest.mark.asyncio
-    async def test_type_conversion(self):
-        """Test that types are converted correctly."""
-        
-        @type_converter
-        async def test_tool(text: str, number: int = 42) -> str:
-            return f"{text}_{number}"
-        
-        result = await test_tool("test", 100)
-        assert result == "test_100"
-    
-    def test_signature_preservation(self):
-        """Test that function signature is preserved."""
-        
-        @type_converter
-        async def test_tool(param1: str, param2: int = 10) -> str:
-            return f"{param1}_{param2}"
-        
-        sig = inspect.signature(test_tool)
-        params = list(sig.parameters.keys())
-        
-        assert params == ["param1", "param2"]
-        assert sig.parameters["param2"].default == 10
-        assert "kwargs" not in params
 
 
 class TestParallelize:
@@ -276,12 +259,11 @@ class TestDecoratorChaining:
     
     @pytest.mark.asyncio
     async def test_regular_tool_chaining(self):
-        """Test exception_handler → tool_logger → type_converter chaining."""
+        """Test exception_handler → tool_logger chaining."""
         
         # Apply decorators in correct order
         @exception_handler
         @tool_logger
-        @type_converter
         async def test_tool(param: str) -> str:
             if param == "error":
                 raise ValueError("Test error")
@@ -297,14 +279,14 @@ class TestDecoratorChaining:
     
     @pytest.mark.asyncio
     async def test_parallel_tool_chaining(self):
-        """Test exception_handler → tool_logger → parallelize(type_converter) chaining."""
+        """Test exception_handler → tool_logger → parallelize chaining."""
         
         # Define base function
         async def base_tool(param: str) -> str:
             return f"processed_{param}"
         
         # Apply decorators in correct order (inner to outer)
-        decorated_tool = exception_handler(tool_logger(parallelize(type_converter(base_tool)), None))
+        decorated_tool = exception_handler(tool_logger(parallelize(base_tool), None))
         
         kwargs_list = [
             {"param": "a"},
@@ -321,7 +303,6 @@ class TestDecoratorChaining:
         # Regular tool chain
         @exception_handler
         @tool_logger
-        @type_converter
         async def regular_tool(param1: str, param2: int = 42) -> str:
             return f"{param1}_{param2}"
         
@@ -331,6 +312,135 @@ class TestDecoratorChaining:
         assert params == ["param1", "param2"]
         assert "kwargs" not in params
         assert sig.parameters["param2"].default == 42
+        
+        # Parallel tool chain (signature should be transformed)
+        base_func = lambda param: str  # Simple base function
+        base_func.__name__ = "parallel_tool"
+        base_func.__annotations__ = {"param": str, "return": str}
+        
+        decorated_parallel = exception_handler(tool_logger(parallelize(base_func), None))
+        
+        parallel_sig = inspect.signature(decorated_parallel)
+        parallel_params = list(parallel_sig.parameters.keys())
+        
+        assert parallel_params == ["kwargs_list", "ctx"]
+        assert parallel_sig.parameters["kwargs_list"].annotation == List[Dict[str, Any]]
+
+
+class TestSQLiteLogger:
+    """Test SQLite logging integration."""
+    
+    @pytest.fixture
+    def temp_db_path(self):
+        """Create temporary database file."""
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            db_path = Path(f.name)
+        yield db_path
+        if db_path.exists():
+            db_path.unlink()
+    
+    def test_database_initialization(self, temp_db_path):
+        """Test that database is initialized correctly."""
+        
+        # Mock the database path
+        with patch('{{ cookiecutter.project_slug }}.decorators.sqlite_logger.SQLiteLoggerSink._get_database_path') as mock_path:
+            mock_path.return_value = temp_db_path
+            
+            sink = SQLiteLoggerSink()
+            
+            # Verify database was created
+            assert temp_db_path.exists()
+            
+            # Verify schema
+            conn = sqlite3.connect(str(temp_db_path))
+            cursor = conn.cursor()
+            
+            # Check table exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tool_logs'")
+            assert cursor.fetchone() is not None
+            
+            # Check schema structure
+            cursor.execute("PRAGMA table_info(tool_logs)")
+            columns = [row[1] for row in cursor.fetchall()]
+            
+            expected_columns = [
+                'id', 'timestamp', 'level', 'message', 'tool_name', 
+                'duration_ms', 'status', 'input_args', 'output_summary', 
+                'error_message', 'module', 'function', 'line', 'extra_data', 'created_at'
+            ]
+            
+            for col in expected_columns:
+                assert col in columns
+            
+            conn.close()
+    
+    def test_thread_safety(self, temp_db_path):
+        """Test that database connections are thread-safe."""
+        
+        with patch('{{ cookiecutter.project_slug }}.decorators.sqlite_logger.SQLiteLoggerSink._get_database_path') as mock_path:
+            mock_path.return_value = temp_db_path
+            
+            sink = SQLiteLoggerSink()
+            
+            # Get connections from different "threads" (simulated)
+            conn1 = sink._get_connection()
+            conn2 = sink._get_connection()
+            
+            # Should be the same connection within same thread
+            assert conn1 is conn2
+    
+    def test_log_tool_execution_function(self, temp_db_path):
+        """Test the log_tool_execution utility function."""
+        
+        # Create a temporary SQLiteLoggerSink instance
+        sink = SQLiteLoggerSink()
+        
+        # Mock the database path for this instance
+        with patch.object(sink, '_db_path', temp_db_path):
+            # Re-initialize with the mocked path
+            sink._local = threading.local()  # Reset thread-local storage
+            sink._initialize_database()
+            
+            # Patch the global logger to use our test sink
+            with patch('{{ cookiecutter.project_slug }}.decorators.sqlite_logger.logger') as mock_logger:
+                # Call the sink directly to log a message
+                test_message = MagicMock()
+                # Create a mock level object with name attribute
+                mock_level = MagicMock()
+                mock_level.name = "INFO"
+                
+                test_message.record = {
+                    "time": datetime.now(),
+                    "level": mock_level,
+                    "message": "Tool test_tool success in 123.5ms",
+                    "module": "test_module",
+                    "function": "test_function",
+                    "line": 42,
+                    "extra": {
+                        "tool_name": "test_tool",
+                        "duration_ms": 123.45,
+                        "status": "success",
+                        "input_args": {"param": "value"},
+                        "output_summary": "Test output",
+                        "error_message": None
+                    }
+                }
+                
+                # Call the sink to write the log
+                sink(test_message)
+                
+                # Verify log was written
+                conn = sqlite3.connect(str(temp_db_path))
+                cursor = conn.cursor()
+                cursor.execute("SELECT tool_name, duration_ms, status FROM tool_logs")
+                row = cursor.fetchone()
+                
+                assert row is not None
+                assert row[0] == "test_tool"
+                assert row[1] == 123.45
+                assert row[2] == "success"
+                
+                conn.close()
 
 
 class TestMCPCompatibility:
@@ -341,14 +451,12 @@ class TestMCPCompatibility:
         
         @exception_handler
         @tool_logger
-        @type_converter
         async def regular_tool(param1: str, param2: int) -> str:
             return f"{param1}_{param2}"
         
         @exception_handler  
         @tool_logger
         @parallelize
-        @type_converter
         async def parallel_base(item: str) -> str:
             return f"processed_{item}"
         
@@ -368,8 +476,7 @@ class TestMCPCompatibility:
         """Test that function metadata is preserved for MCP introspection."""
         
         @exception_handler
-        @tool_logger
-        @type_converter
+        @tool_logger  
         async def test_tool(param: str) -> str:
             """Original docstring."""
             return param
@@ -388,7 +495,6 @@ class TestMCPCompatibility:
         
         @exception_handler
         @tool_logger
-        @type_converter
         async def complex_tool(
             required_param: str,
             optional_param: int = 42,
@@ -446,9 +552,9 @@ class TestIntegrationPattern:
         regular_tools = [echo_tool, multiply_tool]
         parallel_tools = [batch_process_tool]
         
-        # Regular tools: exception_handler → tool_logger → type_converter
+        # Regular tools: exception_handler → tool_logger
         for tool_func in regular_tools:
-            decorated_func = exception_handler(tool_logger(type_converter(tool_func), None))
+            decorated_func = exception_handler(tool_logger(tool_func, None))
             
             # Test that it works
             if tool_func.__name__ == "echo_tool":
@@ -463,9 +569,9 @@ class TestIntegrationPattern:
             original_sig = inspect.signature(tool_func)
             assert list(sig.parameters.keys()) == list(original_sig.parameters.keys())
         
-        # Parallel tools: exception_handler → tool_logger → parallelize(type_converter)
+        # Parallel tools: exception_handler → tool_logger → parallelize
         for tool_func in parallel_tools:
-            decorated_func = exception_handler(tool_logger(parallelize(type_converter(tool_func)), None))
+            decorated_func = exception_handler(tool_logger(parallelize(tool_func), None))
             
             # Test that it works
             if tool_func.__name__ == "batch_process_tool":

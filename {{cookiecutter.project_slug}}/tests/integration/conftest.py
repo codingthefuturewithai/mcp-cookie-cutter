@@ -37,11 +37,11 @@ class StreamableHTTPServer:
     # Class-level tracking of all server instances for cleanup
     _active_servers: List['StreamableHTTPServer'] = []
     
-    def __init__(self, port: int = 3001):
+    def __init__(self, port: int = {{ cookiecutter.server_port }}):
         self.port = port
         self.process: Optional[subprocess.Popen] = None
         self.project_root = Path(__file__).parent.parent.parent
-        self.server_module = "mcp_server_project.server.app"
+        self.server_module = "{{ cookiecutter.project_slug }}.server.app"
         self._cleanup_registered = False
     
     def start(self) -> None:
@@ -202,7 +202,7 @@ async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None
         if transport == "stdio":
             # Setup STDIO transport
             project_root = Path(__file__).parent.parent.parent
-            server_module = "mcp_server_project.server.app"
+            server_module = "{{ cookiecutter.project_slug }}.server.app"
             
             # Build environment with coverage support
             env = get_default_environment()
@@ -235,7 +235,13 @@ async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None
             )
             
             # Start stdio client
-            stdio_context = stdio_client(server_params, errlog=sys.stderr)
+            # Try with errlog parameter (SAAGA compatibility) then fallback
+            import inspect
+            sig = inspect.signature(stdio_client)
+            if 'errlog' in sig.parameters:
+                stdio_context = stdio_client(server_params, errlog=sys.stderr)
+            else:
+                stdio_context = stdio_client(server_params)
             read, write = await stdio_context.__aenter__()
             
             # Create and initialize session
@@ -256,7 +262,7 @@ async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None
                 pytest.skip("streamable_http module not available")
             
             # Setup Streamable HTTP transport
-            port = 3001
+            port = {{ cookiecutter.server_port }}
             
             # Start server in subprocess
             server = StreamableHTTPServer(port)

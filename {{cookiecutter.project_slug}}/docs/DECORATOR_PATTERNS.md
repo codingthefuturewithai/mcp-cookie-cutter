@@ -1,17 +1,17 @@
-# SAAGA Decorator Patterns in {{ cookiecutter.project_name }}
+# Decorator Patterns in {{ cookiecutter.project_name }}
 
 This document explains the SAAGA decorator patterns used in your MCP server and provides guidance on the async-only patterns and parallel tool calling conventions.
 
 ## Overview
 
-Your MCP server automatically applies SAAGA decorators to all tools. These decorators follow strict async-only patterns and provide:
-- **Exception handling**: SAAGA-standard error responses
+Your MCP server automatically applies decorators to all tools. These decorators follow strict async-only patterns and provide:
+- **Exception handling**: Standard error responses
 - **Logging**: Comprehensive execution tracking with SQLite persistence
 - **Parallelization**: Concurrent execution with signature transformation
 
 ## ⚠️ IMPORTANT: Async-Only Pattern
 
-**All tools must be async functions.** SAAGA decorators only support async functions for consistency and performance.
+**All tools must be async functions.** The decorators only support async functions for consistency and performance.
 
 ```python
 # ✅ CORRECT - Async function
@@ -23,11 +23,11 @@ def my_tool(param: str) -> dict:
     return {"result": param.upper()}
 ```
 
-## The Three SAAGA Decorators
+## The Three Decorators
 
 ### 1. Exception Handler (Applied to ALL tools)
 
-The exception handler ensures consistent SAAGA-format error handling:
+The exception handler ensures consistent error handling:
 
 ```python
 @exception_handler
@@ -37,7 +37,7 @@ async def my_tool(param: str) -> dict:
     return {"result": param.upper()}
 ```
 
-**SAAGA Error Format:**
+**Error Format:**
 ```python
 {
     "Status": "Exception",
@@ -49,7 +49,7 @@ async def my_tool(param: str) -> dict:
 
 **What it does:**
 - Catches any exception thrown by your tool
-- Returns SAAGA-standard error response format
+- Returns standard error response format
 - Logs the error with full stack trace
 - Your tool can raise exceptions freely
 
@@ -135,7 +135,7 @@ result = await process_item([
 
 ### Error Handling in Parallel Tools:
 ```python
-# If one item fails, it returns SAAGA error format
+# If one item fails, it returns error format
 result = await process_item([
     {"item": "hello", "operation": "upper"},
     {"item": "world", "operation": "invalid"}  # This will fail

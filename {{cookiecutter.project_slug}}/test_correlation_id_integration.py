@@ -117,7 +117,7 @@ def get_sqlite_logs(correlation_id: str) -> List[Dict]:
     """Query SQLite database for logs with a specific correlation ID."""
     # Get the SQLite database path using platformdirs
     import platformdirs
-    app_data = platformdirs.user_data_dir("mcp_server_project")
+    app_data = platformdirs.user_data_dir("{{cookiecutter.project_slug}}")
     db_path = Path(app_data) / "unified_logs.db"
     
     if not db_path.exists():
@@ -158,7 +158,7 @@ async def test_all_tools(server_script_path: str):
     
     server_params = StdioServerParameters(
         command="python",
-        args=["-m", "mcp_server_project.server.app", "--transport", "stdio"],
+        args=["-m", "{{cookiecutter.project_slug}}.server.app", "--transport", "stdio"],
         env=env
     )
     
@@ -333,7 +333,7 @@ async def test_all_tools(server_script_path: str):
                     
                     # Query for the most recent log entry for this tool
                     import platformdirs
-                    app_data = platformdirs.user_data_dir("mcp_server_project")
+                    app_data = platformdirs.user_data_dir("{{cookiecutter.project_slug}}")
                     db_path = Path(app_data) / "unified_logs.db"
                     
                     if db_path.exists():
@@ -404,7 +404,7 @@ async def test_all_tools(server_script_path: str):
             
             # Manual verification instructions
             console.print("\n[bold]Manual Verification Instructions:[/bold]")
-            console.print("1. Run the Streamlit UI: [cyan]streamlit run mcp_server_project/ui/app.py[/cyan]")
+            console.print("1. Run the Streamlit UI: [cyan]streamlit run {{cookiecutter.project_slug}}/ui/app.py[/cyan]")
             console.print("2. Navigate to the Logs page")
             console.print("3. Use the Correlation ID filter to search for:")
             for test_case in test_cases:
@@ -412,14 +412,14 @@ async def test_all_tools(server_script_path: str):
             console.print("4. Verify that each correlation ID shows the corresponding tool execution")
             
             # Show database location
-            db_path = Path.home() / ".local" / "share" / "mcp_server_project" / "unified_logs.db"
+            db_path = Path.home() / ".local" / "share" / "{{cookiecutter.project_slug}}" / "unified_logs.db"
             console.print(f"\n[dim]SQLite database location: {db_path}[/dim]")
 
 
 @click.command()
 @click.option(
     '--server-module',
-    default="mcp_server_project.server.app",
+    default="{{cookiecutter.project_slug}}.server.app",
     help='Python module path to the MCP server'
 )
 def main(server_module: str):

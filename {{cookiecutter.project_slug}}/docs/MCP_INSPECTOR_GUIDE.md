@@ -100,8 +100,8 @@ These tools work with the standard form interface in MCP Inspector.
 message: "Hello, MCP!"
 Expected: "Echo: Hello, MCP!"
 
-message: "Testing SAAGA decorators"
-Expected: "Echo: Testing SAAGA decorators"
+message: "Testing decorators"
+Expected: "Echo: Testing decorators"
 
 message: "Hello World"
 Expected: "Echo: Hello World"
@@ -268,7 +268,7 @@ Expected output (list of results for each computation):
 
 ## Testing Error Handling
 
-The SAAGA decorators provide comprehensive error handling. Test these scenarios:
+The decorators provide comprehensive error handling. Test these scenarios:
 
 1. **Invalid input types**:
    - For `calculate_fibonacci`: Try `n: -5` (negative number)
@@ -287,7 +287,7 @@ The SAAGA decorators provide comprehensive error handling. Test these scenarios:
 
 ## Viewing Logs
 
-The SAAGA decorators automatically log all tool executions.
+The decorators automatically log all tool executions.
 
 ### Log Locations
 
@@ -345,8 +345,8 @@ If you see `ModuleNotFoundError: No module named '{{ cookiecutter.project_slug }
 Once you've verified the example tools work:
 
 1. Add your own tools in `{{ cookiecutter.project_slug }}/tools/`
-2. Follow the SAAGA decorator pattern for consistency
+2. Follow the decorator pattern for consistency
 3. Test thoroughly with the Inspector
 4. {% if cookiecutter.include_admin_ui == "yes" %}Monitor performance in the Admin UI{% else %}Check logs for performance metrics{% endif %}
 
-For more details on creating custom tools, see the [SAAGA Decorator Patterns](../DECORATOR_PATTERNS.md) documentation.
+For more details on creating custom tools, see the [Decorator Patterns](../DECORATOR_PATTERNS.md) documentation.

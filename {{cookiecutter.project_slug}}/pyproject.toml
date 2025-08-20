@@ -42,4 +42,11 @@ ui = ["streamlit>=1.29.0"]
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["{{ cookiecutter.project_slug }}*"]
-namespaces = false 
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov={{ cookiecutter.project_slug }} --cov-report=html --cov-report=term-missing" 

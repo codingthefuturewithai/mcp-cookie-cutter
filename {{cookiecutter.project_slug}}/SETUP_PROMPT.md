@@ -1,24 +1,24 @@
-# AI Assistant Setup Guide - MCP Server Project
+# {{cookiecutter.project_name}} - Quick Setup Guide
 
-Quick setup instructions for AI assistants working with the MCP Server Project.
+Quick setup instructions for using this MCP server with AI assistants.
 
 ## Quick Setup Commands
 
 ### Installation
 ```bash
 # Install as isolated tool (recommended)
-uv tool install mcp_server_project
+uv tool install {{cookiecutter.project_slug}}
 
 # Find binary location
-which mcp_server_project-server  # macOS/Linux
-where mcp_server_project-server  # Windows
+which {{cookiecutter.project_slug}}-server  # macOS/Linux
+where {{cookiecutter.project_slug}}-server  # Windows
 ```
 
 ### Development Setup
 ```bash
 # Clone and setup for development
 git clone <repository-url>
-cd mcp_server_project
+cd {{cookiecutter.project_slug}}
 
 # Create virtual environment
 uv venv
@@ -34,28 +34,28 @@ uv pip install -e ".[ui,test,monitoring]"
 ### Server Commands
 ```bash
 # Start server (stdio - default transport)
-mcp_server_project-server
+{{cookiecutter.project_slug}}-server
 
 # Start with SSE transport
-mcp_server_project-server --transport sse --port 3001
+{{cookiecutter.project_slug}}-server --transport sse --port 3001
 
 # Start with streamable HTTP transport
-mcp_server_project-server --transport streamable-http --port 3001
+{{cookiecutter.project_slug}}-server --transport streamable-http --port 3001
 
 # Get help
-mcp_server_project-server --help
+{{cookiecutter.project_slug}}-server --help
 ```
 
 ### Testing Commands
 ```bash
 # Test client (stdio)
-mcp_server_project-client "Hello, World!"
+{{cookiecutter.project_slug}}-client "Hello, World!"
 
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=mcp_server_project
+pytest --cov={{cookiecutter.project_slug}}
 
 # Test correlation ID system
 python test_correlation_id_integration.py
@@ -67,14 +67,14 @@ python test_unified_logging.py
 ### Development Tools
 ```bash
 # MCP Inspector (for interactive testing)
-PYTHONPATH=. mcp dev mcp_server_project/server/app.py
+PYTHONPATH=. mcp dev {{cookiecutter.project_slug}}/server/app.py
 
 # Streamlit UI (monitoring interface)
-streamlit run mcp_server_project/ui/app.py
+streamlit run {{cookiecutter.project_slug}}/ui/app.py
 
 # Code formatting
-black mcp_server_project/
-isort mcp_server_project/
+black {{cookiecutter.project_slug}}/
+isort {{cookiecutter.project_slug}}/
 ```
 
 ## Important Files to Know
@@ -125,10 +125,10 @@ isort mcp_server_project/
 ### Quick Test
 ```bash
 # 1. Test basic functionality
-mcp_server_project-client "Hello, World!"
+{{cookiecutter.project_slug}}-client "Hello, World!"
 
 # 2. Test different transports
-mcp_server_project-server --transport sse --port 3001 &
+{{cookiecutter.project_slug}}-server --transport sse --port 3001 &
 curl -X POST http://localhost:3001/tools/echo_tool \
   -H "Content-Type: application/json" \
   -d '{"message": "SSE Test"}'
@@ -156,11 +156,11 @@ python test_unified_logging.py
 ### Interactive Testing
 ```bash
 # MCP Inspector (web interface)
-PYTHONPATH=. mcp dev mcp_server_project/server/app.py
+PYTHONPATH=. mcp dev {{cookiecutter.project_slug}}/server/app.py
 # Access http://localhost:5173
 
 # Streamlit monitoring UI
-streamlit run mcp_server_project/ui/app.py
+streamlit run {{cookiecutter.project_slug}}/ui/app.py
 # Access http://localhost:8501
 ```
 
@@ -193,37 +193,37 @@ streamlit run mcp_server_project/ui/app.py
 ### Check Installation
 ```bash
 # Verify server is installed
-which mcp_server_project-server
-mcp_server_project-server --help
+which {{cookiecutter.project_slug}}-server
+{{cookiecutter.project_slug}}-server --help
 
 # Check tools are registered
-echo '{"method": "tools/list"}' | mcp_server_project-server
+echo '{"method": "tools/list"}' | {{cookiecutter.project_slug}}-server
 ```
 
 ### Debug Logging
 ```bash
 # Enable debug logging
 export LOG_LEVEL=DEBUG
-mcp_server_project-server
+{{cookiecutter.project_slug}}-server
 
 # View logs
-tail -f ~/Library/Logs/mcp-servers/mcp_server_project.log  # macOS
-tail -f ~/.local/state/mcp-servers/logs/mcp_server_project.log  # Linux
-tail -f %LOCALAPPDATA%/mcp-servers/logs/mcp_server_project.log  # Windows
+tail -f ~/Library/Logs/mcp-servers/{{cookiecutter.project_slug}}.log  # macOS
+tail -f ~/.local/state/mcp-servers/logs/{{cookiecutter.project_slug}}.log  # Linux
+tail -f %LOCALAPPDATA%/mcp-servers/logs/{{cookiecutter.project_slug}}.log  # Windows
 ```
 
 ### Transport Debugging
 ```bash
 # Test stdio (default)
-echo '{"method": "ping"}' | mcp_server_project-server
+echo '{"method": "ping"}' | {{cookiecutter.project_slug}}-server
 
 # Test SSE
-mcp_server_project-server --transport sse --port 3001 &
+{{cookiecutter.project_slug}}-server --transport sse --port 3001 &
 curl -s http://localhost:3001/health
 kill %1
 
 # Test streamable HTTP
-mcp_server_project-server --transport streamable-http --port 3001 &
+{{cookiecutter.project_slug}}-server --transport streamable-http --port 3001 &
 curl -s http://localhost:3001/mcp
 kill %1
 ```
@@ -232,7 +232,7 @@ kill %1
 
 ### Optional Configuration
 - **LOG_LEVEL**: DEBUG, INFO, WARNING, ERROR (default: INFO)
-- **MCP_SERVER_NAME**: Custom server name (default: "MCP Server Project")
+- **MCP_SERVER_NAME**: Custom server name (default: "{{cookiecutter.project_name}}")
 - **MCP_SERVER_PORT**: Default port for SSE/HTTP (default: 3001)
 
 ### Development Variables
@@ -241,23 +241,22 @@ kill %1
 
 ## Important Notes
 
-1. **No OAuth/Bazel/SAAGA**: This project doesn't use these technologies
-2. **Python 3.11-3.12**: Required Python version range
-3. **Cross-Platform**: Full Linux, macOS, Windows support
-4. **Isolated Installation**: Use `uv tool install` to avoid conflicts
-5. **Correlation Tracking**: All requests tracked with unique IDs
-6. **Automatic Decoration**: Tools enhanced with decorators automatically
+1. **Python {{cookiecutter.python_version}}+**: Required Python version
+2. **Cross-Platform**: Full Linux, macOS, Windows support
+3. **Isolated Installation**: Use `uv tool install` to avoid conflicts
+4. **Correlation Tracking**: All requests tracked with unique IDs
+5. **Automatic Decoration**: Tools enhanced with decorators automatically
 
 ## Quick Development Checklist
 
 When working with this project:
 
 1. ✅ Install with `uv pip install -e ".[ui,test,monitoring]"`
-2. ✅ Test with `mcp_server_project-client "test"`
+2. ✅ Test with `{{cookiecutter.project_slug}}-client "test"`
 3. ✅ Run pytest to ensure everything works
 4. ✅ Use MCP Inspector for interactive tool testing
 5. ✅ Check logs for correlation ID tracking
 6. ✅ Test different transports if needed
 7. ✅ Use Streamlit UI for monitoring
 
-This setup guide should get you productive with the MCP Server Project quickly!
+This setup guide should get you productive with {{cookiecutter.project_name}} quickly!
