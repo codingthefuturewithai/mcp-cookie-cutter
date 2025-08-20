@@ -92,10 +92,10 @@ def install_dependencies():
     )
     
     if success:
-        # Also install the project in editable mode
+        # Install optional UI dependencies using uv sync with extras
         run_command(
-            ["uv", "pip", "install", "-e", "."],
-            "Installing project in editable mode"
+            ["uv", "sync", "--extra", "ui"],
+            "Installing optional UI dependencies (Streamlit)"
         )
     
     return success
@@ -134,12 +134,16 @@ def show_next_steps():
     print(f"\n🧪 Test with MCP Inspector:")
     print(f"   PYTHONPATH=. mcp dev {project_slug}/server/app.py")
     
+    print(f"\n🖥️ Run the Admin UI:")
+    print(f"   streamlit run {project_slug}/ui/app.py")
+    
     print(f"\n📚 Features included:")
     print(f"   ✅ 10 example tools (8 regular + 2 parallel)")
     print(f"   ✅ 4 decorators (exception_handler, tool_logger, type_converter, parallelize)")
     print(f"   ✅ 3 transports (stdio, sse, streamable-http)")
     print(f"   ✅ Correlation ID tracking")
     print(f"   ✅ Unified logging with SQLite")
+    print(f"   ✅ Streamlit Admin UI")
     print(f"   ✅ Platform-aware configuration")
     
     print("\n" + "=" * 60)

@@ -1,416 +1,724 @@
-# Developing Your MCP Server
+# Development Guide
 
-This guide will help you get started with developing your own MCP server using the scaffolding provided.
+This guide covers development practices, architecture, and contribution guidelines for the MCP Server Project.
 
-## Initial Setup
-
-1. Create and activate a virtual environment:
-
-   ```bash
-   uv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-2. Install the package in development mode:
-
-   ```bash
-   uv pip install -e .
-   ```
-
-   **Note**: This step is REQUIRED before using `mcp dev` or running any server commands. Without it, you'll get `ModuleNotFoundError` when trying to import your package.
-
-3. Verify the scaffolding works by testing the included echo server:
-
-   ```bash
-   # Test with stdio transport (default)
-   {{ cookiecutter.project_slug }}-client "Hello, World"
-   # Should output: Hello, World
-
-   {{ cookiecutter.project_slug }}-client "Hello, World" --transform upper
-   # Should output: HELLO, WORLD
-
-   # Test with SSE transport
-   {{ cookiecutter.project_slug }}-server --transport sse --port {{ cookiecutter.server_port }} &  # Start server in background
-   # Wait a moment for the server to start, then:
-   curl -s -N http://localhost:{{ cookiecutter.server_port }}/tools/echo -X POST -H "Content-Type: application/json" -d '{"text": "Hello SSE"}'
-   # The output will be an SSE stream. Look for a data event like:
-   # data: {"type":"text","text":"Hello SSE","format":"text/plain"}
-   
-   # To stop the background server:
-   kill %1  # Kills the most recent background job
-   # Or bring it to foreground and stop: fg then press Ctrl+C
-   ```
-
-## Project Structure
-
-The scaffolding provides a well-organized MCP server structure:
-
-```
-{{ cookiecutter.project_slug }}/              # Project Root
-├── {{ cookiecutter.project_slug }}/          # Python package directory
-│   ├── __init__.py      # Package initialization
-│   ├── client/
-│   │   ├── __init__.py  # Client module initialization
-│   │   └── app.py       # Convenience client app for testing
-│   ├── server/
-│   │   ├── __init__.py  # Server module initialization
-│   │   └── app.py       # Unified MCP server implementation
-│   └── tools/
-│       ├── __init__.py  # Tool module initialization
-│       └── echo.py      # Example echo tool implementation
-├── pyproject.toml       # Package configuration and entry points
-├── README.md           # Project documentation
-└── DEVELOPMENT.md      # Development guide (this file)
-```
-
-Key files and their purposes:
-
-- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/server/app.py`: Core MCP server implementation with unified transport handling and tool registration. This is the main server application module.
-- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/tools/`: Directory containing individual tool implementations (e.g., `echo.py`).
-- `{{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}/client/app.py`: Convenience client application for testing your MCP server.
-- `pyproject.toml`: Defines package metadata, dependencies, and command-line entry points
-
-## Adding Your Own Tools
-
-1. Create a new file in the `tools/` directory for your tool:
-
-   ```python
-   # tools/your_tool.py
-   from typing import Optional
-   from mcp import types
-
-   def your_tool(param1: str, param2: Optional[int] = None) -> types.TextContent:
-       """Your tool implementation"""
-       result = process_your_data(param1, param2)
-       return types.TextContent(
-           type="text",
-           text=result,
-           format="text/plain"
-       )
-   ```
-
-2. Register your tool in `server/app.py`:
-
-   ```python
-   from {{ cookiecutter.project_slug }}.tools.your_tool import your_tool
-
-   def register_tools(mcp_server: FastMCP) -> None:
-       @mcp_server.tool(
-           name="your_tool_name",
-           description="What your tool does"
-       )
-       def your_tool_wrapper(param1: str, param2: Optional[int] = None) -> types.TextContent:
-           """Wrapper around your tool implementation"""
-           return your_tool(param1, param2)
-   ```
-
-### MCP Content Types
-
-The Python MCP SDK defines the following content types for tool responses:
-
-- `TextContent`: For text responses (plain text, markdown, etc.)
-- `ImageContent`: For image data (PNG, JPEG, etc.)
-- `AudioContent`: For audio data
-- `EmbeddedResource`: For embedded resources
-
-These are the only four content types available in the Python MCP SDK.
-
-Examples using different content types:
-
-```python
-# Text response
-return types.TextContent(
-    type="text",
-    text="Your text here"
-)
-
-# Image response
-return types.ImageContent(
-    type="image",
-    data=base64_encoded_image_string,  # Base64 encoded image
-    mimeType="image/png"  # or "image/jpeg", etc.
-)
-
-# Audio response
-return types.AudioContent(
-    type="audio",
-    data=base64_encoded_audio_string,  # Base64 encoded audio
-    mimeType="audio/mp3"  # or other audio MIME types
-)
-
-# Embedded resource response
-# Note: resource field requires either TextResourceContents or BlobResourceContents
-# For text resources:
-return types.EmbeddedResource(
-    type="resource",
-    resource=types.TextResourceContents(
-        uri="file:///path/to/resource.txt",
-        mimeType="text/plain",
-        text="The actual text content"
-    )
-)
-
-# For binary resources:
-return types.EmbeddedResource(
-    type="resource",
-    resource=types.BlobResourceContents(
-        uri="file:///path/to/resource.pdf",
-        mimeType="application/pdf",
-        blob="base64_encoded_data"
-    )
-)
-```
-
-## Testing Your MCP Server
-
-The MCP Inspector provides a web-based interface for testing and debugging your MCP server during development.
-
-### Starting the Inspector
-
-**IMPORTANT**: You must install the package in development mode AND set PYTHONPATH before using `mcp dev`:
-
-```bash
-# Step 1: Install the package in development mode (REQUIRED)
-uv pip install -e .
-
-# Step 2: Start the MCP Inspector pointing to your server module
-# CRITICAL: PYTHONPATH must be set for module imports to work correctly
-PYTHONPATH=. mcp dev {{ cookiecutter.project_slug }}/server/app.py
-```
-
-⚠️ **WARNING**: If you run `mcp dev` without setting `PYTHONPATH=.`, you'll get a `ModuleNotFoundError` because Python won't be able to find your package imports. The PYTHONPATH tells Python to look in the current directory for modules.
-
-This will:
-
-1. Load your MCP server module
-2. Start a development server
-3. Launch the MCP Inspector web UI at http://localhost:5173
-
-### Using the Inspector
-
-In the MCP Inspector web interface:
-
-1. Select the "Tools" tab to see all available tools
-2. Choose a tool to test
-3. Fill in the tool's parameters
-4. Click "Run Tool" to execute
-5. View the results in the response panel
-
-The Inspector provides a convenient way to:
-
-- Verify tool registration
-- Test parameter validation
-- Check response formatting
-- Debug tool execution
-
-### Example: Testing the Echo Tool
-
-1. Select the "Tools" tab
-2. Choose the "echo" tool
-3. Parameters:
-   - Enter text in the "text" field (e.g., "Hello, World!")
-   - Optionally select a transform ("upper" or "lower")
-4. Click "Run Tool"
-5. Verify the response matches expectations
-
-## Transport Modes
-
-Your MCP server uses a single entry point, `{{ cookiecutter.project_slug }}-server`, and supports two transport modes, selectable via the `--transport` flag.
-
-### stdio Mode (Default)
-
-- **How it works**: The server communicates over standard input/output using JSON messages.
-- **Use cases**: Ideal for command-line tools, scripting, and direct integration with other processes.
-- **Invocation**: 
-  - When you run `{{ cookiecutter.project_slug }}-client`, it automatically starts and communicates with `{{ cookiecutter.project_slug }}-server` in stdio mode.
-  - To run the server directly in stdio mode (e.g., for testing with `mcp-cli` or other tools that manage the process):
-    ```bash
-    {{ cookiecutter.project_slug }}-server --transport stdio
-    # Or simply, as stdio is the default:
-    {{ cookiecutter.project_slug }}-server
-    ```
-
-### SSE (Server-Sent Events) Mode
-
-- **How it works**: The server runs an HTTP server (using Uvicorn/Starlette) to handle MCP requests over Server-Sent Events.
-- **Use cases**: Suitable for web-based clients, persistent connections, or when you need the server to be accessible over a network.
-- **Invocation**:
-  ```bash
-  {{ cookiecutter.project_slug }}-server --transport sse --port {{ cookiecutter.server_port }}
-  ```
-  This starts the HTTP server, typically making it available at `http://localhost:{{ cookiecutter.server_port }}`. The MCP Inspector also connects to the server when it's running in this mode (or by pointing the Inspector directly to the `server/app.py` module).
-
-## Deploying Your MCP Server
-
-Once you've completed and tested your MCP server, you can make it available to AI coding assistants and other MCP clients:
-
-1. Build a wheel distribution:
-
-   ```bash
-   # First, install the build tool if you haven't already
-   uv pip install build
-   
-   # Then build the wheel
-   python -m build --wheel
-   ```
-
-2. Install the wheel on your system using isolated installation:
-
-   ```bash
-   # Install as an isolated tool (recommended)
-   uv tool install dist/your_project-0.1.0-py3-none-any.whl
-   
-   # Or install in current environment (for development)
-   uv pip install dist/your_project-0.1.0-py3-none-any.whl
-   ```
-
-3. Locate the installed MCP server wrapper script:
-
-   ```bash
-   which your-mcp-server
-   # Example output: /Users/username/.local/bin/your-mcp-server
-   ```
-
-4. Configure your AI coding assistant or other MCP clients to use this path when they need to access your MCP server's functionality.
-
-## Publishing to PyPI
-
-Once your MCP server is ready for public use, you can publish it to PyPI to make it easily installable via `pip` or `uvx`.
+## Development Setup
 
 ### Prerequisites
 
-1. Create a PyPI account at https://pypi.org/account/register/
-2. Generate an API token at https://pypi.org/manage/account/token/
-3. Install publishing tools:
+- Python 3.11-3.12
+- uv (recommended) or pip
+- Git for version control
+
+### Initial Setup
+
+1. **Clone and create virtual environment:**
    ```bash
-   uv pip install build twine
-   ```
-4. (Optional) Configure `.pypirc` for easier uploads:
-   ```bash
-   # Create ~/.pypirc with your API token
-   cat > ~/.pypirc << EOF
-   [pypi]
-   username = __token__
-   password = pypi-YOUR-API-TOKEN-HERE
+   git clone <repository-url>
+   cd mcp_server_project
    
-   [testpypi]
-   username = __token__
-   password = pypi-YOUR-TEST-API-TOKEN-HERE
-   EOF
+   # Create and activate virtual environment
+   uv venv
+   source venv/bin/activate  # Linux/macOS
+   # Or: venv\Scripts\activate  # Windows
+   ```
+
+2. **Install in development mode:**
+   ```bash
+   # Install with all optional dependencies
+   uv pip install -e ".[ui,test,monitoring]"
    
-   # Secure the file
-   chmod 600 ~/.pypirc
+   # Or install just core dependencies
+   uv pip install -e .
    ```
 
-### Prepare for Publishing
-
-1. Update version in `pyproject.toml`:
-   ```toml
-   version = "0.1.0"  # Increment as needed
-   ```
-
-2. Ensure your README.md is complete and accurate
-3. Verify all metadata in `pyproject.toml` is correct
-4. Test your package locally:
+3. **Verify installation:**
    ```bash
-   # Build the package
-   python -m build --wheel
+   # Test the server
+   mcp_server_project-server --help
    
-   # Install and test the built wheel
-   uv pip install dist/{{ cookiecutter.project_slug }}-*.whl
-   {{ cookiecutter.project_slug }}-server --help
-   ```
-
-### Publishing Process
-
-1. Clean previous builds:
-   ```bash
-   rm -rf dist/ build/ *.egg-info/
-   ```
-
-2. Build the distribution:
-   ```bash
-   python -m build --wheel
-   ```
-
-3. Check the package:
-   ```bash
-   twine check dist/*
-   ```
-
-4. Upload to TestPyPI first (optional but recommended):
-   ```bash
-   twine upload --repository testpypi dist/*
+   # Test the client
+   mcp_server_project-client "Hello, World!"
    
-   # Test installation from TestPyPI
-   uv pip install --index-url https://test.pypi.org/simple/ {{ cookiecutter.project_slug }}
+   # Test different transports
+   mcp_server_project-server --transport stdio
+   mcp_server_project-server --transport sse --port 3001
+   mcp_server_project-server --transport streamable-http --port 3001
    ```
 
-5. Upload to PyPI:
-   ```bash
-   twine upload dist/*
-   ```
+### Development Dependencies
 
-   You'll be prompted for:
-   - Username: `__token__`
-   - Password: Your PyPI API token
+Install additional development tools:
 
-### After Publishing
+```bash
+# Code formatting and linting
+uv pip install black isort flake8 mypy
 
-1. Test installation:
-   ```bash
-   # Install from PyPI as isolated tool
-   uv tool install {{ cookiecutter.project_slug }}
+# Pre-commit hooks (optional)
+uv pip install pre-commit
+pre-commit install
+```
+
+## Architecture Overview
+
+The MCP Server Project is built with a modular architecture featuring:
+
+### Core Components
+
+- **Server (`server/app.py`)**: Main MCP server with multi-transport support
+- **Tools (`tools/`)**: Individual tool implementations
+- **Decorators (`decorators/`)**: Function decorators for cross-cutting concerns
+- **Log System (`log_system/`)**: Unified logging with correlation tracking
+- **UI (`ui/`)**: Streamlit-based web interface
+- **Client (`client/app.py`)**: Test client for development
+
+### Project Structure
+
+```
+mcp_server_project/
+├── mcp_server_project/           # Main package
+│   ├── __init__.py
+│   ├── config.py                 # Configuration management
+│   ├── logging_config.py         # OS-specific logging setup
+│   │
+│   ├── server/                   # MCP server implementation
+│   │   ├── __init__.py
+│   │   └── app.py               # Main server with multi-transport
+│   │
+│   ├── client/                   # Test client
+│   │   ├── __init__.py
+│   │   └── app.py               # STDIO test client
+│   │
+│   ├── tools/                    # Tool implementations
+│   │   ├── __init__.py
+│   │   ├── echo.py              # Simple echo tool
+│   │   └── example_tools.py     # Comprehensive tool examples
+│   │
+│   ├── decorators/               # Function decorators
+│   │   ├── __init__.py
+│   │   ├── exception_handler.py  # Error handling
+│   │   ├── tool_logger.py       # Request logging
+│   │   ├── type_converter.py    # Parameter conversion
+│   │   └── parallelize.py       # Async parallelization
+│   │
+│   ├── log_system/              # Unified logging system
+│   │   ├── __init__.py
+│   │   ├── correlation.py       # Correlation ID management
+│   │   ├── unified_logger.py    # Main logger interface
+│   │   └── destinations/        # Log destinations
+│   │       ├── __init__.py
+│   │       ├── base.py          # Base destination class
+│   │       ├── factory.py       # Destination factory
+│   │       └── sqlite.py        # SQLite log destination
+│   │
+│   └── ui/                      # Streamlit web interface
+│       ├── __init__.py
+│       ├── app.py               # Main Streamlit app
+│       ├── lib/                 # UI utilities
+│       │   ├── __init__.py
+│       │   ├── components.py    # Reusable components
+│       │   ├── styles.py        # CSS styling
+│       │   └── utils.py         # Utility functions
+│       └── pages/               # Streamlit pages
+│           ├── 1_Home.py        # Server overview
+│           ├── 2_Configuration.py # Config management
+│           └── 3_Logs.py        # Log viewing
+│
+├── tests/                       # Test suite
+│   ├── __init__.py
+│   ├── conftest.py              # Pytest configuration
+│   ├── unit/                    # Unit tests
+│   │   ├── __init__.py
+│   │   └── test_decorators.py   # Decorator tests
+│   └── integration/             # Integration tests
+│       ├── __init__.py
+│       ├── conftest.py
+│       └── test_example_tools_integration.py
+│
+├── test_correlation_id_integration.py  # Correlation ID test
+├── test_unified_logging.py            # Logging system test
+├── pyproject.toml                     # Package configuration
+├── README.md                          # User documentation
+└── DEVELOPMENT.md                     # This file
+```
+
+### Design Patterns
+
+#### 1. Decorator Pattern
+All tools are automatically decorated with:
+- **Exception Handler**: Catches and logs errors
+- **Tool Logger**: Logs calls with correlation IDs
+- **Type Converter**: Ensures proper parameter types
+- **Parallelize**: Parallelizes compute-intensive tools
+
+#### 2. Factory Pattern
+Log destinations use a factory pattern for flexibility:
+```python
+from mcp_server_project.log_system.destinations.factory import create_destination
+
+# Creates appropriate destination based on type
+destination = create_destination("sqlite", settings)
+```
+
+#### 3. Correlation ID Pattern
+All requests are tracked with unique correlation IDs:
+- Generated at request entry
+- Passed through the entire call chain
+- Logged with all operations
+- Used for distributed tracing
+
+## Adding New Tools
+
+### Basic Tool Structure
+
+1. **Create tool function:**
+   ```python
+   # tools/my_tool.py
+   import logging
+   from typing import Dict, Any
+   from mcp.server.fastmcp import Context
    
-   # Verify installation
-   uv tool list | grep {{ cookiecutter.project_slug }}
+   logger = logging.getLogger(__name__)
    
-   # Find binary location
-   which {{ cookiecutter.project_slug }}-server  # macOS/Linux
-   where {{ cookiecutter.project_slug }}-server  # Windows
-   
-   # Test with uvx (as fallback)
-   uvx {{ cookiecutter.project_slug }}-server --help
+   async def my_tool(param1: str, param2: int = 10, ctx: Context = None) -> Dict[str, Any]:
+       """My custom tool implementation.
+       
+       Args:
+           param1: Description of first parameter
+           param2: Description of second parameter (optional)
+           ctx: MCP Context (automatically provided)
+           
+       Returns:
+           Dictionary with results
+       """
+       logger.info(f"Processing {param1} with {param2}")
+       
+       # Your logic here
+       result = process_data(param1, param2)
+       
+       return {
+           "input": param1,
+           "multiplier": param2,
+           "result": result,
+           "timestamp": time.time()
+       }
    ```
 
-2. Update your README to remove "(if published)" notes
-3. Tag the release in git:
+2. **Register tool in server:**
+   ```python
+   # server/app.py
+   from mcp_server_project.tools.my_tool import my_tool
+   
+   # Add to appropriate list
+   example_tools = [
+       # ... existing tools
+       my_tool,
+   ]
+   ```
+
+### Tool Types
+
+#### Regular Tools
+For most tools, add to `example_tools` list:
+```python
+example_tools = [
+    echo_tool,
+    get_time,
+    my_new_tool,  # Add here
+]
+```
+
+#### Parallel Tools
+For compute-intensive tools, add to `parallel_example_tools`:
+```python
+parallel_example_tools = [
+    process_batch_data,
+    simulate_heavy_computation,
+    my_heavy_tool,  # Add here
+]
+```
+
+### Tool Guidelines
+
+1. **Always include type hints**
+2. **Use descriptive docstrings**
+3. **Include Context parameter for advanced features**
+4. **Log important operations**
+5. **Handle errors gracefully**
+6. **Return structured data when possible**
+
+### MCP Context Features
+
+The `Context` parameter provides access to MCP features:
+
+```python
+async def advanced_tool(data: str, ctx: Context = None) -> str:
+    # Progress reporting
+    await ctx.report_progress(progress=0.5, message="Halfway done")
+    
+    # Logging at different levels
+    await ctx.debug("Debug information")
+    await ctx.info("Processing started")
+    await ctx.warning("This might take a while")
+    await ctx.error("Something went wrong")
+    
+    # User interaction (elicit input)
+    result = await ctx.elicit(
+        message="Choose an option:",
+        schema=MySchema
+    )
+    
+    # Resource notifications
+    await ctx.session.send_resource_list_changed()
+    
+    return "Processing complete"
+```
+
+## Decorator System Explained
+
+### Exception Handler
+```python
+# decorators/exception_handler.py
+def exception_handler(func):
+    """Catches exceptions and returns user-friendly errors."""
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            logger.error(f"Tool error: {e}")
+            return {"error": str(e), "type": type(e).__name__}
+    return wrapper
+```
+
+### Tool Logger
+```python
+# decorators/tool_logger.py
+def tool_logger(func, config):
+    """Logs all tool calls with correlation IDs."""
+    async def wrapper(*args, **kwargs):
+        correlation_id = get_correlation_id()
+        logger.info(f"[{correlation_id}] Calling {func.__name__}")
+        
+        start_time = time.time()
+        result = await func(*args, **kwargs)
+        duration = time.time() - start_time
+        
+        logger.info(f"[{correlation_id}] {func.__name__} completed in {duration:.3f}s")
+        return result
+    return wrapper
+```
+
+### Type Converter
+```python
+# decorators/type_converter.py
+def type_converter(func):
+    """Ensures parameters have correct types."""
+    async def wrapper(*args, **kwargs):
+        # Convert parameters based on function signature
+        converted_kwargs = convert_types(func, kwargs)
+        return await func(*args, **converted_kwargs)
+    return wrapper
+```
+
+### Parallelize
+```python
+# decorators/parallelize.py
+def parallelize(func):
+    """Runs function in thread pool for CPU-intensive tasks."""
+    async def wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, func, *args, **kwargs)
+    return wrapper
+```
+
+## Testing Guidelines
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=mcp_server_project
+
+# Run specific test types
+pytest tests/unit/
+pytest tests/integration/
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest tests/unit/test_decorators.py
+
+# Run correlation ID test
+python test_correlation_id_integration.py
+
+# Run logging system test
+python test_unified_logging.py
+```
+
+### Writing Tests
+
+#### Unit Tests
+```python
+# tests/unit/test_my_tool.py
+import pytest
+from mcp_server_project.tools.my_tool import my_tool
+
+@pytest.mark.asyncio
+async def test_my_tool_basic():
+    """Test basic functionality."""
+    result = await my_tool("test", 5)
+    
+    assert result["input"] == "test"
+    assert result["multiplier"] == 5
+    assert "result" in result
+    assert "timestamp" in result
+
+@pytest.mark.asyncio
+async def test_my_tool_defaults():
+    """Test default parameters."""
+    result = await my_tool("test")  # param2 should default to 10
+    
+    assert result["multiplier"] == 10
+```
+
+#### Integration Tests
+```python
+# tests/integration/test_my_tool_integration.py
+import pytest
+from mcp_server_project.server.app import create_mcp_server
+
+@pytest.mark.asyncio
+async def test_tool_through_server():
+    """Test tool through MCP server."""
+    server = create_mcp_server()
+    
+    # Test tool registration
+    assert "my_tool" in server.list_tools()
+    
+    # Test tool execution
+    result = await server.call_tool("my_tool", {"param1": "test"})
+    assert result is not None
+```
+
+### Test Configuration
+
+```python
+# tests/conftest.py
+import pytest
+from mcp_server_project.config import ServerConfig
+
+@pytest.fixture
+def test_config():
+    """Test configuration."""
+    return ServerConfig(
+        name="Test Server",
+        log_level="DEBUG",
+        port=3002  # Use different port for tests
+    )
+
+@pytest.fixture
+def mock_context():
+    """Mock MCP context for testing."""
+    # Create mock context implementation
+    pass
+```
+
+## Contribution Guidelines
+
+### Code Standards
+
+1. **Follow PEP 8** style guidelines
+2. **Use type hints** for all functions
+3. **Write descriptive docstrings** (Google style)
+4. **Keep functions focused** (single responsibility)
+5. **Handle errors gracefully**
+6. **Add tests** for new functionality
+
+### Code Formatting
+
+```bash
+# Format code
+black mcp_server_project/
+isort mcp_server_project/
+
+# Check formatting
+black --check mcp_server_project/
+isort --check-only mcp_server_project/
+
+# Lint code
+flake8 mcp_server_project/
+mypy mcp_server_project/
+```
+
+### Git Workflow
+
+1. **Create feature branch:**
    ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
+   git checkout -b feature/my-new-tool
    ```
 
-### Best Practices
+2. **Make changes with good commit messages:**
+   ```bash
+   git add .
+   git commit -m "feat: add my_new_tool with batch processing"
+   ```
 
-- Use semantic versioning (MAJOR.MINOR.PATCH)
-- Test thoroughly before publishing
-- Include a CHANGELOG.md to document changes
-- Never delete released versions from PyPI
-- Use TestPyPI for testing the publishing process
+3. **Run tests:**
+   ```bash
+   pytest
+   python test_correlation_id_integration.py
+   python test_unified_logging.py
+   ```
 
-## Troubleshooting
+4. **Push and create PR:**
+   ```bash
+   git push origin feature/my-new-tool
+   # Create Pull Request on GitHub/GitLab
+   ```
+
+### Commit Message Format
+
+Use conventional commit format:
+- `feat:` new features
+- `fix:` bug fixes
+- `docs:` documentation changes
+- `test:` adding tests
+- `refactor:` code refactoring
+- `style:` formatting changes
+- `chore:` maintenance tasks
+
+### Pull Request Guidelines
+
+1. **Include clear description** of changes
+2. **Add tests** for new functionality
+3. **Update documentation** as needed
+4. **Ensure all tests pass**
+5. **Follow code style guidelines**
+6. **Keep PRs focused** (one feature per PR)
+
+## Debugging and Development Tools
+
+### MCP Inspector
+
+```bash
+# Install package first
+uv pip install -e .
+
+# Start MCP Inspector
+PYTHONPATH=. mcp dev mcp_server_project/server/app.py
+```
+
+Access at http://localhost:5173 to:
+- Test tools interactively
+- View tool parameters and responses
+- Debug tool execution
+
+### Streamlit UI
+
+```bash
+# Install UI dependencies
+uv pip install -e ".[ui]"
+
+# Start Streamlit interface
+streamlit run mcp_server_project/ui/app.py
+```
+
+Features:
+- Server status monitoring
+- Configuration management
+- Real-time log viewing
+- Correlation ID tracking
+
+### Manual Testing
+
+```bash
+# Test different transports
+mcp_server_project-server --transport stdio
+mcp_server_project-server --transport sse --port 3001
+mcp_server_project-server --transport streamable-http --port 3001
+
+# Test client
+mcp_server_project-client "Hello, World!"
+
+# Test with curl (SSE transport)
+curl -X POST http://localhost:3001/tools/echo \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello SSE"}'
+```
+
+### Logging and Debugging
+
+```bash
+# Set debug logging
+export LOG_LEVEL=DEBUG
+mcp_server_project-server
+
+# View logs
+tail -f ~/.local/state/mcp-servers/logs/mcp_server_project.log  # Linux
+tail -f ~/Library/Logs/mcp-servers/mcp_server_project.log       # macOS
+
+# Test correlation ID tracking
+python test_correlation_id_integration.py
+
+# Test unified logging
+python test_unified_logging.py
+```
+
+## Performance Considerations
+
+### Parallel Tools
+
+Use parallelization for:
+- CPU-intensive computations
+- Batch processing operations
+- Long-running calculations
+
+```python
+# Add to parallel_example_tools for automatic parallelization
+parallel_example_tools = [
+    my_heavy_computation,
+    batch_processor,
+]
+```
+
+### Async Best Practices
+
+1. **Use async/await** for I/O operations
+2. **Avoid blocking calls** in async functions
+3. **Use asyncio.sleep()** instead of time.sleep()
+4. **Handle cancellation** properly
+
+```python
+async def async_tool(data: str, ctx: Context = None) -> Dict[str, Any]:
+    # Good: async I/O
+    async with aiofiles.open('file.txt', 'r') as f:
+        content = await f.read()
+    
+    # Good: yielding control
+    await asyncio.sleep(0.1)  # Not time.sleep(0.1)
+    
+    # Good: async HTTP requests
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://api.example.com') as response:
+            data = await response.json()
+    
+    return {"result": data}
+```
+
+## Troubleshooting Development Issues
 
 ### ModuleNotFoundError
 
-The most common issue when developing MCP servers is encountering `ModuleNotFoundError`. This project has been carefully structured to avoid such issues, but they can still occur in certain scenarios:
-
-**When using MCP Inspector:**
 ```bash
-# ❌ Wrong - will cause ModuleNotFoundError
-mcp dev {{ cookiecutter.project_slug }}/server/app.py
+# Ensure package is installed
+uv pip install -e .
 
-# ✅ Correct - sets PYTHONPATH
-PYTHONPATH=. mcp dev {{ cookiecutter.project_slug }}/server/app.py
+# Check PYTHONPATH for MCP Inspector
+PYTHONPATH=. mcp dev mcp_server_project/server/app.py
 ```
 
-**Important notes about project structure:**
-- This template uses absolute imports throughout (e.g., `from {{ cookiecutter.project_slug }}.tools.echo import ...`)
-- The project structure and `__init__.py` files are carefully configured to support proper module discovery
-- **DO NOT** restructure the project foundation, change import patterns, or modify core `__init__.py` files without understanding the implications
+### Import Errors
 
-**If you encounter ModuleNotFoundError:**
-1. Ensure you've installed the package in development mode: `uv pip install -e .`
-2. Verify you're in the project root directory (where `pyproject.toml` is located)
-3. Check that your virtual environment is activated
-4. For MCP Inspector, ensure you're using `PYTHONPATH=.` before the command
-5. Avoid modifying the project's import structure or `__init__.py` files
+- Verify all `__init__.py` files exist
+- Use absolute imports: `from mcp_server_project.tools import my_tool`
+- Check virtual environment is activated
+
+### Transport Issues
+
+- **STDIO**: Check for stdout pollution (use stderr for debugging)
+- **SSE/HTTP**: Verify port availability and firewall settings
+- **General**: Check logs for detailed error messages
+
+### Decorator Issues
+
+- Ensure decorators are applied in correct order
+- Check correlation ID propagation
+- Verify async/await compatibility
+
+### Testing Issues
+
+```bash
+# Clean pytest cache
+pytest --cache-clear
+
+# Run tests in isolation
+pytest --forked
+
+# Check test dependencies
+uv pip list | grep pytest
+```
+
+## Advanced Features
+
+### Custom Log Destinations
+
+Create new log destination:
+
+```python
+# log_system/destinations/my_destination.py
+from .base import BaseDestination
+
+class MyDestination(BaseDestination):
+    async def log(self, entry: LogEntry) -> None:
+        # Implement custom logging logic
+        pass
+    
+    async def close(self) -> None:
+        # Cleanup resources
+        pass
+```
+
+Register in factory:
+```python
+# log_system/destinations/factory.py
+def create_destination(dest_type: str, settings: Dict) -> BaseDestination:
+    if dest_type == "my_destination":
+        return MyDestination(settings)
+    # ... existing destinations
+```
+
+### Custom Decorators
+
+Create new decorator:
+
+```python
+# decorators/my_decorator.py
+def my_decorator(func):
+    """Custom decorator for specific functionality."""
+    async def wrapper(*args, **kwargs):
+        # Pre-processing
+        result = await func(*args, **kwargs)
+        # Post-processing
+        return result
+    return wrapper
+```
+
+Apply in server:
+```python
+# Apply custom decorator in decorator chain
+decorated_func = my_decorator(exception_handler(tool_logger(func)))
+```
+
+### Configuration Extensions
+
+Extend configuration:
+
+```python
+# config.py
+class ServerConfig:
+    my_setting: str = "default_value"
+    my_number: int = 42
+```
+
+Use in tools:
+```python
+async def my_tool(ctx: Context = None) -> str:
+    config = get_config()
+    return f"Setting: {config.my_setting}"
+```
+
+This development guide should help you understand and extend the MCP Server Project effectively. Remember to run tests and follow coding standards when contributing.

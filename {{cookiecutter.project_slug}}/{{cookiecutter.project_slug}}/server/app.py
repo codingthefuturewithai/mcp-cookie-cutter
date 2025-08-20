@@ -21,7 +21,9 @@ from {{ cookiecutter.project_slug }}.log_system.correlation import (
     clear_initialization_correlation_id
 )
 from {{ cookiecutter.project_slug }}.log_system.unified_logger import UnifiedLogger
+{% if cookiecutter.include_example_tools == "yes" -%}
 from {{ cookiecutter.project_slug }}.tools.example_tools import example_tools, parallel_example_tools
+{% endif -%}
 
 
 def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
@@ -60,6 +62,10 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     else:
         UnifiedLogger.initialize_default(config)
     
+    # Set up traditional logging as fallback
+    # IMPORTANT: This must come BEFORE UnifiedLogger.initialize to avoid overriding
+    # setup_logging(config)  # Temporarily disabled to test unified logging
+    
     # Log startup info using unified logger
     import logging
     unified_logger = logging.getLogger('{{ cookiecutter.project_slug }}')
@@ -68,8 +74,13 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     
     mcp_server = FastMCP(config.name or "{{ cookiecutter.project_name }}")
     
+    {% if cookiecutter.include_example_tools == "yes" -%}
     # Register all tools with the server
     register_tools(mcp_server, config)
+    {% else -%}
+    # No example tools included
+    unified_logger.info("No example tools configured. Add your tools and register them here.")
+    {% endif -%}
     
     # Clear initialization correlation ID after initialization
     unified_logger.info("Server initialization complete")
@@ -78,6 +89,8 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     return mcp_server
 
 
+
+{% if cookiecutter.include_example_tools == "yes" -%}
 def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
     """Register all MCP tools with the server using decorators.
     
@@ -111,6 +124,7 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
         
         unified_logger.info(f"Registered tool: {tool_name}")
     
+    {% if cookiecutter.include_parallel_example == "yes" -%}
     # Register parallel tools with decorators  
     for tool_func in parallel_example_tools:
         # Apply decorator chain: exception_handler → tool_logger → parallelize(type_converter)
@@ -126,8 +140,10 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
         )(decorated_func)
         
         unified_logger.info(f"Registered parallel tool: {tool_name}")
+    {% endif -%}
     
     unified_logger.info(f"Server '{mcp_server.name}' initialized with decorators")
+{% endif -%}
 
 
 # Create a server instance that can be imported by the MCP CLI
@@ -143,7 +159,7 @@ server = create_mcp_server()
 @click.option(
     "--transport",
     type=click.Choice(["stdio", "sse", "streamable-http"]),
-    default="stdio",
+    default="{{ cookiecutter.default_transport }}",
     help="Transport type (stdio, sse, or streamable-http)"
 )
 def main(port: int, transport: str) -> int:
