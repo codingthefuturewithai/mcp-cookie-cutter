@@ -313,7 +313,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-Tim - email@example.com
+tim - email@example.com
 
 ---
 

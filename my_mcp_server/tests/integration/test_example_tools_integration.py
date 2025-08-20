@@ -402,6 +402,192 @@ class TestMCPToolExecution:
             assert "iterations" in res, f"Result {i} missing iterations (transport: {transport})"
             assert "result" in res, f"Result {i} missing result (transport: {transport})"
             assert "computation_time" in res, f"Result {i} missing computation_time (transport: {transport})"
+    
+    async def test_random_number_invalid_range(self, mcp_session):
+        """Test random_number with invalid range (min > max).
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        """
+        session, transport = mcp_session
+        result = await session.call_tool("random_number", {
+            "min_value": "100",
+            "max_value": "10"
+        })
+        
+        # Should return error or error message in content
+        error_text = extract_error_text(result) or extract_text_content(result)
+        assert error_text, "Should return error for invalid range"
+        assert any(keyword in error_text.lower() for keyword in ["error", "invalid", "min", "max"]), (
+            f"Error should indicate range issue: {error_text} (transport: {transport})"
+        )
+    
+    async def test_calculate_fibonacci_edge_cases(self, mcp_session):
+        """Test fibonacci with 0, 1, and large values.
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        """
+        session, transport = mcp_session
+        
+        # Test n=0
+        result = await session.call_tool("calculate_fibonacci", {"n": "0"})
+        assert not result.isError, f"Should handle n=0: {result}"
+        text_content = extract_text_content(result)
+        data = json.loads(text_content)
+        assert data["value"] == 0, f"Fibonacci(0) should be 0 (transport: {transport})"
+        assert data["position"] == 0
+        
+        # Test n=1
+        result = await session.call_tool("calculate_fibonacci", {"n": "1"})
+        assert not result.isError, f"Should handle n=1: {result}"
+        text_content = extract_text_content(result)
+        data = json.loads(text_content)
+        assert data["value"] == 1, f"Fibonacci(1) should be 1 (transport: {transport})"
+        assert data["position"] == 1
+    
+    async def test_search_tool_empty_directories(self, mcp_session):
+        """Test search_tool with empty directories list defaults correctly.
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        """
+        session, transport = mcp_session
+        
+        result = await session.call_tool("search_tool", {
+            "query": "test empty dirs",
+            "directories": []  # Empty list should default to ["default_dir"]
+        })
+        
+        assert not result.isError, f"Tool execution failed: {result}"
+        text_content = extract_text_content(result)
+        data = json.loads(text_content)
+        
+        assert data["directories"] == ["default_dir"], (
+            f"Empty directories should default to ['default_dir']: {data['directories']} (transport: {transport})"
+        )
+        assert len(data["results"]) > 0, "Should return some results"
+    
+    async def test_process_batch_data_all_operations(self, mcp_session):
+        """Test process_batch_data with all operations including reverse and invalid.
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        """
+        session, transport = mcp_session
+        
+        # Test reverse operation
+        result = await session.call_tool("process_batch_data", {
+            "kwargs_list": [{"items": ["hello", "world"], "operation": "reverse"}]
+        })
+        
+        assert not result.isError, f"Reverse operation failed: {result}"
+        
+        results = []
+        for content in result.content:
+            if isinstance(content, types.TextContent):
+                try:
+                    results.append(json.loads(content.text))
+                except json.JSONDecodeError:
+                    pass
+        
+        assert len(results) == 1, f"Expected 1 result, got {len(results)}"
+        assert results[0]["processed"] == ["olleh", "dlrow"], (
+            f"Reverse operation incorrect: {results[0]['processed']} (transport: {transport})"
+        )
+        
+        # Test invalid operation
+        result = await session.call_tool("process_batch_data", {
+            "kwargs_list": [{"items": ["test"], "operation": "invalid"}]
+        })
+        
+        # Should error on invalid operation
+        error_text = extract_error_text(result) or extract_text_content(result)
+        assert "unknown operation" in error_text.lower() or result.isError, (
+            f"Should error on invalid operation: {error_text} (transport: {transport})"
+        )
+    
+    async def test_simulate_heavy_computation_boundaries(self, mcp_session):
+        """Test simulate_heavy_computation with boundary values.
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        """
+        session, transport = mcp_session
+        
+        # Test complexity = 1 (minimum valid)
+        result = await session.call_tool("simulate_heavy_computation", {
+            "kwargs_list": [{"complexity": "1"}]
+        })
+        
+        assert not result.isError, f"Complexity=1 should be valid: {result}"
+        
+        results = []
+        for content in result.content:
+            if isinstance(content, types.TextContent):
+                try:
+                    results.append(json.loads(content.text))
+                except json.JSONDecodeError:
+                    pass
+        
+        assert len(results) == 1
+        assert results[0]["complexity"] == 1
+        assert results[0]["iterations"] == 100000  # 1 * 100000
+        
+        # Test complexity = 10 (maximum valid)
+        result = await session.call_tool("simulate_heavy_computation", {
+            "kwargs_list": [{"complexity": "10"}]
+        })
+        
+        assert not result.isError, f"Complexity=10 should be valid: {result}"
+        
+        results = []
+        for content in result.content:
+            if isinstance(content, types.TextContent):
+                try:
+                    results.append(json.loads(content.text))
+                except json.JSONDecodeError:
+                    pass
+        
+        assert len(results) == 1
+        assert results[0]["complexity"] == 10
+        assert results[0]["iterations"] == 1000000  # 10 * 100000
+        
+        # Test complexity = 0 (invalid)
+        result = await session.call_tool("simulate_heavy_computation", {
+            "kwargs_list": [{"complexity": "0"}]
+        })
+        
+        error_text = extract_error_text(result) or extract_text_content(result)
+        assert "between 1 and 10" in error_text.lower() or result.isError, (
+            f"Should error on complexity=0: {error_text} (transport: {transport})"
+        )
+        
+        # Test complexity = 11 (invalid)
+        result = await session.call_tool("simulate_heavy_computation", {
+            "kwargs_list": [{"complexity": "11"}]
+        })
+        
+        error_text = extract_error_text(result) or extract_text_content(result)
+        assert "between 1 and 10" in error_text.lower() or result.isError, (
+            f"Should error on complexity=11: {error_text} (transport: {transport})"
+        )
+    
+    async def test_elicit_example_unavailable_date(self, mcp_session):
+        """Test elicit_example with unavailable date (2024-12-25).
+        
+        This test runs with both STDIO and Streamable HTTP transports.
+        Note: This triggers the elicit path but we can't fully test user interaction.
+        """
+        session, transport = mcp_session
+        
+        # Test with unavailable date - this will trigger elicit but we can't respond
+        result = await session.call_tool("elicit_example", {
+            "date": "2024-12-25",
+            "time": "19:00", 
+            "party_size": "4"
+        })
+        
+        # The tool will try to elicit user input, which we can't provide in tests
+        # But at least this exercises that code path for coverage
+        text_content = extract_text_content(result) or extract_error_text(result)
+        assert text_content is not None, "Should return some response"
+        # Can't assert specific content as elicit behavior varies
 
 
 class TestMCPErrorHandling:

@@ -78,7 +78,7 @@ def render_project_overview():
         **Project Details:**
         - **Name:** My MCP Server
         - **Description:** MCP server with decorators
-        - **Author:** Tim
+        - **Author:** tim
         - **Email:** email@example.com
         """)
         
