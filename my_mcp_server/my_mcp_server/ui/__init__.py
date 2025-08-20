@@ -1,1 +1,0 @@
-"""My MCP Server Admin UI Package"""
