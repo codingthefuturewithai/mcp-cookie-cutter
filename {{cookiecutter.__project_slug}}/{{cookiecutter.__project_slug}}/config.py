@@ -90,23 +90,67 @@ class ServerConfig:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ServerConfig":
-        """Create configuration from dictionary."""
-        return cls(
-            name=data.get("name", "{{cookiecutter.project_name}}"),
-            description=data.get("description", "MCP server with decorators, unified logging, and multiple transports"),
-            log_level=data.get("log_level", "INFO"),
-            log_retention_days=data.get("log_retention_days", 30),
-            logging_destinations=data.get("logging_destinations"),
-            default_transport=data.get("default_transport", "stdio"),
-            default_host=data.get("default_host", "127.0.0.1"),
-            default_port=data.get("default_port", {{cookiecutter.server_port}}),
-        )
+        """Create configuration from dictionary (supports both flat and nested structure)."""
+        # Check if data has nested structure (UI format) or flat structure (legacy)
+        if "server" in data:
+            # Nested structure from UI
+            server_config = data.get("server", {})
+            logging_config = data.get("logging", {})
+            return cls(
+                name=server_config.get("name", "{{cookiecutter.project_name}}"),
+                description=server_config.get("description", "MCP server with decorators, unified logging, and multiple transports"),
+                log_level=server_config.get("log_level", "INFO"),
+                log_retention_days=logging_config.get("retention_days", 30),
+                logging_destinations={"destinations": logging_config.get("destinations", [])},
+                default_transport=server_config.get("default_transport", "stdio"),
+                default_host=server_config.get("default_host", "127.0.0.1"),
+                default_port=server_config.get("port", {{cookiecutter.server_port}}),
+            )
+        else:
+            # Flat structure (legacy or direct from ServerConfig)
+            return cls(
+                name=data.get("name", "{{cookiecutter.project_name}}"),
+                description=data.get("description", "MCP server with decorators, unified logging, and multiple transports"),
+                log_level=data.get("log_level", "INFO"),
+                log_retention_days=data.get("log_retention_days", 30),
+                logging_destinations=data.get("logging_destinations"),
+                default_transport=data.get("default_transport", "stdio"),
+                default_host=data.get("default_host", "127.0.0.1"),
+                default_port=data.get("default_port", {{cookiecutter.server_port}}),
+            )
     
     def save(self) -> None:
-        """Save configuration to file."""
+        """Save configuration to file in nested structure for UI compatibility."""
         try:
+            # Convert to nested structure for UI
+            nested_config = {
+                "server": {
+                    "name": self.name,
+                    "description": self.description,
+                    "port": self.default_port,
+                    "log_level": self.log_level,
+                    "default_transport": self.default_transport,
+                    "default_host": self.default_host
+                },
+                "logging": {
+                    "level": self.log_level,
+                    "retention_days": self.log_retention_days,
+                    "database_path": str(self.database_path),
+                    "destinations": self.logging_destinations.get("destinations", []) if self.logging_destinations else []
+                },
+                "features": {
+                    "admin_ui": True,
+                    "example_tools": True,
+                    "parallel_examples": False
+                },
+                "paths": {
+                    "config": str(self.config_dir),
+                    "logs": str(self.log_dir),
+                    "data": str(self.data_dir)
+                }
+            }
             with open(self.config_file_path, 'w') as f:
-                yaml.dump(self.to_dict(), f, default_flow_style=False)
+                yaml.dump(nested_config, f, default_flow_style=False)
         except Exception as e:
             print(f"Warning: Could not save configuration: {e}")
     

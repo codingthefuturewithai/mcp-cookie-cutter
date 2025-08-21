@@ -11,6 +11,8 @@ import sys
 import platform
 import subprocess
 from pathlib import Path
+import yaml
+import platformdirs
 
 
 def run_command(cmd, description, check=True):
@@ -110,6 +112,91 @@ def install_dependencies():
     return success
 
 
+def create_default_config():
+    """Create a default config.yaml file for the MCP server.
+    
+    Creates the configuration in the platform-specific directory
+    following XDG/Windows/macOS standards.
+    """
+    print("\n⚙️  Creating default configuration...")
+    
+    try:
+        # Get platform-specific config directory
+        app_name = "{{ cookiecutter.__project_slug }}"
+        config_dir = Path(platformdirs.user_config_dir(app_name))
+        
+        # Create directory if it doesn't exist
+        config_dir.mkdir(parents=True, exist_ok=True)
+        
+        config_file = config_dir / "config.yaml"
+        
+        # Check if config already exists
+        if config_file.exists():
+            print(f"   ℹ️  Configuration already exists at: {config_file}")
+            return True
+        
+        # Default configuration matching UI's expected structure
+        default_config = {
+            "server": {
+                "name": "{{ cookiecutter.project_name }}",
+                "description": "{{ cookiecutter.description }}",
+                "port": int("{{ cookiecutter.server_port }}"),
+                "log_level": "INFO",
+                "default_transport": "stdio",
+                "default_host": "127.0.0.1"
+            },
+            "logging": {
+                "level": "INFO",
+                "retention_days": 30,
+                "database_path": str(data_dir / "logs.db"),
+                "destinations": [
+                    {
+                        "type": "sqlite",
+                        "enabled": True,
+                        "settings": {}
+                    }
+                ]
+            },
+            "features": {
+                "admin_ui": True,
+                "example_tools": True,
+                "parallel_examples": False
+            },
+            "paths": {
+                "config": str(config_dir),
+                "logs": str(log_dir),
+                "data": str(data_dir)
+            }
+        }
+        
+        # Write config file
+        with open(config_file, 'w', encoding='utf-8') as f:
+            yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
+        
+        print(f"   ✅ Created default configuration at:")
+        print(f"      {config_file}")
+        
+        # Also create data and log directories
+        data_dir = Path(platformdirs.user_data_dir(app_name))
+        log_dir = Path(platformdirs.user_log_dir(app_name))
+        
+        data_dir.mkdir(parents=True, exist_ok=True)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        
+        print(f"   ✅ Created data directory at:")
+        print(f"      {data_dir}")
+        print(f"   ✅ Created log directory at:")
+        print(f"      {log_dir}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"   ⚠️  Could not create configuration: {e}")
+        print(f"   ℹ️  You can create it manually later by running the server")
+        # Don't fail the entire generation for this
+        return False
+
+
 def show_next_steps():
     """Show helpful next steps to the user."""
     project_name = "{{ cookiecutter.project_name }}"
@@ -178,6 +265,9 @@ def main():
     if not install_dependencies():
         print("\n⚠️  Setup incomplete: Could not install all dependencies")
         print("   Please run 'uv sync' manually")
+    
+    # Create default configuration
+    create_default_config()
     
     # Show next steps
     show_next_steps()

@@ -1,5 +1,4 @@
-"""
-Home/Dashboard page for {{cookiecutter.project_name}} Admin UI
+"""Home/Dashboard page for {{cookiecutter.project_name}} Admin UI
 
 This page provides an overview of the MCP server status, project information,
 and quick access to common administrative tasks.
@@ -16,13 +15,13 @@ parent_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(parent_dir))
 
 try:
-    from {{ cookiecutter.__project_slug }}.ui.lib.components import (
+    from {{cookiecutter.__project_slug}}.ui.lib.components import (
         render_status_card, 
         render_metric_card,
         render_info_section,
         render_quick_actions
     )
-    from {{ cookiecutter.__project_slug }}.ui.lib.utils import (
+    from {{cookiecutter.__project_slug}}.ui.lib.utils import (
         check_server_status,
         get_project_info,
         get_system_info,
@@ -77,18 +76,21 @@ def render_project_overview():
         st.markdown("""
         **Project Details:**
         - **Name:** {{cookiecutter.project_name}}
-        - **Description:** MCP server with decorators, unified logging, and multiple transports
+        - **Description:** {{cookiecutter.description}}
         - **Author:** {{cookiecutter.author_name}}
         - **Email:** {{cookiecutter.email}}
         """)
         
     with col2:
-        st.markdown("""
+        import sys
+        from {{cookiecutter.__project_slug}}.config import get_config
+        config = get_config()
+        st.markdown(f"""
         **Configuration:**
-        - **Python Version:** 3.11+
+        - **Python Version:** {sys.version_info.major}.{sys.version_info.minor}
         - **Server Port:** {{cookiecutter.server_port}}
-        - **Log Level:** INFO
-        - **Log Retention:** 30 days
+        - **Log Level:** {config.log_level}
+        - **Log Retention:** {config.log_retention_days} days
         """)
 
 def render_feature_status():
@@ -105,11 +107,13 @@ def render_feature_status():
     with col2:
         # Example tools
         st.success("✅ Example Tools")
+        st.info("➖ Example Tools")
         st.caption("Sample MCP tools for demonstration")
         
     with col3:
         # Parallel processing
         st.success("✅ Parallel Processing")
+        st.info("➖ Parallel Processing")
         st.caption("Parallel execution examples")
 
 def render_quick_actions_section():
@@ -198,7 +202,7 @@ def main():
     
     # Footer
     st.markdown("---")
-    st.caption(f"{{cookiecutter.project_name}} Admin UI • Generated with MCP Server Cookie Cutter")
+    st.caption(f"{{cookiecutter.project_name}} Admin UI • Generated with SAAGA MCP Server Cookie Cutter")
 
 if __name__ == "__main__":
     main()

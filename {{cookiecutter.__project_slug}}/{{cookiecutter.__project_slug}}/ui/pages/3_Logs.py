@@ -1,5 +1,4 @@
-"""
-Log viewer page for {{cookiecutter.project_name}} Admin UI
+"""Log viewer page for {{cookiecutter.project_name}} Admin UI
 
 This page provides interface for viewing, filtering, and analyzing server logs
 from the SQLite logging database. Includes export capabilities and real-time updates.
@@ -17,13 +16,13 @@ parent_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(parent_dir))
 
 try:
-    from {{ cookiecutter.__project_slug }}.ui.lib.components import (
+    from {{cookiecutter.__project_slug}}.ui.lib.components import (
         render_log_filters,
         render_log_table,
         render_log_metrics,
         render_export_options
     )
-    from {{ cookiecutter.__project_slug }}.ui.lib.utils import (
+    from {{cookiecutter.__project_slug}}.ui.lib.utils import (
         load_logs_from_database,
         filter_logs,
         export_logs,
@@ -304,15 +303,62 @@ def render_export_section(df: pd.DataFrame):
     
     with col1:
         if st.button("📄 Export CSV", disabled=True):
-            st.info("CSV export will be available in a future update")
+            st.info("CSV export will be available in Phase 4, Issue 3")
     
     with col2:
         if st.button("📊 Export Excel", disabled=True):
-            st.info("Excel export will be available in a future update")
+            st.info("Excel export will be available in Phase 4, Issue 3")
     
     with col3:
         if st.button("🔗 Export JSON", disabled=True):
-            st.info("JSON export will be available in a future update")
+            st.info("JSON export will be available in Phase 4, Issue 3")
+
+def render_log_maintenance_section():
+    """Render log maintenance section with purge functionality"""
+    st.subheader("🧹 Log Maintenance")
+    
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        # Get current retention days from config
+        try:
+            from {{cookiecutter.__project_slug}}.config import get_config
+            config = get_config()
+            current_retention = config.log_retention_days
+        except:
+            current_retention = 7
+        
+        retention_days = st.number_input(
+            "Log Retention (days)",
+            min_value=1,
+            max_value=365,
+            value=current_retention,
+            help="Logs older than this will be deleted when purging"
+        )
+    
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Spacer
+        cutoff_date = datetime.now() - timedelta(days=retention_days)
+        st.info(f"Will delete logs before: {cutoff_date.strftime('%Y-%m-%d')}")
+    
+    with col3:
+        st.markdown("<br>", unsafe_allow_html=True)  # Spacer
+        if st.button("🗑️ Purge Old Logs", type="primary", use_container_width=True):
+            try:
+                # Import and use the SQLite logger's cleanup method
+                from {{cookiecutter.__project_slug}}.decorators.sqlite_logger import get_sqlite_sink
+                
+                sqlite_sink = get_sqlite_sink()
+                if sqlite_sink:
+                    # Update the config's retention days temporarily for this cleanup
+                    sqlite_sink.config.log_retention_days = retention_days
+                    sqlite_sink.cleanup_old_logs()
+                    st.success(f"✅ Successfully purged logs older than {retention_days} days")
+                    st.rerun()  # Refresh the page to show updated data
+                else:
+                    st.error("❌ SQLite logging not initialized")
+            except Exception as e:
+                st.error(f"❌ Failed to purge logs: {str(e)}")
 
 def main():
     """Main logs page content"""
@@ -368,6 +414,11 @@ def main():
     
     # Export section
     render_export_section(filtered_data)
+    
+    st.markdown("---")
+    
+    # Log maintenance section
+    render_log_maintenance_section()
     
     # Navigation
     st.markdown("---")

@@ -181,7 +181,7 @@ async def test_all_tools(server_script_path: str):
             # Define test cases for all tools
             test_cases = [
                 {
-                    "tool": "echo_tool",
+                    "tool": "echo",
                     "args": {"message": "Testing correlation ID feature!"},
                     "correlation_id": "test_echo_abc123"
                 },

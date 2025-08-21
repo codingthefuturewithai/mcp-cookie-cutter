@@ -1,5 +1,4 @@
-"""
-Streamlit Admin UI for {{cookiecutter.project_name}}
+"""Streamlit Admin UI for {{cookiecutter.project_name}}
 
 This admin interface provides web-based management for the MCP server configuration
 and log viewing. It runs independently of the MCP server and communicates through
@@ -23,9 +22,9 @@ components_available = True
 error_details = None
 
 try:
-    from {{ cookiecutter.__project_slug }}.ui.lib.components import render_header, render_sidebar, render_error_message
-    from {{ cookiecutter.__project_slug }}.ui.lib.styles import apply_custom_styles, hide_streamlit_style
-    from {{ cookiecutter.__project_slug }}.ui.lib.utils import check_server_status, get_project_info
+    from {{cookiecutter.__project_slug}}.ui.lib.components import render_header, render_sidebar, render_error_message
+    from {{cookiecutter.__project_slug}}.ui.lib.styles import apply_custom_styles, hide_streamlit_style
+    from {{cookiecutter.__project_slug}}.ui.lib.utils import check_server_status, get_project_info
 except ImportError as e:
     components_available = False
     error_details = str(e)
@@ -95,19 +94,23 @@ def main():
                 st.error("⚠️ Component Issues")
                 st.caption("Some UI features are unavailable due to import errors.")
         
-        # Main content area - show welcome message since we can't switch_page in main app
-        st.markdown("## Welcome to {{cookiecutter.project_name}} Admin")
-        st.info("Navigate using the sidebar menu to access different sections.")
+        # Main app page content - show welcome message and navigation
+        st.markdown("## Welcome to {{cookiecutter.project_name}} Admin Interface")
+        st.markdown("Please select a page from the sidebar to continue:")
         
-        # Show quick status
         col1, col2, col3 = st.columns(3)
+        
         with col1:
-            st.metric("Server Status", st.session_state.server_status.title())
+            if st.button("🏠 **Home Dashboard**", use_container_width=True, help="View server status and overview"):
+                st.switch_page("pages/1_Home.py")
+        
         with col2:
-            project_info = get_project_info()
-            st.metric("Version", project_info.get("version", "Unknown"))
+            if st.button("⚙️ **Configuration**", use_container_width=True, help="Manage server settings"):
+                st.switch_page("pages/2_Configuration.py")
+        
         with col3:
-            st.metric("UI Mode", "Full" if components_available else "Limited")
+            if st.button("📊 **View Logs**", use_container_width=True, help="Browse and analyze logs"):
+                st.switch_page("pages/3_Logs.py")
         
     except Exception as e:
         st.error("❌ Critical Application Error")

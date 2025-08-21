@@ -1,5 +1,4 @@
-"""
-Configuration management page for {{cookiecutter.project_name}} Admin UI
+"""Configuration management page for {{cookiecutter.project_name}} Admin UI
 
 This page provides interface for managing server configuration, environment variables,
 and tool settings. Changes require server restart to take effect.
@@ -16,12 +15,12 @@ parent_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(parent_dir))
 
 try:
-    from {{ cookiecutter.__project_slug }}.ui.lib.components import (
+    from {{cookiecutter.__project_slug}}.ui.lib.components import (
         render_info_card,
         render_warning_banner,
         render_config_section
     )
-    from {{ cookiecutter.__project_slug }}.ui.lib.utils import (
+    from {{cookiecutter.__project_slug}}.ui.lib.utils import (
         load_configuration,
         validate_configuration,
         save_configuration,
@@ -83,27 +82,43 @@ def render_configuration_form(config):
         
         with col1:
             st.markdown("**Server Settings**")
-            server_name = st.text_input("Server Name", value=server_config.get("name", "{{ cookiecutter.project_name }}"))
+            server_name = st.text_input("Server Name", value=server_config.get("name", "{{cookiecutter.project_name}}"))
             server_port = st.number_input("Server Port", 
-                                        value=server_config.get("port", {{ cookiecutter.server_port }}),
+                                        value=server_config.get("port", {{cookiecutter.server_port}}),
                                         min_value=1, max_value=65535)
+            # Get current log level from runtime config
+            try:
+                from {{cookiecutter.__project_slug}}.config import get_config
+                current_config = get_config()
+                current_log_level = current_config.log_level
+            except:
+                current_log_level = "INFO"
+            
             log_level = st.selectbox("Log Level", 
                                    options=["DEBUG", "INFO", "WARNING", "ERROR"],
                                    index=["DEBUG", "INFO", "WARNING", "ERROR"].index(
-                                       server_config.get("log_level", "INFO")
+                                       server_config.get("log_level", current_log_level)
                                    ))
         
         with col2:
             st.markdown("**Logging Settings**")
+            # Get current retention days from runtime config
+            try:
+                from {{cookiecutter.__project_slug}}.config import get_config
+                current_config = get_config()
+                current_retention = current_config.log_retention_days
+            except:
+                current_retention = 7
+            
             log_retention = st.number_input("Log Retention (days)", 
-                                          value=logging_config.get("retention_days", 30),
+                                          value=logging_config.get("retention_days", current_retention),
                                           min_value=1, max_value=365)
             
             st.markdown("**Feature Settings**")
             enable_example_tools = st.checkbox("Enable Example Tools", 
                                               value=features_config.get("example_tools", True))
             enable_parallel_examples = st.checkbox("Enable Parallel Examples", 
-                                                  value=features_config.get("parallel_examples", True))
+                                                  value=features_config.get("parallel_examples", False))
         
         st.markdown("---")
         
@@ -231,7 +246,7 @@ def handle_export_config(config):
     st.download_button(
         label="📥 Download Configuration (JSON)",
         data=config_json,
-        file_name="{{ cookiecutter.__project_slug }}_config.json",
+        file_name="{{cookiecutter.__project_slug}}_config.json",
         mime="application/json"
     )
     
@@ -376,7 +391,7 @@ def render_validation_section(config):
     validation_results = []
     
     # Server port validation
-    port = server_config.get("port", {{cookiecutter.server_port}})
+    port = server_config.get("port", int({{cookiecutter.server_port}}))
     if is_port_available(port):
         validation_results.append({
             "check": "Server port availability", 
@@ -488,7 +503,7 @@ def main():
         st.download_button(
             label="📥 Download Configuration (JSON)",
             data=config_json,
-            file_name="{{ cookiecutter.__project_slug }}_config.json",
+            file_name="{{cookiecutter.__project_slug}}_config.json",
             mime="application/json"
         )
         
@@ -498,7 +513,7 @@ def main():
         st.download_button(
             label="📥 Download Configuration (YAML)",
             data=config_yaml,
-            file_name="{{ cookiecutter.__project_slug }}_config.yaml",
+            file_name="{{cookiecutter.__project_slug}}_config.yaml",
             mime="application/x-yaml"
         )
     
