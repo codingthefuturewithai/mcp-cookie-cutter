@@ -1,4 +1,4 @@
-# Testing Guide for Tim MCP server
+# Testing Guide for Tim Mcp server
 
 ## Overview
 

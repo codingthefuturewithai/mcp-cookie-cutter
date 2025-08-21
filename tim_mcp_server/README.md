@@ -1,4 +1,4 @@
-# Tim MCP server
+# Tim Mcp server
 
 MCP server with decorators, unified logging, and multiple transports
 
@@ -313,7 +313,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-itm - tim@gmail.com
+t - t@gmail.com
 
 ---
 

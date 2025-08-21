@@ -1,4 +1,4 @@
-# MCP Inspector Testing Guide for Tim MCP server
+# MCP Inspector Testing Guide for Tim Mcp server
 
 This guide helps you test your MCP server tools using the MCP Inspector, including troubleshooting common setup issues.
 

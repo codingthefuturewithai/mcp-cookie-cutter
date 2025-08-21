@@ -1,4 +1,4 @@
-"""Documentation viewer page for Tim MCP server Admin UI
+"""Documentation viewer page for Tim Mcp server Admin UI
 
 This page displays project documentation from markdown files, providing
 easy access to README, developer guides, and other documentation.
@@ -36,42 +36,44 @@ def load_markdown_file(file_path: Path) -> str:
 def render_documentation_content():
     """Render the documentation content with tabs for different docs"""
     
-    # Get the project root directory (parent of ui directory)
-    project_root = Path(__file__).parent.parent.parent
+    # Get the project root directory (4 levels up from pages/4_Documentation.py)
+    project_root = Path(__file__).parent.parent.parent.parent
     
-    # Define available documentation files
+    # Define all documentation files
     doc_files = {
         "README": project_root / "README.md",
         "Developer Guide": project_root / "DEVELOPER_GUIDE.md", 
         "Development": project_root / "DEVELOPMENT.md",
-        "Setup Guide": project_root / "SETUP_PROMPT.md"
+        "MCP Inspector": project_root / "docs" / "MCP_INSPECTOR_GUIDE.md",
+        "Decorator Patterns": project_root / "docs" / "DECORATOR_PATTERNS.md",
+        "Unified Logging": project_root / "docs" / "UNIFIED_LOGGING.md"
     }
     
     # Check which files exist
     available_docs = {name: path for name, path in doc_files.items() if path.exists()}
     
+    # Always show Quick Start section
+    st.info("📚 **Quick Start Documentation**")
+    st.markdown("""
+    This MCP server was generated from the Tim Mcp server Cookie Cutter template.
+    
+    **Getting Started:**
+    1. Test your server with MCP Inspector: `mcp dev tim_mcp_server/server/app.py`
+    2. Run the example client: `tim_mcp_server-client "Hello World"`
+    3. View logs in this UI (Logs page)
+    
+    **Key Files:**
+    - `server/app.py` - Main MCP server implementation
+    - `tools/example_tools.py` - Example tool implementations
+    - `config.py` - Configuration management
+    
+    **Testing:**
+    - Run tests: `pytest tests/`
+    - Test correlation IDs: `python tests/integration/test_correlation.py`
+    """)
+    
     if not available_docs:
-        # No local docs found, show helpful message about where to find docs
-        st.info("📚 **Quick Start Documentation**")
-        st.markdown("""
-        This MCP server was generated from the SAAGA Cookie Cutter template.
-        
-        **Getting Started:**
-        1. Test your server with MCP Inspector: `mcp dev tim_mcp_server/server/app.py`
-        2. Run the example client: `tim_mcp_server-client "Hello World"`
-        3. View logs in this UI (Logs page)
-        
-        **Key Files:**
-        - `server/app.py` - Main MCP server implementation
-        - `tools/example_tools.py` - Example tool implementations
-        - `config.py` - Configuration management
-        
-        **Testing:**
-        - Run tests: `pytest tests/`
-        - Test correlation IDs: `python tests/integration/test_correlation.py`
-        
-        For detailed documentation, check the project repository or the external resources below.
-        """)
+        st.warning("Documentation files not found. Please ensure README.md and other docs are in the project root.")
         return
     
     # Create tabs for available documentation
@@ -108,7 +110,7 @@ def render_external_links():
 def main():
     """Main documentation page content"""
     # Page header
-    st.title("📖 Tim MCP server Documentation")
+    st.title("📖 Tim Mcp server Documentation")
     st.markdown("Browse project documentation and resources.")
     st.markdown("---")
     

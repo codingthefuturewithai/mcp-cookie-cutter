@@ -36,8 +36,8 @@ def load_markdown_file(file_path: Path) -> str:
 def render_documentation_content():
     """Render the documentation content with tabs for different docs"""
     
-    # Get the project root directory (parent of ui directory)
-    project_root = Path(__file__).parent.parent.parent
+    # Get the project root directory (4 levels up from pages/4_Documentation.py)
+    project_root = Path(__file__).parent.parent.parent.parent
     
     # Define all documentation files
     doc_files = {

@@ -1,4 +1,4 @@
-# Developer Guide - Tim MCP server
+# Developer Guide - Tim Mcp server
 
 This guide is for developers working on this MCP server - whether you're brand new to MCP or adding your tenth tool.
 

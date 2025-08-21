@@ -1,4 +1,4 @@
-# Decorator Patterns in Tim MCP server
+# Decorator Patterns in Tim Mcp server
 
 This document explains the SAAGA decorator patterns used in your MCP server and provides guidance on the async-only patterns and parallel tool calling conventions.
 

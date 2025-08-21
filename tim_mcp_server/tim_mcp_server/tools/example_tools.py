@@ -1,4 +1,4 @@
-"""Example MCP tools for Tim MCP server
+"""Example MCP tools for Tim Mcp server
 
 This module provides example tools that demonstrate how to create MCP tools
 with the decorator pattern. These tools are automatically registered

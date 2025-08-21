@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "MCP server with decorators, unified logging, and multiple transports"
 readme = "README.md"
 authors = [
-    {name = "itm", email = "tim@gmail.com"}
+    {name = "t", email = "t@gmail.com"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.11,<3.13"

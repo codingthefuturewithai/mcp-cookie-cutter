@@ -1,4 +1,4 @@
-# Tim MCP server - Quick Setup Guide
+# Tim Mcp server - Quick Setup Guide
 
 Quick setup instructions for using this MCP server with AI assistants.
 
@@ -232,7 +232,7 @@ kill %1
 
 ### Optional Configuration
 - **LOG_LEVEL**: DEBUG, INFO, WARNING, ERROR (default: INFO)
-- **MCP_SERVER_NAME**: Custom server name (default: "Tim MCP server")
+- **MCP_SERVER_NAME**: Custom server name (default: "Tim Mcp server")
 - **MCP_SERVER_PORT**: Default port for SSE/HTTP (default: 3001)
 
 ### Development Variables
@@ -259,4 +259,4 @@ When working with this project:
 6. ✅ Test different transports if needed
 7. ✅ Use Streamlit UI for monitoring
 
-This setup guide should get you productive with Tim MCP server quickly!
+This setup guide should get you productive with Tim Mcp server quickly!
