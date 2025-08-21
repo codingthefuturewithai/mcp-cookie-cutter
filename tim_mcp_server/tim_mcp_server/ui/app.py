@@ -1,5 +1,4 @@
-"""
-Streamlit Admin UI for Tim MCP Server
+"""Streamlit Admin UI for Tim MCP server
 
 This admin interface provides web-based management for the MCP server configuration
 and log viewing. It runs independently of the MCP server and communicates through
@@ -25,7 +24,7 @@ error_details = None
 try:
     from tim_mcp_server.ui.lib.components import render_header, render_sidebar, render_error_message
     from tim_mcp_server.ui.lib.styles import apply_custom_styles, hide_streamlit_style
-    from tim_mcp_server.ui.lib.utils import check_server_status, get_project_info
+    from tim_mcp_server.ui.lib.utils import get_project_info
 except ImportError as e:
     components_available = False
     error_details = str(e)
@@ -41,7 +40,7 @@ except ImportError as e:
         pass
     
     def render_header():
-        st.title("Tim MCP Server Admin")
+        st.title("Tim MCP server Admin")
         st.caption("MCP Server Administration Interface")
     
     def render_sidebar():
@@ -49,15 +48,12 @@ except ImportError as e:
             st.markdown("### ⚠️ Limited Mode")
             st.warning("Some UI components are not available.")
     
-    def check_server_status():
-        return "unknown"
-    
     def get_project_info():
-        return {"name": "Tim MCP Server", "version": "0.1.0"}
+        return {"name": "Tim MCP server", "version": "0.1.0"}
 
 # Page configuration
 st.set_page_config(
-    page_title="Tim MCP Server Admin",
+    page_title="Tim MCP server Admin",
     page_icon="🛠️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -66,8 +62,6 @@ st.set_page_config(
 # Initialize session state
 if "initialized" not in st.session_state:
     st.session_state.initialized = True
-    st.session_state.server_status = "unknown"
-    st.session_state.last_status_check = None
 
 
 def main():
@@ -95,19 +89,23 @@ def main():
                 st.error("⚠️ Component Issues")
                 st.caption("Some UI features are unavailable due to import errors.")
         
-        # Main content area - show welcome message since we can't switch_page in main app
-        st.markdown("## Welcome to Tim MCP Server Admin")
-        st.info("Navigate using the sidebar menu to access different sections.")
+        # Main app page content - show welcome message and navigation
+        st.markdown("## Welcome to Tim MCP server Admin Interface")
+        st.markdown("Please select a page from the sidebar to continue:")
         
-        # Show quick status
         col1, col2, col3 = st.columns(3)
+        
         with col1:
-            st.metric("Server Status", st.session_state.server_status.title())
+            if st.button("🏠 **Home Dashboard**", use_container_width=True, help="View server status and overview"):
+                st.switch_page("pages/1_Home.py")
+        
         with col2:
-            project_info = get_project_info()
-            st.metric("Version", project_info.get("version", "Unknown"))
+            if st.button("⚙️ **Configuration**", use_container_width=True, help="Manage server settings"):
+                st.switch_page("pages/2_Configuration.py")
+        
         with col3:
-            st.metric("UI Mode", "Full" if components_available else "Limited")
+            if st.button("📊 **View Logs**", use_container_width=True, help="Browse and analyze logs"):
+                st.switch_page("pages/3_Logs.py")
         
     except Exception as e:
         st.error("❌ Critical Application Error")

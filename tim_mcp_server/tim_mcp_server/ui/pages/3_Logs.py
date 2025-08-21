@@ -1,5 +1,4 @@
-"""
-Log viewer page for Tim MCP Server Admin UI
+"""Log viewer page for Tim MCP server Admin UI
 
 This page provides interface for viewing, filtering, and analyzing server logs
 from the SQLite logging database. Includes export capabilities and real-time updates.
@@ -82,6 +81,18 @@ def render_log_metrics_section(df: pd.DataFrame):
         else:
             st.metric("Active Tools", 0)
 
+def clear_all_filters():
+    """Callback function to clear all filter values"""
+    # Set to default values instead of deleting
+    st.session_state.quick_log_filter = "All Levels"  # First option in radio
+    st.session_state.log_level_filter = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]  # All selected
+    st.session_state.log_type_filter = "All"  # First option
+    st.session_state.status_filter = "All"  # First option  
+    st.session_state.time_range_filter = "Last 7 Days"  # Index 2 default
+    st.session_state.search_filter = ""  # Empty string for text input
+    if "custom_log_levels" in st.session_state:
+        del st.session_state.custom_log_levels  # This one we can delete
+
 def render_log_filters_section():
     """Render log filtering controls"""
     st.subheader("🔍 Filters")
@@ -152,17 +163,7 @@ def render_log_filters_section():
     
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)  # Spacer
-        if st.button("Clear Filters", use_container_width=True):
-            # Clear all filter-related session state by setting to specific values
-            st.session_state["quick_log_filter"] = "All Levels"
-            st.session_state["log_level_filter"] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-            st.session_state["log_type_filter"] = "All"
-            st.session_state["status_filter"] = "All"
-            st.session_state["time_range_filter"] = "Last 7 Days"
-            st.session_state["search_filter"] = ""
-            if "custom_log_levels" in st.session_state:
-                del st.session_state["custom_log_levels"]
-            st.rerun()
+        st.button("Clear Filters", use_container_width=True, on_click=clear_all_filters)
     
     return {
         "log_levels": log_levels if log_levels else None,
@@ -304,20 +305,67 @@ def render_export_section(df: pd.DataFrame):
     
     with col1:
         if st.button("📄 Export CSV", disabled=True):
-            st.info("CSV export will be available in a future update")
+            st.info("CSV export will be available in Phase 4, Issue 3")
     
     with col2:
         if st.button("📊 Export Excel", disabled=True):
-            st.info("Excel export will be available in a future update")
+            st.info("Excel export will be available in Phase 4, Issue 3")
     
     with col3:
         if st.button("🔗 Export JSON", disabled=True):
-            st.info("JSON export will be available in a future update")
+            st.info("JSON export will be available in Phase 4, Issue 3")
+
+def render_log_maintenance_section():
+    """Render log maintenance section with purge functionality"""
+    st.subheader("🧹 Log Maintenance")
+    
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        # Get current retention days from config
+        try:
+            from tim_mcp_server.config import get_config
+            config = get_config()
+            current_retention = config.log_retention_days
+        except:
+            current_retention = 7
+        
+        retention_days = st.number_input(
+            "Log Retention (days)",
+            min_value=1,
+            max_value=365,
+            value=current_retention,
+            help="Logs older than this will be deleted when purging"
+        )
+    
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Spacer
+        cutoff_date = datetime.now() - timedelta(days=retention_days)
+        st.info(f"Will delete logs before: {cutoff_date.strftime('%Y-%m-%d')}")
+    
+    with col3:
+        st.markdown("<br>", unsafe_allow_html=True)  # Spacer
+        if st.button("🗑️ Purge Old Logs", type="primary", use_container_width=True):
+            try:
+                # Import and use the SQLite logger's cleanup method
+                from tim_mcp_server.decorators.sqlite_logger import get_sqlite_sink
+                
+                sqlite_sink = get_sqlite_sink()
+                if sqlite_sink:
+                    # Update the config's retention days temporarily for this cleanup
+                    sqlite_sink.config.log_retention_days = retention_days
+                    sqlite_sink.cleanup_old_logs()
+                    st.success(f"✅ Successfully purged logs older than {retention_days} days")
+                    st.rerun()  # Refresh the page to show updated data
+                else:
+                    st.error("❌ SQLite logging not initialized")
+            except Exception as e:
+                st.error(f"❌ Failed to purge logs: {str(e)}")
 
 def main():
     """Main logs page content"""
     # Page header
-    st.title("📊 Tim MCP Server Logs")
+    st.title("📊 Tim MCP server Logs")
     st.markdown("View and analyze server logs from the unified logging system.")
     st.markdown("---")
     
@@ -368,6 +416,11 @@ def main():
     
     # Export section
     render_export_section(filtered_data)
+    
+    st.markdown("---")
+    
+    # Log maintenance section
+    render_log_maintenance_section()
     
     # Navigation
     st.markdown("---")

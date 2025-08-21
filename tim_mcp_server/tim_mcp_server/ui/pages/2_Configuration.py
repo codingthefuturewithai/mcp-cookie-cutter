@@ -1,5 +1,4 @@
-"""
-Configuration management page for Tim MCP Server Admin UI
+"""Configuration management page for Tim MCP server Admin UI
 
 This page provides interface for managing server configuration, environment variables,
 and tool settings. Changes require server restart to take effect.
@@ -53,16 +52,13 @@ def render_current_config_preview(config):
     st.subheader("📋 Current Configuration Preview")
     
     # Display configuration in tabs
-    tab1, tab2, tab3 = st.tabs(["🔧 Server", "🎛️ Features", "📁 Paths"])
+    tab1, tab2 = st.tabs(["🔧 Server", "📊 Logging"])
     
     with tab1:
         st.json(config.get("server", {}))
         
     with tab2:
-        st.json(config.get("features", {}))
-        
-    with tab3:
-        st.json(config.get("paths", {}))
+        st.json(config.get("logging", {}))
 
 def render_configuration_form(config):
     """Render configuration editing form"""
@@ -76,34 +72,43 @@ def render_configuration_form(config):
     # Current configuration values
     server_config = config.get("server", {})
     logging_config = config.get("logging", {})
-    features_config = config.get("features", {})
     
     with st.form("config_form"):
         col1, col2 = st.columns(2)
         
         with col1:
             st.markdown("**Server Settings**")
-            server_name = st.text_input("Server Name", value=server_config.get("name", "Tim MCP Server"))
+            server_name = st.text_input("Server Name", value=server_config.get("name", "Tim MCP server"))
             server_port = st.number_input("Server Port", 
                                         value=server_config.get("port", 3001),
                                         min_value=1, max_value=65535)
+            # Get current log level from runtime config
+            try:
+                from tim_mcp_server.config import get_config
+                current_config = get_config()
+                current_log_level = current_config.log_level
+            except:
+                current_log_level = "INFO"
+            
             log_level = st.selectbox("Log Level", 
                                    options=["DEBUG", "INFO", "WARNING", "ERROR"],
                                    index=["DEBUG", "INFO", "WARNING", "ERROR"].index(
-                                       server_config.get("log_level", "INFO")
+                                       server_config.get("log_level", current_log_level)
                                    ))
         
         with col2:
             st.markdown("**Logging Settings**")
-            log_retention = st.number_input("Log Retention (days)", 
-                                          value=logging_config.get("retention_days", 30),
-                                          min_value=1, max_value=365)
+            # Get current retention days from runtime config
+            try:
+                from tim_mcp_server.config import get_config
+                current_config = get_config()
+                current_retention = current_config.log_retention_days
+            except:
+                current_retention = 7
             
-            st.markdown("**Feature Settings**")
-            enable_example_tools = st.checkbox("Enable Example Tools", 
-                                              value=features_config.get("example_tools", True))
-            enable_parallel_examples = st.checkbox("Enable Parallel Examples", 
-                                                  value=features_config.get("parallel_examples", True))
+            log_retention = st.number_input("Log Retention (days)", 
+                                          value=logging_config.get("retention_days", current_retention),
+                                          min_value=1, max_value=365)
         
         st.markdown("---")
         
@@ -126,8 +131,7 @@ def render_configuration_form(config):
         
         # Process form submissions
         if save_button:
-            return handle_save_config(server_name, server_port, log_level, log_retention, 
-                                    enable_example_tools, enable_parallel_examples, config)
+            return handle_save_config(server_name, server_port, log_level, log_retention, config)
         
         if reset_button:
             return handle_reset_config()
@@ -140,27 +144,30 @@ def render_configuration_form(config):
     
     return None
 
-def handle_save_config(server_name, server_port, log_level, log_retention, 
-                      enable_example_tools, enable_parallel_examples, current_config):
+def handle_save_config(server_name, server_port, log_level, log_retention, current_config):
     """Handle saving configuration changes"""
     # Build new configuration
     new_config = {
         "server": {
             "name": server_name,
+            "description": current_config.get("server", {}).get("description", "Tim's MCP S"),
             "port": server_port,
-            "log_level": log_level
+            "log_level": log_level,
+            "default_transport": current_config.get("server", {}).get("default_transport", "stdio"),
+            "default_host": current_config.get("server", {}).get("default_host", "127.0.0.1")
         },
         "logging": {
             "level": log_level,
             "retention_days": log_retention,
-            "database_path": current_config.get("logging", {}).get("database_path", "")
-        },
-        "features": {
-            "admin_ui": True,
-            "example_tools": enable_example_tools,
-            "parallel_examples": enable_parallel_examples
-        },
-        "paths": current_config.get("paths", {})
+            "database_name": current_config.get("logging", {}).get("database_name", "unified_logs.db"),
+            "destinations": current_config.get("logging", {}).get("destinations", [
+                {
+                    "type": "sqlite",
+                    "enabled": True,
+                    "settings": {}
+                }
+            ])
+        }
     }
     
     # Validate configuration
@@ -279,14 +286,7 @@ def show_config_diff(old_config, new_config):
         if old_val != new_val:
             changes.append(f"Logging {key}: {old_val} → {new_val}")
     
-    # Check features changes
-    old_features = old_config.get("features", {})
-    new_features = new_config.get("features", {})
-    for key in set(old_features.keys()) | set(new_features.keys()):
-        old_val = old_features.get(key)
-        new_val = new_features.get(key)
-        if old_val != new_val:
-            changes.append(f"Feature {key}: {old_val} → {new_val}")
+    # No longer check features changes as they've been removed
     
     if changes:
         st.write("**Changes to be made:**")
@@ -376,7 +376,7 @@ def render_validation_section(config):
     validation_results = []
     
     # Server port validation
-    port = server_config.get("port", 3001)
+    port = server_config.get("port", int(3001))
     if is_port_available(port):
         validation_results.append({
             "check": "Server port availability", 
@@ -456,7 +456,7 @@ def render_validation_section(config):
 def main():
     """Main configuration page content"""
     # Page header
-    st.title("⚙️ Tim MCP Server Configuration")
+    st.title("⚙️ Tim MCP server Configuration")
     st.markdown("Manage server settings, features, and environment configuration.")
     st.markdown("---")
     

@@ -1,4 +1,4 @@
-"""Example MCP tools for Tim MCP Server
+"""Example MCP tools for Tim MCP server
 
 This module provides example tools that demonstrate how to create MCP tools
 with the decorator pattern. These tools are automatically registered
@@ -14,7 +14,7 @@ from mcp.server.session import ServerSession
 from pydantic import BaseModel, Field
 from tim_mcp_server.log_system.unified_logger import UnifiedLogger
 
-async def echo(message: str, ctx: Context = None) -> str:
+async def echo_tool(message: str, ctx: Context = None) -> str:
     """Echo back the input message.
     
     This is a simple example tool that demonstrates basic MCP tool functionality.
@@ -27,8 +27,6 @@ async def echo(message: str, ctx: Context = None) -> str:
     Returns:
         The echoed message with a prefix
     """
-    logger = UnifiedLogger.get_logger(__name__)
-    logger.info(f"echo called with message: {message}")
     return f"Echo: {message}"
 
 
@@ -302,7 +300,7 @@ parallel_example_tools = [
 
 # List of regular example tools
 example_tools = [
-    echo,
+    echo_tool,
     get_time,
     random_number,
     calculate_fibonacci,
@@ -338,7 +336,7 @@ if __name__ == "__main__":
         print(await get_tool_info())
         
         print("\nTesting example tools:")
-        print(await echo("Hello, World!"))
+        print(await echo_tool("Hello, World!"))
         print(await get_time())
         print(await random_number(1, 10))
         print(await calculate_fibonacci(10))
