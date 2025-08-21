@@ -1,5 +1,5 @@
 """
-Unified logging system for Tim Mcp server.
+Unified logging system for Tim MCp server.
 
 This module provides a pluggable logging architecture with correlation IDs
 for tracking related events across tool executions and internal logs.

@@ -1,4 +1,4 @@
-"""Documentation viewer page for Tim Mcp server Admin UI
+"""Documentation viewer page for Tim MCp server Admin UI
 
 This page displays project documentation from markdown files, providing
 easy access to README, developer guides, and other documentation.
@@ -55,7 +55,7 @@ def render_documentation_content():
     # Always show Quick Start section
     st.info("📚 **Quick Start Documentation**")
     st.markdown("""
-    This MCP server was generated from the Tim Mcp server Cookie Cutter template.
+    This MCP server was generated from the Tim MCp server Cookie Cutter template.
     
     **Getting Started:**
     1. Test your server with MCP Inspector: `mcp dev tim_mcp_server/server/app.py`
@@ -110,7 +110,7 @@ def render_external_links():
 def main():
     """Main documentation page content"""
     # Page header
-    st.title("📖 Tim Mcp server Documentation")
+    st.title("📖 Tim MCp server Documentation")
     st.markdown("Browse project documentation and resources.")
     st.markdown("---")
     

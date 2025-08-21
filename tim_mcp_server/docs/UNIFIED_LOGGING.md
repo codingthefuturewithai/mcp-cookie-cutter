@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Tim Mcp server implements a unified logging system that captures both tool executions and internal application logs in a single, queryable database. The system features:
+The Tim MCp server implements a unified logging system that captures both tool executions and internal application logs in a single, queryable database. The system features:
 
 - **Correlation IDs**: Track related events across the entire request lifecycle
 - **Pluggable Destinations**: Easily swap between different log storage backends

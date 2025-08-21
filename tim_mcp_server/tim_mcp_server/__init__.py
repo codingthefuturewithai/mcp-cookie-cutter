@@ -1,4 +1,4 @@
-"""Tim Mcp server package."""
+"""Tim MCp server package."""
 
 import asyncio
 import logging

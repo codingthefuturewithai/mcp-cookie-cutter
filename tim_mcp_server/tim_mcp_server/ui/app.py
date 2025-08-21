@@ -1,4 +1,4 @@
-"""Streamlit Admin UI for Tim Mcp server
+"""Streamlit Admin UI for Tim MCp server
 
 This admin interface provides web-based management for the MCP server configuration
 and log viewing. It runs independently of the MCP server and communicates through
@@ -40,7 +40,7 @@ except ImportError as e:
         pass
     
     def render_header():
-        st.title("Tim Mcp server Admin")
+        st.title("Tim MCp server Admin")
         st.caption("MCP Server Administration Interface")
     
     def render_sidebar():
@@ -49,11 +49,11 @@ except ImportError as e:
             st.warning("Some UI components are not available.")
     
     def get_project_info():
-        return {"name": "Tim Mcp server", "version": "0.1.0"}
+        return {"name": "Tim MCp server", "version": "0.1.0"}
 
 # Page configuration
 st.set_page_config(
-    page_title="Tim Mcp server Admin",
+    page_title="Tim MCp server Admin",
     page_icon="🛠️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -90,7 +90,7 @@ def main():
                 st.caption("Some UI features are unavailable due to import errors.")
         
         # Main app page content - show welcome message and navigation
-        st.markdown("## Welcome to Tim Mcp server Admin Interface")
+        st.markdown("## Welcome to Tim MCp server Admin Interface")
         st.markdown("Please select a page from the sidebar to continue:")
         
         col1, col2, col3 = st.columns(3)

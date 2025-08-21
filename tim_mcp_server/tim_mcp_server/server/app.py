@@ -1,4 +1,4 @@
-"""Tim Mcp server - MCP Server with Decorators
+"""Tim MCp server - MCP Server with Decorators
 
 This module implements the core MCP server using FastMCP with multi-transport support
 (STDIO, SSE, and Streamable HTTP) and automatic application of decorators 
@@ -71,7 +71,7 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     unified_logger.info(f"Unified logging initialized with {len(UnifiedLogger.get_available_destinations())} available destination types")
     unified_logger.info(f"Server config: {config.name} at log level {config.log_level}")
     
-    mcp_server = FastMCP(config.name or "Tim Mcp server")
+    mcp_server = FastMCP(config.name or "Tim MCp server")
     
     
     # Register all tools with the server
@@ -156,7 +156,7 @@ server = create_mcp_server()
     help="Transport type (stdio, sse, or streamable-http)"
 )
 def main(port: int, transport: str) -> int:
-    """Run the Tim Mcp server server with specified transport."""
+    """Run the Tim MCp server server with specified transport."""
     async def run_server():
         """Inner async function to run the server and manage the event loop."""
         # Set the event loop in UnifiedLogger for async operations

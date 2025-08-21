@@ -1,4 +1,4 @@
-"""Main module for Tim Mcp server MCP server.
+"""Main module for Tim MCp server MCP server.
 
 This module allows the server to be run as a Python module using:
 python -m tim_mcp_server

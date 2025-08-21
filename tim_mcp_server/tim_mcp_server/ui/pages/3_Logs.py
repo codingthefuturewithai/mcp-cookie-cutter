@@ -1,4 +1,4 @@
-"""Log viewer page for Tim Mcp server Admin UI
+"""Log viewer page for Tim MCp server Admin UI
 
 This page provides interface for viewing, filtering, and analyzing server logs
 from the SQLite logging database. Includes export capabilities and real-time updates.
@@ -365,7 +365,7 @@ def render_log_maintenance_section():
 def main():
     """Main logs page content"""
     # Page header
-    st.title("📊 Tim Mcp server Logs")
+    st.title("📊 Tim MCp server Logs")
     st.markdown("View and analyze server logs from the unified logging system.")
     st.markdown("---")
     

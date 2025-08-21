@@ -1,4 +1,4 @@
-"""Configuration management page for Tim Mcp server Admin UI
+"""Configuration management page for Tim MCp server Admin UI
 
 This page provides interface for managing server configuration, environment variables,
 and tool settings. Changes require server restart to take effect.
@@ -78,7 +78,7 @@ def render_configuration_form(config):
         
         with col1:
             st.markdown("**Server Settings**")
-            server_name = st.text_input("Server Name", value=server_config.get("name", "Tim Mcp server"))
+            server_name = st.text_input("Server Name", value=server_config.get("name", "Tim MCp server"))
             server_port = st.number_input("Server Port", 
                                         value=server_config.get("port", 3001),
                                         min_value=1, max_value=65535)
@@ -150,7 +150,7 @@ def handle_save_config(server_name, server_port, log_level, log_retention, curre
     new_config = {
         "server": {
             "name": server_name,
-            "description": current_config.get("server", {}).get("description", "Tim Mcp server - MCP server with tools and integrations"),
+            "description": current_config.get("server", {}).get("description", "Tim MCp server - MCP server with tools and integrations"),
             "port": server_port,
             "log_level": log_level,
             "default_transport": current_config.get("server", {}).get("default_transport", "stdio"),
@@ -456,7 +456,7 @@ def render_validation_section(config):
 def main():
     """Main configuration page content"""
     # Page header
-    st.title("⚙️ Tim Mcp server Configuration")
+    st.title("⚙️ Tim MCp server Configuration")
     st.markdown("Manage server settings, features, and environment configuration.")
     st.markdown("---")
     

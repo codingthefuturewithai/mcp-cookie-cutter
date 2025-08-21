@@ -1,4 +1,4 @@
-"""Configuration management for Tim Mcp server
+"""Configuration management for Tim MCp server
 
 This module provides platform-aware configuration management using platformdirs
 to ensure configuration files are stored in appropriate locations across different
@@ -19,7 +19,7 @@ class ServerConfig:
     """Configuration class for the MCP server."""
     
     # Server settings
-    name: str = "Tim Mcp server"
+    name: str = "Tim MCp server"
     description: str = "MCP server with decorators, unified logging, and multiple transports"
     
     # Logging configuration
@@ -98,7 +98,7 @@ class ServerConfig:
             server_config = data.get("server", {})
             logging_config = data.get("logging", {})
             return cls(
-                name=server_config.get("name", "Tim Mcp server"),
+                name=server_config.get("name", "Tim MCp server"),
                 description=server_config.get("description", "MCP server with decorators, unified logging, and multiple transports"),
                 log_level=server_config.get("log_level", "INFO"),
                 log_retention_days=logging_config.get("retention_days", 30),
@@ -111,7 +111,7 @@ class ServerConfig:
         else:
             # Flat structure (legacy or direct from ServerConfig)
             return cls(
-                name=data.get("name", "Tim Mcp server"),
+                name=data.get("name", "Tim MCp server"),
                 description=data.get("description", "MCP server with decorators, unified logging, and multiple transports"),
                 log_level=data.get("log_level", "INFO"),
                 log_retention_days=data.get("log_retention_days", 30),

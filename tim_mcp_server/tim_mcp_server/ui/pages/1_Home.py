@@ -1,4 +1,4 @@
-"""Home/Dashboard page for Tim Mcp server Admin UI
+"""Home/Dashboard page for Tim MCp server Admin UI
 
 This page provides an overview of the MCP server status, project information,
 and quick access to common administrative tasks.
@@ -61,9 +61,9 @@ def render_project_overview():
     with col1:
         st.markdown("""
         **Project Details:**
-        - **Name:** Tim Mcp server
-        - **Description:** Tim Mcp server - MCP server with tools and integrations
-        - **Author:** t
+        - **Name:** Tim MCp server
+        - **Description:** Tim MCp server - MCP server with tools and integrations
+        - **Author:** T
         - **Email:** t@gmail.com
         """)
         
@@ -161,7 +161,7 @@ Application Directory:
 def main():
     """Main page content"""
     # Page header
-    st.title("🏠 Tim Mcp server Admin Dashboard")
+    st.title("🏠 Tim MCp server Admin Dashboard")
     st.markdown("Welcome to the administrative interface for your MCP server.")
     st.markdown("---")
     
@@ -186,7 +186,7 @@ def main():
     
     # Footer
     st.markdown("---")
-    st.caption(f"Tim Mcp server Admin UI • Generated with SAAGA MCP Server Cookie Cutter")
+    st.caption(f"Tim MCp server Admin UI • Generated with SAAGA MCP Server Cookie Cutter")
 
 if __name__ == "__main__":
     main()

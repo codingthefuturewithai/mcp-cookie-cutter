@@ -1,4 +1,4 @@
-"""Logging configuration for Tim Mcp server MCP server"""
+"""Logging configuration for Tim MCp server MCP server"""
 
 import logging
 import logging.handlers
@@ -29,7 +29,7 @@ def get_default_log_dir() -> Path:
 
 
 def setup_logging(server_config: Optional[ServerConfig] = None) -> None:
-    """Configure logging for the Tim Mcp server MCP server"""
+    """Configure logging for the Tim MCp server MCP server"""
     # Get log level from server config, environment, or default to INFO
     log_level = "INFO"
     if server_config and hasattr(server_config, "log_level"):

@@ -14,7 +14,7 @@ from mcp.server.session import ServerSession
 from pydantic import BaseModel, Field
 from {{cookiecutter.__project_slug}}.log_system.unified_logger import UnifiedLogger
 
-async def echo_tool(message: str, ctx: Context = None) -> str:
+async def echo(message: str, ctx: Context = None) -> str:
     """Echo back the input message.
     
     This is a simple example tool that demonstrates basic MCP tool functionality.
@@ -300,7 +300,7 @@ parallel_example_tools = [
 
 # List of regular example tools
 example_tools = [
-    echo_tool,
+    echo,
     get_time,
     random_number,
     calculate_fibonacci,
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         print(await get_tool_info())
         
         print("\nTesting example tools:")
-        print(await echo_tool("Hello, World!"))
+        print(await echo("Hello, World!"))
         print(await get_time())
         print(await random_number(1, 10))
         print(await calculate_fibonacci(10))
