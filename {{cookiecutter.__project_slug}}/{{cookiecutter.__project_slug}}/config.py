@@ -43,6 +43,7 @@ class ServerConfig:
     config_file_path: Path = None
     log_file_path: Path = None
     database_path: Path = None
+    database_name: str = "unified_logs.db"
     
     def __post_init__(self):
         """Initialize platform-aware paths after dataclass creation."""
@@ -61,7 +62,7 @@ class ServerConfig:
         # Set file paths
         self.config_file_path = self.config_dir / "config.yaml"
         self.log_file_path = self.log_dir / "{{cookiecutter.__project_slug}}.log"
-        self.database_path = self.data_dir / "{{cookiecutter.__project_slug}}.db"
+        self.database_path = self.data_dir / self.database_name
         
         # Initialize default logging destinations if not set
         if self.logging_destinations is None:
@@ -102,6 +103,7 @@ class ServerConfig:
                 log_level=server_config.get("log_level", "INFO"),
                 log_retention_days=logging_config.get("retention_days", 30),
                 logging_destinations={"destinations": logging_config.get("destinations", [])},
+                database_name=logging_config.get("database_name", "unified_logs.db"),
                 default_transport=server_config.get("default_transport", "stdio"),
                 default_host=server_config.get("default_host", "127.0.0.1"),
                 default_port=server_config.get("port", {{cookiecutter.server_port}}),
@@ -114,6 +116,7 @@ class ServerConfig:
                 log_level=data.get("log_level", "INFO"),
                 log_retention_days=data.get("log_retention_days", 30),
                 logging_destinations=data.get("logging_destinations"),
+                database_name=data.get("database_name", "unified_logs.db"),
                 default_transport=data.get("default_transport", "stdio"),
                 default_host=data.get("default_host", "127.0.0.1"),
                 default_port=data.get("default_port", {{cookiecutter.server_port}}),
@@ -135,18 +138,8 @@ class ServerConfig:
                 "logging": {
                     "level": self.log_level,
                     "retention_days": self.log_retention_days,
-                    "database_path": str(self.database_path),
+                    "database_name": self.database_name,
                     "destinations": self.logging_destinations.get("destinations", []) if self.logging_destinations else []
-                },
-                "features": {
-                    "admin_ui": True,
-                    "example_tools": True,
-                    "parallel_examples": False
-                },
-                "paths": {
-                    "config": str(self.config_dir),
-                    "logs": str(self.log_dir),
-                    "data": str(self.data_dir)
                 }
             }
             with open(self.config_file_path, 'w') as f:

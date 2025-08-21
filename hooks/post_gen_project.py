@@ -135,6 +135,10 @@ def create_default_config():
             print(f"   ℹ️  Configuration already exists at: {config_file}")
             return True
         
+        # Get platform-specific data and log directories first
+        data_dir = Path(platformdirs.user_data_dir(app_name))
+        log_dir = Path(platformdirs.user_log_dir(app_name))
+        
         # Default configuration matching UI's expected structure
         default_config = {
             "server": {
@@ -148,7 +152,7 @@ def create_default_config():
             "logging": {
                 "level": "INFO",
                 "retention_days": 30,
-                "database_path": str(data_dir / "logs.db"),
+                "database_name": "unified_logs.db",
                 "destinations": [
                     {
                         "type": "sqlite",
@@ -156,16 +160,6 @@ def create_default_config():
                         "settings": {}
                     }
                 ]
-            },
-            "features": {
-                "admin_ui": True,
-                "example_tools": True,
-                "parallel_examples": False
-            },
-            "paths": {
-                "config": str(config_dir),
-                "logs": str(log_dir),
-                "data": str(data_dir)
             }
         }
         
@@ -176,10 +170,7 @@ def create_default_config():
         print(f"   ✅ Created default configuration at:")
         print(f"      {config_file}")
         
-        # Also create data and log directories
-        data_dir = Path(platformdirs.user_data_dir(app_name))
-        log_dir = Path(platformdirs.user_log_dir(app_name))
-        
+        # Create data and log directories (already defined above)
         data_dir.mkdir(parents=True, exist_ok=True)
         log_dir.mkdir(parents=True, exist_ok=True)
         

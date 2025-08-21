@@ -52,16 +52,13 @@ def render_current_config_preview(config):
     st.subheader("📋 Current Configuration Preview")
     
     # Display configuration in tabs
-    tab1, tab2, tab3 = st.tabs(["🔧 Server", "🎛️ Features", "📁 Paths"])
+    tab1, tab2 = st.tabs(["🔧 Server", "📊 Logging"])
     
     with tab1:
         st.json(config.get("server", {}))
         
     with tab2:
-        st.json(config.get("features", {}))
-        
-    with tab3:
-        st.json(config.get("paths", {}))
+        st.json(config.get("logging", {}))
 
 def render_configuration_form(config):
     """Render configuration editing form"""
@@ -75,7 +72,6 @@ def render_configuration_form(config):
     # Current configuration values
     server_config = config.get("server", {})
     logging_config = config.get("logging", {})
-    features_config = config.get("features", {})
     
     with st.form("config_form"):
         col1, col2 = st.columns(2)
@@ -113,12 +109,6 @@ def render_configuration_form(config):
             log_retention = st.number_input("Log Retention (days)", 
                                           value=logging_config.get("retention_days", current_retention),
                                           min_value=1, max_value=365)
-            
-            st.markdown("**Feature Settings**")
-            enable_example_tools = st.checkbox("Enable Example Tools", 
-                                              value=features_config.get("example_tools", True))
-            enable_parallel_examples = st.checkbox("Enable Parallel Examples", 
-                                                  value=features_config.get("parallel_examples", False))
         
         st.markdown("---")
         
@@ -141,8 +131,7 @@ def render_configuration_form(config):
         
         # Process form submissions
         if save_button:
-            return handle_save_config(server_name, server_port, log_level, log_retention, 
-                                    enable_example_tools, enable_parallel_examples, config)
+            return handle_save_config(server_name, server_port, log_level, log_retention, config)
         
         if reset_button:
             return handle_reset_config()
@@ -155,27 +144,30 @@ def render_configuration_form(config):
     
     return None
 
-def handle_save_config(server_name, server_port, log_level, log_retention, 
-                      enable_example_tools, enable_parallel_examples, current_config):
+def handle_save_config(server_name, server_port, log_level, log_retention, current_config):
     """Handle saving configuration changes"""
     # Build new configuration
     new_config = {
         "server": {
             "name": server_name,
+            "description": current_config.get("server", {}).get("description", "{{cookiecutter.description}}"),
             "port": server_port,
-            "log_level": log_level
+            "log_level": log_level,
+            "default_transport": current_config.get("server", {}).get("default_transport", "stdio"),
+            "default_host": current_config.get("server", {}).get("default_host", "127.0.0.1")
         },
         "logging": {
             "level": log_level,
             "retention_days": log_retention,
-            "database_path": current_config.get("logging", {}).get("database_path", "")
-        },
-        "features": {
-            "admin_ui": True,
-            "example_tools": enable_example_tools,
-            "parallel_examples": enable_parallel_examples
-        },
-        "paths": current_config.get("paths", {})
+            "database_name": current_config.get("logging", {}).get("database_name", "unified_logs.db"),
+            "destinations": current_config.get("logging", {}).get("destinations", [
+                {
+                    "type": "sqlite",
+                    "enabled": True,
+                    "settings": {}
+                }
+            ])
+        }
     }
     
     # Validate configuration
@@ -294,14 +286,7 @@ def show_config_diff(old_config, new_config):
         if old_val != new_val:
             changes.append(f"Logging {key}: {old_val} → {new_val}")
     
-    # Check features changes
-    old_features = old_config.get("features", {})
-    new_features = new_config.get("features", {})
-    for key in set(old_features.keys()) | set(new_features.keys()):
-        old_val = old_features.get(key)
-        new_val = new_features.get(key)
-        if old_val != new_val:
-            changes.append(f"Feature {key}: {old_val} → {new_val}")
+    # No longer check features changes as they've been removed
     
     if changes:
         st.write("**Changes to be made:**")

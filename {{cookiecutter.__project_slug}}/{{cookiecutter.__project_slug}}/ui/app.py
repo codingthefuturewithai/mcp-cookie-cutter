@@ -24,7 +24,7 @@ error_details = None
 try:
     from {{cookiecutter.__project_slug}}.ui.lib.components import render_header, render_sidebar, render_error_message
     from {{cookiecutter.__project_slug}}.ui.lib.styles import apply_custom_styles, hide_streamlit_style
-    from {{cookiecutter.__project_slug}}.ui.lib.utils import check_server_status, get_project_info
+    from {{cookiecutter.__project_slug}}.ui.lib.utils import get_project_info
 except ImportError as e:
     components_available = False
     error_details = str(e)
@@ -48,9 +48,6 @@ except ImportError as e:
             st.markdown("### ⚠️ Limited Mode")
             st.warning("Some UI components are not available.")
     
-    def check_server_status():
-        return "unknown"
-    
     def get_project_info():
         return {"name": "{{cookiecutter.project_name}}", "version": "0.1.0"}
 
@@ -65,8 +62,6 @@ st.set_page_config(
 # Initialize session state
 if "initialized" not in st.session_state:
     st.session_state.initialized = True
-    st.session_state.server_status = "unknown"
-    st.session_state.last_status_check = None
 
 
 def main():

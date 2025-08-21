@@ -81,6 +81,18 @@ def render_log_metrics_section(df: pd.DataFrame):
         else:
             st.metric("Active Tools", 0)
 
+def clear_all_filters():
+    """Callback function to clear all filter values"""
+    # Set to default values instead of deleting
+    st.session_state.quick_log_filter = "All Levels"  # First option in radio
+    st.session_state.log_level_filter = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]  # All selected
+    st.session_state.log_type_filter = "All"  # First option
+    st.session_state.status_filter = "All"  # First option  
+    st.session_state.time_range_filter = "Last 7 Days"  # Index 2 default
+    st.session_state.search_filter = ""  # Empty string for text input
+    if "custom_log_levels" in st.session_state:
+        del st.session_state.custom_log_levels  # This one we can delete
+
 def render_log_filters_section():
     """Render log filtering controls"""
     st.subheader("🔍 Filters")
@@ -151,17 +163,7 @@ def render_log_filters_section():
     
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)  # Spacer
-        if st.button("Clear Filters", use_container_width=True):
-            # Clear all filter-related session state by setting to specific values
-            st.session_state["quick_log_filter"] = "All Levels"
-            st.session_state["log_level_filter"] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-            st.session_state["log_type_filter"] = "All"
-            st.session_state["status_filter"] = "All"
-            st.session_state["time_range_filter"] = "Last 7 Days"
-            st.session_state["search_filter"] = ""
-            if "custom_log_levels" in st.session_state:
-                del st.session_state["custom_log_levels"]
-            st.rerun()
+        st.button("Clear Filters", use_container_width=True, on_click=clear_all_filters)
     
     return {
         "log_levels": log_levels if log_levels else None,

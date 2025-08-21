@@ -16,13 +16,10 @@ sys.path.insert(0, str(parent_dir))
 
 try:
     from {{cookiecutter.__project_slug}}.ui.lib.components import (
-        render_status_card, 
-        render_metric_card,
         render_info_section,
         render_quick_actions
     )
     from {{cookiecutter.__project_slug}}.ui.lib.utils import (
-        check_server_status,
         get_project_info,
         get_system_info,
         format_uptime
@@ -33,38 +30,27 @@ except ImportError as e:
 
 # Note: Page configuration is handled by main app.py
 
-def render_server_status_section():
-    """Render the server status monitoring section"""
-    st.subheader("🔧 Server Status")
+def render_admin_ui_status():
+    """Render the admin UI status section"""
+    st.subheader("📊 Status")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        # Server status
-        try:
-            status = check_server_status()
-            if status == "running":
-                st.success("🟢 Server Running")
-            elif status == "stopped":
-                st.error("🔴 Server Stopped")
-            else:
-                st.warning("🟡 Status Unknown")
-        except:
-            st.warning("🟡 Status Check Failed")
+        # Admin UI status
+        st.success("✅ Admin UI Active")
+        st.caption("Web interface running")
     
     with col2:
-        # Admin UI status
-        st.info("🟢 Admin UI Active")
+        # Project info
+        project_info = get_project_info()
+        st.info(f"📦 Version {project_info.get('version', '0.1.0')}")
+        st.caption("Project version")
     
     with col3:
-        # Last updated
-        current_time = datetime.now().strftime("%H:%M:%S")
-        st.metric("Last Check", current_time)
-    
-    with col4:
-        # Refresh button
-        if st.button("🔄 Refresh Status", key="refresh_status"):
-            st.rerun()
+        # Python version
+        st.info(f"🐍 Python {project_info.get('python_version', 'Unknown')}")
+        st.caption("Runtime version")
 
 def render_project_overview():
     """Render project information overview"""
@@ -93,9 +79,9 @@ def render_project_overview():
         - **Log Retention:** {config.log_retention_days} days
         """)
 
-def render_feature_status():
-    """Render feature enablement status"""
-    st.subheader("⚙️ Feature Status")
+def render_system_status():
+    """Render system resource and capabilities status"""
+    st.subheader("⚙️ System Status")
     
     col1, col2, col3 = st.columns(3)
     
@@ -105,22 +91,20 @@ def render_feature_status():
         st.caption("Web-based administration interface")
         
     with col2:
-        # Example tools
-        st.success("✅ Example Tools")
-        st.info("➖ Example Tools")
-        st.caption("Sample MCP tools for demonstration")
+        # MCP Server
+        st.info("🔧 MCP Server")
+        st.caption("Model Context Protocol server")
         
     with col3:
-        # Parallel processing
-        st.success("✅ Parallel Processing")
-        st.info("➖ Parallel Processing")
-        st.caption("Parallel execution examples")
+        # Logging System
+        st.success("✅ Unified Logging")
+        st.caption("SQLite-based log aggregation")
 
 def render_quick_actions_section():
     """Render quick action buttons"""
     st.subheader("🚀 Quick Actions")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         if st.button("⚙️ Configuration", 
@@ -135,23 +119,18 @@ def render_quick_actions_section():
             st.switch_page("pages/3_Logs.py")
     
     with col3:
-        if st.button("🔄 Restart Server", 
-                    help="Restart the MCP server (manual)",
-                    use_container_width=True):
-            st.warning("⚠️ Manual restart required")
-            st.info("Stop the server process and restart it manually.")
-    
-    with col4:
         if st.button("📖 Documentation", 
                     help="View project documentation",
                     use_container_width=True):
-            st.info("📚 Documentation will open in a new tab")
+            st.switch_page("pages/4_Documentation.py")
 
 def render_system_info():
     """Render system information in an expandable section"""
     with st.expander("🔍 System Information"):
         try:
+            from {{cookiecutter.__project_slug}}.ui.lib.utils import get_system_paths
             system_info = get_system_info()
+            system_paths = get_system_paths()
             
             col1, col2 = st.columns(2)
             
@@ -164,11 +143,16 @@ Architecture: {system_info.get('architecture', 'Unknown')}
 """)
             
             with col2:
-                st.markdown("**Application Paths:**")
+                st.markdown("**System Paths:**")
                 st.code(f"""
-Config Path: {system_info.get('config_path', 'Not configured')}
-Log Path: {system_info.get('log_path', 'Not configured')}
-Data Path: {system_info.get('data_path', 'Not configured')}
+Configuration File:
+{system_paths.get('configuration_file', 'Unknown')}
+
+Logging Database:
+{system_paths.get('logging_database', 'Unknown')}
+
+Application Directory:
+{system_paths.get('application_directory', 'Unknown')}
 """)
                 
         except Exception as e:
@@ -181,16 +165,16 @@ def main():
     st.markdown("Welcome to the administrative interface for your MCP server.")
     st.markdown("---")
     
-    # Server status section
-    render_server_status_section()
+    # Admin UI status section
+    render_admin_ui_status()
     st.markdown("---")
     
     # Project overview
     render_project_overview()
     st.markdown("---")
     
-    # Feature status
-    render_feature_status()
+    # System status
+    render_system_status()
     st.markdown("---")
     
     # Quick actions
