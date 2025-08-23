@@ -26,10 +26,10 @@ def run_command(cmd, description, check=True):
             check=False  # Don't raise exception on non-zero exit code
         )
         if result.returncode == 0:
-            print(f"   ✅ {description} completed")
+            print(f"   {description} completed")
             return True
         else:
-            print(f"   ⚠️  {description} failed with exit code {result.returncode}")
+            print(f"   WARNING: {description} failed with exit code {result.returncode}")
             # Show stderr if available
             if result.stderr:
                 print(f"\n   Error details:")
@@ -43,10 +43,10 @@ def run_command(cmd, description, check=True):
                     print(f"      {line}")
             return False
     except FileNotFoundError:
-        print(f"   ⚠️  Command not found: {cmd[0]}")
+        print(f"   WARNING: Command not found: {cmd[0]}")
         return False
     except Exception as e:
-        print(f"   ⚠️  {description} failed with unexpected error: {e}")
+        print(f"   WARNING: {description} failed with unexpected error: {e}")
         return False
 
 
@@ -58,7 +58,7 @@ def check_uv_installed():
         check=False
     )
     if not result:
-        print("\n   📦 uv is not installed. Installing uv...")
+        print("\n   uv is not installed. Installing uv...")
         # Try to install uv
         if platform.system() == "Windows":
             install_cmd = ["powershell", "-Command", "irm https://astral.sh/uv/install.ps1 | iex"]
@@ -66,10 +66,10 @@ def check_uv_installed():
             install_cmd = ["sh", "-c", "curl -LsSf https://astral.sh/uv/install.sh | sh"]
         
         if run_command(install_cmd, "Installing uv", check=False):
-            print("   ✅ uv installed successfully")
+            print("   uv installed successfully")
             return True
         else:
-            print("   ⚠️  Could not install uv automatically")
+            print("   WARNING: Could not install uv automatically")
             print("   Please install uv manually: https://github.com/astral-sh/uv")
             return False
     return True
@@ -77,12 +77,12 @@ def check_uv_installed():
 
 def create_virtual_environment():
     """Create a virtual environment using uv."""
-    print("\n🐍 Setting up Python environment...")
+    print("\nSetting up Python environment...")
     
     # Check if .venv already exists
     venv_path = Path.cwd() / ".venv"
     if venv_path.exists():
-        print("   ✅ Virtual environment already exists")
+        print("   Virtual environment already exists")
         return True
     
     # Create virtual environment with uv
@@ -94,7 +94,7 @@ def create_virtual_environment():
 
 def install_dependencies():
     """Install project dependencies using uv."""
-    print("\n📦 Installing dependencies...")
+    print("\nInstalling dependencies...")
     
     # Install dependencies with uv sync (installs from pyproject.toml)
     success = run_command(
@@ -118,7 +118,7 @@ def create_default_config():
     Creates the configuration in the platform-specific directory
     following XDG/Windows/macOS standards.
     """
-    print("\n⚙️  Creating default configuration...")
+    print("\nCreating default configuration...")
     
     try:
         # Get platform-specific config directory
@@ -132,7 +132,7 @@ def create_default_config():
         
         # Check if config already exists
         if config_file.exists():
-            print(f"   ℹ️  Configuration already exists at: {config_file}")
+            print(f"   Configuration already exists at: {config_file}")
             return True
         
         # Get platform-specific data and log directories first
@@ -167,23 +167,23 @@ def create_default_config():
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(default_config, f, default_flow_style=False, sort_keys=False)
         
-        print(f"   ✅ Created default configuration at:")
+        print(f"   Created default configuration at:")
         print(f"      {config_file}")
         
         # Create data and log directories (already defined above)
         data_dir.mkdir(parents=True, exist_ok=True)
         log_dir.mkdir(parents=True, exist_ok=True)
         
-        print(f"   ✅ Created data directory at:")
+        print(f"   Created data directory at:")
         print(f"      {data_dir}")
-        print(f"   ✅ Created log directory at:")
+        print(f"   Created log directory at:")
         print(f"      {log_dir}")
         
         return True
         
     except Exception as e:
-        print(f"   ⚠️  Could not create configuration: {e}")
-        print(f"   ℹ️  You can create it manually later by running the server")
+        print(f"   WARNING: Could not create configuration: {e}")
+        print(f"   You can create it manually later by running the server")
         # Don't fail the entire generation for this
         return False
 
@@ -194,67 +194,83 @@ def show_next_steps():
     project_slug = "{{ cookiecutter.__project_slug }}"
     
     print("\n" + "=" * 60)
-    print(f"🎉 {project_name} created successfully!")
+    print(f"{project_name} created successfully!")
     print("=" * 60)
     
-    print("\n📋 Quick Start:")
+    print("\nNEXT STEPS - Follow these in order:")
+    
+    print(f"\n1. Enter your project and activate the environment:")
+    print(f"   # Open a new terminal window, then:")
     print(f"   cd {project_slug}")
     
     # Platform-specific activation command
     if platform.system() == "Windows":
-        activate_cmd = ".venv\\Scripts\\activate"
+        print(f"   .venv\\Scripts\\activate         # Windows")
     else:
-        activate_cmd = "source .venv/bin/activate"
+        print(f"   source .venv/bin/activate       # Mac/Linux")
     
-    print(f"   {activate_cmd}")
-    
-    print(f"\n🚀 Run your server:")
-    print(f"   # STDIO transport (default)")
-    print(f"   {project_slug}-server")
+    print(f"\n2. Verify your installation:")
+    print(f"   {project_slug}-client \"Hello World\"")
     print(f"   ")
-    print(f"   # SSE transport")
-    print(f"   {project_slug}-server --transport sse --port 3001")
-    print(f"   ")
-    print(f"   # Streamable HTTP transport")
-    print(f"   {project_slug}-server --transport streamable-http --port 3001")
+    print(f"   You should see: \"Echo: Hello World\"")
     
-    print(f"\n🧪 Test with MCP Inspector:")
-    print(f"   PYTHONPATH=. mcp dev {project_slug}/server/app.py")
-    
-    print(f"\n🖥️ Run the Admin UI:")
+    print(f"\n3. Open the Admin UI for documentation and monitoring:")
+    print(f"   # In a NEW terminal window:")
+    print(f"   cd {project_slug}")
+    if platform.system() == "Windows":
+        print(f"   .venv\\Scripts\\activate")
+    else:
+        print(f"   source .venv/bin/activate")
     print(f"   streamlit run {project_slug}/ui/app.py")
+    print(f"   ")
+    print(f"   - Browser opens at http://localhost:8501")
+    print(f"   - Click \"Documentation\" in sidebar for comprehensive guides")
+    print(f"   - View logs and configure your server")
     
-    print(f"\n📚 Features included:")
-    print(f"   ✅ 10 example tools (8 regular + 2 parallel)")
-    print(f"   ✅ 4 decorators (exception_handler, tool_logger, type_converter, parallelize)")
-    print(f"   ✅ 3 transports (stdio, sse, streamable-http)")
-    print(f"   ✅ Correlation ID tracking")
-    print(f"   ✅ Unified logging with SQLite")
-    print(f"   ✅ Streamlit Admin UI")
-    print(f"   ✅ Platform-aware configuration")
+    print(f"\n4. Test with MCP Inspector (optional):")
+    print(f"   # In a NEW terminal window:")
+    print(f"   cd {project_slug}")
+    if platform.system() == "Windows":
+        print(f"   .venv\\Scripts\\activate")
+    else:
+        print(f"   source .venv/bin/activate")
+    print(f"   mcp dev {project_slug}/server/app.py")
+    
+    print("\n" + "=" * 60)
+    
+    print("\nDOCUMENTATION")
+    print("\nAll documentation is available in the Admin UI:")
+    print("- Getting started guides")
+    print("- Adding new tools")
+    print("- Testing your tools")
+    print("- Different transport modes (SSE, HTTP)")
+    print("- Correlation ID tracking")
+    print("- And much more...")
+    
+    print("\nFor Claude Code users: Type /claude getting-started")
     
     print("\n" + "=" * 60)
 
 
 def main():
     """Main entry point for the post-generation hook."""
-    print("\n🔧 Running post-generation setup...")
+    print("\nRunning post-generation setup...")
     
     # Check and install uv if needed
     if not check_uv_installed():
-        print("\n⚠️  Setup incomplete: uv is required")
+        print("\nSetup incomplete: uv is required")
         print("   Please install uv and run 'uv sync' manually")
         return
     
     # Create virtual environment
     if not create_virtual_environment():
-        print("\n⚠️  Setup incomplete: Could not create virtual environment")
+        print("\nSetup incomplete: Could not create virtual environment")
         print("   Please create a virtual environment manually")
         return
     
     # Install dependencies
     if not install_dependencies():
-        print("\n⚠️  Setup incomplete: Could not install all dependencies")
+        print("\nSetup incomplete: Could not install all dependencies")
         print("   Please run 'uv sync' manually")
     
     # Create default configuration
@@ -263,14 +279,14 @@ def main():
     # Show next steps
     show_next_steps()
     
-    print("\n✅ Post-generation setup completed!")
+    print("\nPost-generation setup completed!")
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"\n⚠️  Post-generation hook failed: {e}")
+        print(f"\nPost-generation hook failed: {e}")
         print("   You may need to set up the environment manually")
     
     # Always exit successfully to not break cookiecutter

@@ -29,10 +29,10 @@ async def echo_message(message: str) -> str:
             # Initialize the connection
             await session.initialize()
             
-            # Call the echo_tool from example_tools
+            # Call the echo tool from example_tools
             arguments = {"message": message}
                 
-            result = await session.call_tool("echo_tool", arguments=arguments)
+            result = await session.call_tool("echo", arguments=arguments)
             if isinstance(result, TextContent):
                 return result.text
             else:

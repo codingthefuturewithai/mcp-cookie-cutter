@@ -306,5 +306,6 @@ This will create comprehensive unit and integration tests following MCP best pra
 
 ### Or Continue Development
 - Add another tool: `/add-tool`
+- Remove example tools: `/remove-examples` (clean up the example tools from the codebase)
 - Start development server: `mcp dev {{cookiecutter.__project_slug}}/server/app.py`
 - Check the UI: `streamlit run {{cookiecutter.__project_slug}}/ui/app.py`
