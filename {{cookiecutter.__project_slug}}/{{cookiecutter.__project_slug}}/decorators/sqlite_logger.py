@@ -60,9 +60,14 @@ class SQLiteLoggerSink(BaseLoggerSink):
                 str(self._db_path),
                 check_same_thread=False
             )
-            # Enable WAL mode for better concurrency
-            self._local.connection.execute("PRAGMA journal_mode=WAL")
-            self._local.connection.execute("PRAGMA synchronous=NORMAL")
+            # Try WAL mode for better concurrency, but fall back if it fails (Windows file locking)
+            try:
+                self._local.connection.execute("PRAGMA journal_mode=WAL")
+                self._local.connection.execute("PRAGMA synchronous=NORMAL")
+            except sqlite3.OperationalError:
+                # Fall back to DELETE mode if WAL fails (common on Windows with certain file systems)
+                self._local.connection.execute("PRAGMA journal_mode=DELETE")
+                self._local.connection.execute("PRAGMA synchronous=FULL")
         return self._local.connection
     
     def _initialize_database(self):

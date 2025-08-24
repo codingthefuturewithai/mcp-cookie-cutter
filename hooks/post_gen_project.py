@@ -8,11 +8,18 @@ This hook automatically:
 """
 
 import sys
+import os
 import platform
 import subprocess
 from pathlib import Path
 import yaml
-import platformdirs
+
+# Try to import platformdirs, but handle if it's not available
+try:
+    import platformdirs
+    HAS_PLATFORMDIRS = True
+except ImportError:
+    HAS_PLATFORMDIRS = False
 
 
 def run_command(cmd, description, check=True):
@@ -121,9 +128,34 @@ def create_default_config():
     print("\nCreating default configuration...")
     
     try:
-        # Get platform-specific config directory
         app_name = "{{ cookiecutter.__project_slug }}"
-        config_dir = Path(platformdirs.user_config_dir(app_name))
+        
+        # Get platform-specific directories
+        if HAS_PLATFORMDIRS:
+            # Use platformdirs if available (likely on Mac/Linux with system Python)
+            config_dir = Path(platformdirs.user_config_dir(app_name))
+            data_dir = Path(platformdirs.user_data_dir(app_name))
+            log_dir = Path(platformdirs.user_log_dir(app_name))
+        else:
+            # Fallback to manual platform detection (for Windows in cookiecutter environment)
+            home = Path.home()
+            if platform.system() == "Windows":
+                # Windows: Use %APPDATA% for config and data, %LOCALAPPDATA% for logs
+                appdata = Path(os.environ.get('APPDATA', home / 'AppData' / 'Roaming'))
+                localappdata = Path(os.environ.get('LOCALAPPDATA', home / 'AppData' / 'Local'))
+                config_dir = appdata / app_name
+                data_dir = appdata / app_name
+                log_dir = localappdata / app_name / 'Logs'
+            elif platform.system() == "Darwin":
+                # macOS
+                config_dir = home / 'Library' / 'Application Support' / app_name
+                data_dir = home / 'Library' / 'Application Support' / app_name
+                log_dir = home / 'Library' / 'Logs' / app_name
+            else:
+                # Linux/Unix
+                config_dir = home / '.config' / app_name
+                data_dir = home / '.local' / 'share' / app_name
+                log_dir = home / '.local' / 'state' / app_name
         
         # Create directory if it doesn't exist
         config_dir.mkdir(parents=True, exist_ok=True)
@@ -134,10 +166,6 @@ def create_default_config():
         if config_file.exists():
             print(f"   Configuration already exists at: {config_file}")
             return True
-        
-        # Get platform-specific data and log directories first
-        data_dir = Path(platformdirs.user_data_dir(app_name))
-        log_dir = Path(platformdirs.user_log_dir(app_name))
         
         # Default configuration matching UI's expected structure
         default_config = {
@@ -199,53 +227,53 @@ def show_next_steps():
     
     print("\nNEXT STEPS - Follow these in order:")
     
-    print(f"\n1. Enter your project and activate the environment:")
-    print(f"   # Open a new terminal window, then:")
-    print(f"   cd {project_slug}")
+    print(f"\n[1] Enter your project and activate the environment:")
+    print(f"    # Open a new terminal window, then:")
+    print(f"    cd {project_slug}")
     
     # Platform-specific activation command
     if platform.system() == "Windows":
-        print(f"   .venv\\Scripts\\activate         # Windows")
+        print(f"    .venv\\Scripts\\activate         # Windows")
     else:
-        print(f"   source .venv/bin/activate       # Mac/Linux")
+        print(f"    source .venv/bin/activate       # Mac/Linux")
     
-    print(f"\n2. Verify your installation:")
-    print(f"   {project_slug}-client \"Hello World\"")
-    print(f"   ")
-    print(f"   You should see: \"Echo: Hello World\"")
+    print(f"\n[2] Verify your installation:")
+    print(f"    {project_slug}-client \"Hello World\"")
+    print(f"    ")
+    print(f"    Expected output: \"Echo: Hello World\"")
     
-    print(f"\n3. Open the Admin UI for documentation and monitoring:")
-    print(f"   # In a NEW terminal window:")
-    print(f"   cd {project_slug}")
+    print(f"\n[3] Open the Admin UI for documentation and monitoring:")
+    print(f"    # In a NEW terminal window:")
+    print(f"    cd {project_slug}")
     if platform.system() == "Windows":
-        print(f"   .venv\\Scripts\\activate")
+        print(f"    .venv\\Scripts\\activate")
     else:
-        print(f"   source .venv/bin/activate")
-    print(f"   streamlit run {project_slug}/ui/app.py")
-    print(f"   ")
-    print(f"   - Browser opens at http://localhost:8501")
-    print(f"   - Click \"Documentation\" in sidebar for comprehensive guides")
-    print(f"   - View logs and configure your server")
+        print(f"    source .venv/bin/activate")
+    print(f"    streamlit run {project_slug}/ui/app.py")
+    print(f"    ")
+    print(f"    -> Browser opens at http://localhost:8501")
+    print(f"    -> Click \"Documentation\" in sidebar for comprehensive guides")
+    print(f"    -> View logs and configure your server")
     
-    print(f"\n4. Test with MCP Inspector (optional):")
-    print(f"   # In a NEW terminal window:")
-    print(f"   cd {project_slug}")
+    print(f"\n[4] Test with MCP Inspector (optional):")
+    print(f"    # In a NEW terminal window:")
+    print(f"    cd {project_slug}")
     if platform.system() == "Windows":
-        print(f"   .venv\\Scripts\\activate")
+        print(f"    .venv\\Scripts\\activate")
     else:
-        print(f"   source .venv/bin/activate")
-    print(f"   mcp dev {project_slug}/server/app.py")
+        print(f"    source .venv/bin/activate")
+    print(f"    mcp dev {project_slug}/server/app.py")
     
     print("\n" + "=" * 60)
     
     print("\nDOCUMENTATION")
     print("\nAll documentation is available in the Admin UI:")
-    print("- Getting started guides")
-    print("- Adding new tools")
-    print("- Testing your tools")
-    print("- Different transport modes (SSE, HTTP)")
-    print("- Correlation ID tracking")
-    print("- And much more...")
+    print("  - Getting started guides")
+    print("  - Adding new tools")
+    print("  - Testing your tools")
+    print("  - Different transport modes (SSE, HTTP)")
+    print("  - Correlation ID tracking")
+    print("  - And much more...")
     
     print("\nFor Claude Code users: Type /claude getting-started")
     

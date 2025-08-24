@@ -24,7 +24,8 @@ Let me verify you have your own tools first:
 
 ```bash
 pwd
-ls -la {{ cookiecutter.__project_slug }}/tools/
+# List tools directory (cross-platform)
+python -c "import os, pathlib; p = pathlib.Path('{{ cookiecutter.__project_slug }}/tools'); print([f.name for f in p.iterdir()] if p.exists() else 'Directory not found')"
 ```
 
 Looking for YOUR tool files (not example_tools.py).
@@ -35,9 +36,16 @@ Looking for YOUR tool files (not example_tools.py).
 
 ```bash
 # Remove the example tools module
+# Windows:
+del "{{ cookiecutter.__project_slug }}\tools\example_tools.py"
+# Mac/Linux:
 rm {{ cookiecutter.__project_slug }}/tools/example_tools.py
 
 # Remove example-specific test files
+# Windows:
+del "tests\integration\test_example_tools_integration.py"
+del "tests\integration\test_example_tools_edge_cases.py"
+# Mac/Linux:
 rm tests/integration/test_example_tools_integration.py
 rm tests/integration/test_example_tools_edge_cases.py
 ```
@@ -84,17 +92,20 @@ The genius of this architecture is that the registration loops are GENERIC. They
 ## Step 3: Verify Clean Removal
 
 ```bash
-# 1. Check server still imports correctly
-python -c "from {{ cookiecutter.__project_slug }}.server.app import app; print('✅ Server imports successfully')"
+# 1. Check server still imports correctly (use double quotes for Windows)
+python -c "from {{ cookiecutter.__project_slug }}.server.app import app; print('Server imports successfully')"
 
-# 2. List remaining test files (should only be YOUR tests)
-ls -la tests/integration/
+# 2. List remaining test files (cross-platform)
+python -c "import os, pathlib; p = pathlib.Path('tests/integration'); print([f.name for f in p.iterdir() if f.suffix == '.py'])"
 
 # 3. Run YOUR tests (should all pass)
 uv run pytest tests/integration/test_*.py -v
 
 # 4. Verify example_tools import is gone
-grep "example_tools" {{cookiecutter.__project_slug}}/server/app.py || echo "✅ No example_tools import found"
+# Windows:
+findstr "example_tools" {{cookiecutter.__project_slug}}\server\app.py || echo No example_tools import found
+# Mac/Linux:
+grep "example_tools" {{cookiecutter.__project_slug}}/server/app.py || echo "No example_tools import found"
 ```
 
 ## ✅ Cleanup Complete!

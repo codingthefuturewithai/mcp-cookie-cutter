@@ -97,8 +97,17 @@ class StreamableHTTPServer:
                     # Use OS-level kill as last resort
                     if self.process.pid:
                         try:
-                            os.kill(self.process.pid, signal.SIGKILL)
-                        except ProcessLookupError:
+                            # Windows doesn't have SIGKILL, use platform-appropriate method
+                            if sys.platform == "win32":
+                                # On Windows, forcefully terminate the process
+                                import ctypes
+                                kernel32 = ctypes.windll.kernel32
+                                handle = kernel32.OpenProcess(1, False, self.process.pid)
+                                kernel32.TerminateProcess(handle, 1)
+                                kernel32.CloseHandle(handle)
+                            else:
+                                os.kill(self.process.pid, signal.SIGKILL)
+                        except (ProcessLookupError, OSError):
                             pass  # Process already dead
         except Exception as e:
             print(f"Error stopping server: {e}", file=sys.stderr)

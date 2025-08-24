@@ -9,7 +9,8 @@ allowed-tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash", "KillBash"]
 First, let me check the project structure:
 ```bash
 pwd
-ls -la tools/
+# List tools directory (cross-platform)
+python -c "import os; [print(f) for f in os.listdir('tools')]"
 ```
 
 ## 🚨 IMPORTANT: Environment Ready
@@ -27,6 +28,9 @@ Let me check if any MCP processes are running that need to be killed:
 # First, determine our project name
 pwd
 # Then check for processes related to THIS project
+# Windows PowerShell:
+Get-Process | Where-Object {$_.ProcessName -match "python|uv"} | Select-Object Id, ProcessName
+# Mac/Linux:
 ps aux | grep -E "mcp|uv run" | grep -v grep
 ```
 
@@ -282,6 +286,10 @@ Tell me one of these:
 **Process cleanup:**
 ```bash
 # Find and kill processes
+# Windows:
+tasklist | findstr /I "python uv"
+taskkill /PID <PID> /F
+# Mac/Linux:
 ps aux | grep -E "mcp|uv run" | grep -v grep
 kill <PIDs>
 ```

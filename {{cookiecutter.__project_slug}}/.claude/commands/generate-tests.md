@@ -20,6 +20,9 @@ allowed-tools: ["Read", "Write", "Grep", "Glob", "Bash", "KillBash"]
 Let me check if any MCP processes are running:
 
 ```bash
+# Windows PowerShell:
+Get-Process | Where-Object {$_.ProcessName -match "python|uv"} | Select-Object Id, ProcessName
+# Mac/Linux:
 ps aux | grep -E "mcp|uv run" | grep -v grep
 ```
 
@@ -27,6 +30,9 @@ If processes found: "I need to kill these processes before generating tests. The
 
 ```bash
 # Kill any running processes
+# Windows:
+taskkill /PID <PID> /F
+# Mac/Linux:
 kill <PIDs>
 ```
 
@@ -135,6 +141,9 @@ Each test includes:
 
 ```bash
 # Check again for any lingering processes
+# Windows PowerShell:
+Get-Process | Where-Object {$_.ProcessName -match "python|uv"} | Select-Object Id, ProcessName
+# Mac/Linux:
 ps aux | grep -E "mcp|uv run" | grep -v grep
 ```
 
@@ -144,10 +153,12 @@ If any found, kill them before proceeding.
 
 **First, ensure your virtual environment is activated:**
 ```bash
-# If not already activated:
-source .venv/bin/activate  # Linux/Mac
-# OR
-.venv\Scripts\activate     # Windows
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Windows CMD:
+.venv\Scripts\activate.bat
+# Mac/Linux:
+source .venv/bin/activate
 ```
 
 Now run your new tests:

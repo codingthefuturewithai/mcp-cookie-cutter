@@ -50,9 +50,14 @@ class SQLiteDestination(LogDestination):
                 timeout=30.0
             )
             self._local.connection.row_factory = sqlite3.Row
-            # Enable foreign keys and WAL mode for better concurrency
+            # Enable foreign keys
             self._local.connection.execute("PRAGMA foreign_keys = ON")
-            self._local.connection.execute("PRAGMA journal_mode = WAL")
+            # Try WAL mode for better concurrency, but fall back if it fails (Windows file locking)
+            try:
+                self._local.connection.execute("PRAGMA journal_mode = WAL")
+            except sqlite3.OperationalError:
+                # Fall back to DELETE mode if WAL fails (common on Windows with certain file systems)
+                self._local.connection.execute("PRAGMA journal_mode = DELETE")
         return self._local.connection
     
     def _initialize_database(self) -> None:

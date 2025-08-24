@@ -9,7 +9,8 @@ allowed-tools: ["Read", "Grep", "Glob", "LS", "Bash", "KillBash", "BashOutput"]
 First, let me understand what project we're working with:
 ```bash
 pwd  # Check current directory
-ls -la  # See project structure
+# List files (cross-platform)
+python -c "import os; [print(f) for f in os.listdir('.')]"
 ```
 
 Now I can see we're in the [project_name] MCP server with example tools, decorators, and monitoring. Let's get you started!
@@ -169,7 +170,8 @@ parallel_example_tools = [
 3. **GO TO DECORATOR CONCEPTS SECTION ABOVE** - Present each concept with stops
 4. After decorator concepts, continue here:
    ```bash
-   ls -la tools/  # "Now let me show you the example tools you have..."
+   # Show tools directory (cross-platform)
+   python -c "import os; print('Tools:', os.listdir('tools'))"
    ```
 5. **MENTION (don't launch) the UI**:
    ```
@@ -187,6 +189,9 @@ parallel_example_tools = [
 
 **Check for running processes BEFORE any operation**:
 ```bash
+# Windows PowerShell:
+Get-Process | Where-Object {$_.ProcessName -match "python|uv"} | Select-Object Id, ProcessName
+# Mac/Linux:
 ps aux | grep -E "mcp|uv run" | grep -v grep
 ```
 
@@ -198,6 +203,9 @@ ps aux | grep -E "mcp|uv run" | grep -v grep
 
 **Kill ONLY project processes**:
 ```bash
+# Windows:
+taskkill /PID <PID> /F  # Only PIDs from THIS project
+# Mac/Linux:
 kill <PID>  # Only PIDs from THIS project
 ```
 

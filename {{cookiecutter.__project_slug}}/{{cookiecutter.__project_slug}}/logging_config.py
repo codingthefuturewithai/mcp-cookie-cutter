@@ -18,11 +18,33 @@ def get_default_log_dir() -> Path:
     if system == "darwin":  # macOS
         return Path.home() / "Library" / "Logs" / "mcp-servers"
     elif system == "linux":
-        if os.geteuid() == 0:
-            return Path("/var/log/mcp-servers")
-        else:
-            return Path.home() / ".local" / "state" / "mcp-servers" / "logs"
+        # Check if running as root (Linux/Unix only)
+        try:
+            if os.geteuid() == 0:
+                # Only use /var/log if it exists and is writable
+                var_log = Path("/var/log/mcp-servers")
+                try:
+                    var_log.mkdir(parents=True, exist_ok=True)
+                    return var_log
+                except (PermissionError, OSError):
+                    # Fall back to user directory if /var/log isn't writable
+                    pass
+        except AttributeError:
+            # os.geteuid() doesn't exist on Windows
+            pass
+        return Path.home() / ".local" / "state" / "mcp-servers" / "logs"
     elif system == "windows":
+        # Windows: Check if running as administrator
+        try:
+            import ctypes
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+            if is_admin:
+                # Use ProgramData for admin
+                program_data = Path(os.environ.get('PROGRAMDATA', 'C:\\ProgramData'))
+                return program_data / "mcp-servers" / "logs"
+        except Exception:
+            pass
+        # Regular user location
         return Path.home() / "AppData" / "Local" / "mcp-servers" / "logs"
     else:
         return Path.home() / ".mcp-servers" / "logs"
