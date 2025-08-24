@@ -203,13 +203,18 @@ echo '{"method": "tools/list"}' | {{cookiecutter.__project_slug}}-server
 ### Debug Logging
 ```bash
 # Enable debug logging
-export LOG_LEVEL=DEBUG
+export LOG_LEVEL=DEBUG  # macOS/Linux
+set LOG_LEVEL=DEBUG     # Windows CMD
+$env:LOG_LEVEL="DEBUG"  # Windows PowerShell
 {{cookiecutter.__project_slug}}-server
 
 # View logs
-tail -f ~/Library/Logs/mcp-servers/{{cookiecutter.__project_slug}}.log  # macOS
-tail -f ~/.local/state/mcp-servers/logs/{{cookiecutter.__project_slug}}.log  # Linux
-tail -f %LOCALAPPDATA%/mcp-servers/logs/{{cookiecutter.__project_slug}}.log  # Windows
+# macOS:
+tail -f ~/Library/Logs/mcp-servers/{{cookiecutter.__project_slug}}.log
+# Linux:
+tail -f ~/.local/state/mcp-servers/logs/{{cookiecutter.__project_slug}}.log
+# Windows PowerShell:
+Get-Content -Wait "$env:LOCALAPPDATA\mcp-servers\logs\{{cookiecutter.__project_slug}}.log"
 ```
 
 ### Transport Debugging
@@ -218,14 +223,26 @@ tail -f %LOCALAPPDATA%/mcp-servers/logs/{{cookiecutter.__project_slug}}.log  # W
 echo '{"method": "ping"}' | {{cookiecutter.__project_slug}}-server
 
 # Test SSE
+# macOS/Linux:
 {{cookiecutter.__project_slug}}-server --transport sse --port 3001 &
 curl -s http://localhost:3001/health
 kill %1
 
+# Windows PowerShell:
+Start-Job { {{cookiecutter.__project_slug}}-server --transport sse --port 3001 }
+Invoke-RestMethod -Uri http://localhost:3001/health
+Stop-Job -Name Job1
+
 # Test streamable HTTP
+# macOS/Linux:
 {{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001 &
 curl -s http://localhost:3001/mcp
 kill %1
+
+# Windows PowerShell:
+Start-Job { {{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001 }
+Invoke-RestMethod -Uri http://localhost:3001/mcp
+Stop-Job -Name Job1
 ```
 
 ## Environment Variables

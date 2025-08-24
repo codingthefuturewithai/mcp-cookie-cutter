@@ -105,17 +105,11 @@ def install_dependencies():
     
     # Install dependencies with uv sync (installs from pyproject.toml)
     success = run_command(
-        ["uv", "sync"],
-        "Installing dependencies with uv sync"
+        ["uv", "sync", "--all-extras"],
+        "Installing dependencies with uv sync (including dev, ui, and monitoring extras)"
     )
     
-    if success:
-        # Install optional UI dependencies using uv sync with extras
-        run_command(
-            ["uv", "sync", "--extra", "ui"],
-            "Installing optional UI dependencies (Streamlit)"
-        )
-    
+    # Note: --all-extras already includes ui, dev, and monitoring dependencies
     return success
 
 
@@ -233,7 +227,10 @@ def show_next_steps():
     
     # Platform-specific activation command
     if platform.system() == "Windows":
-        print(f"    .venv\\Scripts\\activate         # Windows")
+        print(f"    # For PowerShell:")
+        print(f"    .\\.venv\\Scripts\\Activate.ps1")
+        print(f"    # For Command Prompt (cmd):")
+        print(f"    .venv\\Scripts\\activate.bat")
     else:
         print(f"    source .venv/bin/activate       # Mac/Linux")
     
@@ -246,7 +243,10 @@ def show_next_steps():
     print(f"    # In a NEW terminal window:")
     print(f"    cd {project_slug}")
     if platform.system() == "Windows":
-        print(f"    .venv\\Scripts\\activate")
+        print(f"    # For PowerShell:")
+        print(f"    .\\.venv\\Scripts\\Activate.ps1")
+        print(f"    # For Command Prompt (cmd):")
+        print(f"    .venv\\Scripts\\activate.bat")
     else:
         print(f"    source .venv/bin/activate")
     print(f"    streamlit run {project_slug}/ui/app.py")
@@ -259,7 +259,10 @@ def show_next_steps():
     print(f"    # In a NEW terminal window:")
     print(f"    cd {project_slug}")
     if platform.system() == "Windows":
-        print(f"    .venv\\Scripts\\activate")
+        print(f"    # For PowerShell:")
+        print(f"    .\\.venv\\Scripts\\Activate.ps1")
+        print(f"    # For Command Prompt (cmd):")
+        print(f"    .venv\\Scripts\\activate.bat")
     else:
         print(f"    source .venv/bin/activate")
     print(f"    mcp dev {project_slug}/server/app.py")

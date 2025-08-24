@@ -336,8 +336,32 @@ class TestSQLiteLogger:
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = Path(f.name)
         yield db_path
+        
+        # Close any open connections from SQLiteLoggerSink before cleanup
+        from {{ cookiecutter.__project_slug }}.decorators.sqlite_logger import SQLiteLoggerSink
+        if hasattr(SQLiteLoggerSink, '_instance') and SQLiteLoggerSink._instance:
+            sink = SQLiteLoggerSink._instance
+            if hasattr(sink, '_local') and hasattr(sink._local, 'connection'):
+                try:
+                    sink._local.connection.close()
+                except:
+                    pass
+        
+        # On Windows, retry deletion with a small delay if needed
         if db_path.exists():
-            db_path.unlink()
+            import time
+            import sys
+            max_retries = 3 if sys.platform == "win32" else 1
+            for i in range(max_retries):
+                try:
+                    db_path.unlink()
+                    break
+                except PermissionError:
+                    if i < max_retries - 1:
+                        time.sleep(0.1)  # Small delay for Windows to release file handle
+                    else:
+                        # If we still can't delete, it's okay for temp files
+                        pass
     
     def test_database_initialization(self, temp_db_path):
         """Test that database is initialized correctly."""

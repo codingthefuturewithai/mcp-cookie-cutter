@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import json
 import yaml
 import sqlite3
+import platformdirs
 
 def get_project_info() -> Dict[str, Any]:
     """
@@ -58,36 +59,18 @@ def get_system_info() -> Dict[str, Any]:
 
 def get_config_path() -> str:
     """Get the platform-appropriate configuration directory path"""
-    if platform.system() == "Windows":
-        base_path = Path(os.environ.get("APPDATA", "~")).expanduser()
-    elif platform.system() == "Darwin":  # macOS
-        base_path = Path("~/Library/Application Support").expanduser()
-    else:  # Linux and others
-        base_path = Path(os.environ.get("XDG_CONFIG_HOME", "~/.config")).expanduser()
-    
-    return str(base_path / "{{cookiecutter.__project_slug}}")
+    # Use platformdirs for consistency across the application
+    return str(Path(platformdirs.user_config_dir("{{cookiecutter.__project_slug}}")))
 
 def get_log_path() -> str:
     """Get the platform-appropriate log directory path"""
-    if platform.system() == "Windows":
-        base_path = Path(os.environ.get("LOCALAPPDATA", "~")).expanduser()
-    elif platform.system() == "Darwin":  # macOS
-        base_path = Path("~/Library/Logs").expanduser()
-    else:  # Linux and others
-        base_path = Path(os.environ.get("XDG_STATE_HOME", "~/.local/state")).expanduser()
-    
-    return str(base_path / "{{cookiecutter.__project_slug}}")
+    # Use platformdirs for consistency across the application
+    return str(Path(platformdirs.user_log_dir("{{cookiecutter.__project_slug}}")))
 
 def get_data_path() -> str:
     """Get the platform-appropriate data directory path"""
-    if platform.system() == "Windows":
-        base_path = Path(os.environ.get("LOCALAPPDATA", "~")).expanduser()
-    elif platform.system() == "Darwin":  # macOS
-        base_path = Path("~/Library/Application Support").expanduser()
-    else:  # Linux and others
-        base_path = Path(os.environ.get("XDG_DATA_HOME", "~/.local/share")).expanduser()
-    
-    return str(base_path / "{{cookiecutter.__project_slug}}")
+    # Use platformdirs for consistency across the application
+    return str(Path(platformdirs.user_data_dir("{{cookiecutter.__project_slug}}")))
 
 def load_configuration(config_path: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -231,18 +214,20 @@ def get_system_paths() -> Dict[str, str]:
     """
     app_name = "{{cookiecutter.__project_slug}}"
     
-    # Get platform-specific directories
-    if platform.system() == "Windows":
-        app_dir = Path(os.environ.get("APPDATA", "~")).expanduser() / app_name
-    elif platform.system() == "Darwin":  # macOS
-        app_dir = Path("~/Library/Application Support").expanduser() / app_name
-    else:  # Linux and others
-        app_dir = Path(os.environ.get("XDG_CONFIG_HOME", "~/.config")).expanduser() / app_name
+    # Use platformdirs for consistency with server
+    # This ensures UI looks in the same place as the server writes
+    config_dir = Path(platformdirs.user_config_dir(app_name))
+    data_dir = Path(platformdirs.user_data_dir(app_name))
+    
+    # Ensure directories exist
+    config_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
     
     return {
-        "configuration_file": str(app_dir / "config.yaml"),
-        "logging_database": str(app_dir / "unified_logs.db"),
-        "application_directory": str(app_dir)
+        "configuration_file": str(config_dir / "config.yaml"),
+        "logging_database": str(data_dir / "unified_logs.db"),
+        "application_directory": str(config_dir),
+        "data_directory": str(data_dir)
     }
 
 def load_logs_from_database(db_path: Optional[str] = None, limit: int = 1000) -> List[Dict[str, Any]]:
@@ -285,7 +270,10 @@ def load_logs_from_database(db_path: Optional[str] = None, limit: int = 1000) ->
                 error_message,
                 module,
                 function,
-                thread_name
+                line,
+                thread_name,
+                extra_data,
+                created_at
             FROM unified_logs 
             ORDER BY timestamp DESC 
             LIMIT ?

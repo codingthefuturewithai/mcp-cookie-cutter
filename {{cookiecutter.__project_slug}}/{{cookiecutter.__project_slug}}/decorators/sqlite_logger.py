@@ -41,9 +41,11 @@ class SQLiteLoggerSink(BaseLoggerSink):
     
     def _get_database_path(self) -> Path:
         """Get platform-specific database path."""
+        # Use the same path as config for consistency
         data_dir = Path(platformdirs.user_data_dir("{{ cookiecutter.__project_slug }}"))
         data_dir.mkdir(parents=True, exist_ok=True)
-        return data_dir / "tool_logs.db"
+        # Use unified_logs.db to match config.py
+        return data_dir / "unified_logs.db"
     
     def get_log_location(self) -> str:
         """Get the location where logs are stored.

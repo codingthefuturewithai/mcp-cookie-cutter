@@ -58,16 +58,24 @@ From your project root (with venv activated):
 mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 ```
 
-### SSE Transport
+### Default Transport (STDIO)
 ```bash
-mcp dev {{ cookiecutter.__project_slug }}/server/app.py --transport sse
+mcp dev {{ cookiecutter.__project_slug }}/server/app.py
+```
+
+### SSE Transport
+To test with SSE transport, run the server directly:
+```bash
+python -m {{ cookiecutter.__project_slug }}.server.app --transport sse
 ```
 
 ### Streamable HTTP Transport (Recommended for Testing)
 The Streamable HTTP transport provides the best testing experience with its unified endpoint:
 ```bash
-mcp dev {{ cookiecutter.__project_slug }}/server/app.py --transport streamable-http
+python -m {{ cookiecutter.__project_slug }}.server.app --transport streamable-http
 ```
+
+Note: The `mcp dev` command always uses STDIO transport. To test other transports, run the server directly using the Python module.
 
 You should see:
 - Server logs showing tool registration
@@ -329,7 +337,7 @@ If you see `ModuleNotFoundError: No module named '{{ cookiecutter.__project_slug
 ### MCP Inspector Not Loading
 
 1. Check server started without errors
-2. Try a different port: `mcp dev {{ cookiecutter.__project_slug }}/server/app.py --port 5174`
+2. Check if port 6274 is already in use
 3. Clear browser cache and refresh
 
 ### Tools Not Appearing
