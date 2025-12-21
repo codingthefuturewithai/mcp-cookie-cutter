@@ -10,6 +10,18 @@ I'll execute the approved plan with validation, documentation updates, and incre
 
 **Prerequisites:** Approved plan from `/devflow:plan-work`
 
+---
+
+## Step 0: Exit Plan Mode (if needed)
+
+[If currently in plan mode from `/devflow:plan-work`]:
+
+[Call `ExitPlanMode`]
+
+This will prompt you to choose how to proceed with implementation.
+
+---
+
 [Check if --tdd flag was used in plan-work or if passed to this command]
 
 **TDD Mode:** [If --tdd present: ENABLED | If absent: DISABLED]

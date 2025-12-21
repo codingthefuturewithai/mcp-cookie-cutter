@@ -91,4 +91,6 @@ Discuss approach with team first
 **If fully implemented:**
 Close or update JIRA issue
 
-DO NOT CONTINUE - User must decide and run next command
+---
+
+⏸️ **Stopped** - Choose your next step above and run the appropriate command

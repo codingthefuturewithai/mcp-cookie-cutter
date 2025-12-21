@@ -282,12 +282,23 @@ Researching: [tech1], [tech2]...
 
 ## ⛔ STOP - Plan Complete
 
-Implementation plan is ready.
+✅ **Plan approved and ready for implementation**
 
-**To implement:** Run `/devflow:implement`
+---
 
-**To revise:** Tell me what to change
+**To implement this plan:**
 
-**To cancel:** Say cancel
+Run `/devflow:implement`
 
-*(You're still in plan mode - it will exit when you run /devflow:implement)*
+⚠️ **Important:** When you run `/devflow:implement`, you'll be prompted with 3 options:
+1. "Yes, and bypass permissions" ← **Recommended** for automatic implementation
+2. "Yes, and manually approve edits" ← Choose this to review each change individually
+3. "Type here to tell Claude what to change"
+
+We recommend **option 1** for faster implementation unless you want to review each edit.
+
+---
+
+**To revise this plan:** Tell me what to change (I'll stay in plan mode)
+
+**To cancel:** Say "cancel"
