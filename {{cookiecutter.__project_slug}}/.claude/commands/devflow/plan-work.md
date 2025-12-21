@@ -1,7 +1,7 @@
 ---
 description: Create branch, update JIRA, and develop implementation plan
 argument-hint: "[--tdd] [ISSUE-KEY]"
-allowed-tools: ["Bash", "mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__transitionJiraIssue", "mcp__atlassian__getTransitionsForJiraIssue", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode", "ExitPlanMode"]
+allowed-tools: ["Bash", "mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__transitionJiraIssue", "mcp__atlassian__getTransitionsForJiraIssue", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode"]
 ---
 
 # Plan Work
