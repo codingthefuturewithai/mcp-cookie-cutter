@@ -313,6 +313,10 @@ Run `/devflow:implement`
 
 We recommend **option 1** for faster implementation unless you want to review each edit.
 
+---
+
+[Then END naturally - do not call ExitPlanMode, do not continue, just stop]
+
 [If user wants changes]:
 
 Tell me what to revise and I'll update the plan (staying in plan mode).
