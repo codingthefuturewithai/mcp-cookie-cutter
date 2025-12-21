@@ -105,20 +105,26 @@ Now in Plan Mode - I'll analyze the codebase and create a detailed plan.
 [Only if TDD Mode is ENABLED]
 
 **Test Framework Detection:**
-[Detect framework using pattern matching]
+[Search codebase to discover test infrastructure - adapt to what exists]
 
-Check for:
-- Python: pytest.ini, pyproject.toml[tool.pytest], setup.cfg, tox.ini
-- JavaScript: jest.config.js, package.json["jest"], vitest.config.js
-- Go: *_test.go files, go.mod
-- Ruby: .rspec, spec_helper.rb, Rakefile
+1. **Find test files:**
+   - Search for common test directories: tests/, test/, spec/, __tests__/
+   - Search for test file patterns: *test*, *spec*, Test*.java, *Tests.cs
+   - Check package config: package.json, pom.xml, build.gradle, Gemfile, pyproject.toml, go.mod
 
-Extract and report:
-- Framework: [pytest/jest/go test/rspec/vitest/minitest/etc.]
-- Test directory: [path]
-- Test patterns: [file naming conventions]
-- Run command: [command to execute tests]
-- Run specific: [command to run specific test file/function]
+2. **Identify frameworks by analyzing what's found:**
+   - Read test files to see imports/annotations (pytest, jest, JUnit, NUnit, RSpec, etc.)
+   - Check config files for framework declarations
+   - Note: May find MULTIPLE frameworks in monorepos (React frontend + Java backend)
+
+3. **Report discovered test infrastructure:**
+   - Languages detected: [Python/JavaScript/Java/Go/Ruby/C#/etc.]
+   - Frameworks found: [pytest/jest/vitest/JUnit/TestNG/go test/RSpec/etc.]
+   - Test locations: [paths to test directories per language]
+   - Run commands: [framework-specific commands to run tests]
+   - Run specific: [commands to run individual test file/function]
+
+If NO tests found: Note this and skip test mapping (still generate test plan for TDD)
 
 **Existing Test Patterns:**
 [Read 2-3 representative test files to extract patterns]
@@ -280,11 +286,21 @@ Researching: [tech1], [tech2]...
 
 ---
 
-## ⛔ STOP - Plan Complete
+## ⛔ STOP - Review Plan
 
-✅ **Plan approved and ready for implementation**
+**Do you approve this plan?**
+
+- If **YES**: I'll provide next steps for implementation
+- If **NO**: Tell me what to change and I'll revise (staying in plan mode)
+- To **CANCEL**: Say "cancel"
+
+[WAIT for user response - do NOT continue]
+
+[If user approves]:
 
 ---
+
+✅ **Plan approved**
 
 **To implement this plan:**
 
@@ -297,8 +313,6 @@ Run `/devflow:implement`
 
 We recommend **option 1** for faster implementation unless you want to review each edit.
 
----
+[If user wants changes]:
 
-**To revise this plan:** Tell me what to change (I'll stay in plan mode)
-
-**To cancel:** Say "cancel"
+Tell me what to revise and I'll update the plan (staying in plan mode).
