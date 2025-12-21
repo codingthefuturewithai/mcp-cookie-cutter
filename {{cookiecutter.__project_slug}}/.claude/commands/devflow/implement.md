@@ -284,16 +284,17 @@ Tests: [X new, Y passing total]
 
 If major deviation from plan required (including when tests reveal issues):
 
-⚠️ Discovered during [implementation|testing]: [problem]
+⚠️ **STOP - Major Deviation Detected**
+
+Discovered during [implementation|testing]: [problem]
 [If TDD Mode: Test results show: [what tests revealed]]
 Cannot proceed because: [reason]
 
-[Call `EnterPlanMode`]
-[Create revised plan with updated approach]
-[If TDD Mode: Include revised test strategy]
-[Call `ExitPlanMode`]
+**Action required:** The current plan needs significant revision.
 
-Wait for approval of revised plan before continuing.
+Please run `/devflow:plan-work [ISSUE-KEY]` to revise the plan, then return to `/devflow:implement`.
+
+DO NOT continue implementation - plan must be updated first.
 
 ---
 
