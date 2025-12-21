@@ -1,14 +1,18 @@
 ---
-description: Create branch, update JIRA, and develop implementation plan
+description: Analyze issue and develop implementation plan
 argument-hint: "[--tdd] [ISSUE-KEY]"
-allowed-tools: ["Bash", "mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__transitionJiraIssue", "mcp__atlassian__getTransitionsForJiraIssue", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode"]
+allowed-tools: ["mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode"]
 ---
 
 # Plan Work
 
-I'll create a branch, update JIRA to In Progress, and develop an implementation plan.
+I'll analyze the issue and develop a detailed implementation plan.
 
 Issue: $ARGUMENTS
+
+[Call `EnterPlanMode`]
+
+Now in Plan Mode - I'll fetch the issue details and analyze the codebase.
 
 [Check if $ARGUMENTS contains --tdd flag]
 
@@ -36,55 +40,7 @@ Type: [Issue type]
 
 ---
 
-## Step 2: Create Git Branch
-
-**Check if git repository exists:**
-
-```bash
-git rev-parse --git-dir 2>/dev/null || echo "not-a-repo"
-```
-
-**If not a git repository:**
-
-Initialize git and create initial commit:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit" || echo "Nothing to commit yet"
-```
-
-✅ Git initialized
-
-**Determine branch type:**
-- Feature/Executable Spec → `feature/[ISSUE-KEY]-[slug]`
-- Bug → `bugfix/[ISSUE-KEY]-[slug]`
-- Other → `task/[ISSUE-KEY]-[slug]`
-
-**Create branch:**
-
-```bash
-git checkout -b [branch-name]
-```
-
-✅ Branch: [branch-name]
-
----
-
-## Step 3: Update JIRA Status
-
-[Call `mcp__atlassian__getTransitionsForJiraIssue`]
-[Call `mcp__atlassian__transitionJiraIssue` to "In Progress"]
-
-✅ JIRA: In Progress
-
----
-
-## Step 4: Enter Plan Mode & Create Implementation Plan
-
-[Call `EnterPlanMode`]
-
-Now in Plan Mode - I'll analyze the codebase and create a detailed plan.
+## Step 2: Analyze Codebase & Create Implementation Plan
 
 ### Analyze Codebase
 
@@ -286,35 +242,4 @@ Researching: [tech1], [tech2]...
 
 ---
 
-**Do you approve this plan?**
-
-- If **YES**: I'll provide next steps for implementation
-- If **NO**: Tell me what to change and I'll revise (staying in plan mode)
-- To **CANCEL**: Say "cancel"
-
-[WAIT for user response - do NOT continue]
-
-[If user approves]:
-
----
-
-✅ **Plan approved**
-
-**To implement this plan:**
-
-Run `/devflow:implement`
-
-⚠️ **Important:** When you run `/devflow:implement`, you'll be prompted with 3 options:
-1. "Yes, and bypass permissions" ← **Recommended** for automatic implementation
-2. "Yes, and manually approve edits" ← Choose this to review each change individually
-3. "Type here to tell Claude what to change"
-
-We recommend **option 1** for faster implementation unless you want to review each edit.
-
----
-
-[Then END naturally - do not call ExitPlanMode, do not continue, just stop]
-
-[If user wants changes]:
-
-Tell me what to revise and I'll update the plan (staying in plan mode).
+Do you approve this plan?

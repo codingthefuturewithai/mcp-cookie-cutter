@@ -1,7 +1,7 @@
 ---
 description: Execute approved plan with validation and documentation
 argument-hint: "[--tdd]"
-allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "EnterPlanMode", "ExitPlanMode"]
+allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue", "EnterPlanMode", "ExitPlanMode"]
 ---
 
 # Implement Work
@@ -19,6 +19,50 @@ I'll execute the approved plan with validation, documentation updates, and incre
 [Call `ExitPlanMode`]
 
 This will prompt you to choose how to proceed with implementation.
+
+---
+
+## Step 1: Create Git Branch
+
+**Check if git repository exists:**
+
+```bash
+git rev-parse --git-dir 2>/dev/null || echo "not-a-repo"
+```
+
+**If not a git repository:**
+
+Initialize git and create initial commit:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit" || echo "Nothing to commit yet"
+```
+
+✅ Git initialized
+
+**Determine branch type:**
+- Feature/Executable Spec → `feature/[ISSUE-KEY]-[slug]`
+- Bug → `bugfix/[ISSUE-KEY]-[slug]`
+- Other → `task/[ISSUE-KEY]-[slug]`
+
+**Create branch:**
+
+```bash
+git checkout -b [branch-name]
+```
+
+✅ Branch: [branch-name]
+
+---
+
+## Step 2: Update JIRA Status
+
+[Call `mcp__atlassian__getTransitionsForJiraIssue`]
+[Call `mcp__atlassian__transitionJiraIssue` to "In Progress"]
+
+✅ JIRA: In Progress
 
 ---
 
