@@ -38,10 +38,30 @@ Type: [Issue type]
 
 ## Step 2: Create Git Branch
 
-[Determine branch type]:
+**Check if git repository exists:**
+
+```bash
+git rev-parse --git-dir 2>/dev/null || echo "not-a-repo"
+```
+
+**If not a git repository:**
+
+Initialize git and create initial commit:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit" || echo "Nothing to commit yet"
+```
+
+✅ Git initialized
+
+**Determine branch type:**
 - Feature/Executable Spec → `feature/[ISSUE-KEY]-[slug]`
 - Bug → `bugfix/[ISSUE-KEY]-[slug]`
 - Other → `task/[ISSUE-KEY]-[slug]`
+
+**Create branch:**
 
 ```bash
 git checkout -b [branch-name]
