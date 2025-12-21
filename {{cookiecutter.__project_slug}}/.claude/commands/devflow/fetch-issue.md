@@ -68,9 +68,22 @@ Searching codebase to determine if work is already done...
 Based on the feasibility analysis above, decide next steps:
 
 **If ready to proceed:**
+
+Standard workflow:
 ```
-/plan-work $ARGUMENTS
+/devflow:plan-work $ARGUMENTS
 ```
+
+**OR** with Test-Driven Development:
+```
+/devflow:plan-work --tdd $ARGUMENTS
+```
+
+TDD mode will:
+- Detect test framework and existing test patterns
+- Map tests to components being modified
+- Generate test cases from acceptance criteria
+- Guide RED/GREEN/REFACTOR implementation workflow
 
 **If partially done or conflicts exist:**
 Discuss approach with team first
