@@ -1,6 +1,6 @@
 ---
 description: Execute approved plan with validation and documentation
-argument-hint: ""
+argument-hint: "[--tdd]"
 allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "EnterPlanMode", "ExitPlanMode"]
 ---
 
@@ -8,11 +8,17 @@ allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "E
 
 I'll execute the approved plan with validation, documentation updates, and incremental commits.
 
-**Prerequisites:** Approved plan from `/plan-work`
+**Prerequisites:** Approved plan from `/devflow:plan-work`
 
 [Check if --tdd flag was used in plan-work or if passed to this command]
 
 **TDD Mode:** [If --tdd present: ENABLED | If absent: DISABLED]
+
+[If --tdd mode enabled, notify user]:
+✅ TDD Mode enabled - Following RED/GREEN/REFACTOR workflow
+
+[If --tdd mode disabled]:
+Standard implementation workflow (tests after code)
 
 ---
 

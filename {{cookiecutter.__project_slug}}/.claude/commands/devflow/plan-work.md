@@ -1,6 +1,6 @@
 ---
 description: Create branch, update JIRA, and develop implementation plan
-argument-hint: "[ISSUE-KEY]"
+argument-hint: "[--tdd] [ISSUE-KEY]"
 allowed-tools: ["Bash", "mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__transitionJiraIssue", "mcp__atlassian__getTransitionsForJiraIssue", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode", "ExitPlanMode"]
 ---
 
@@ -13,6 +13,16 @@ Issue: $ARGUMENTS
 [Check if $ARGUMENTS contains --tdd flag]
 
 **TDD Mode:** [If --tdd present: ENABLED | If absent: DISABLED]
+
+[If --tdd mode enabled, notify user]:
+✅ TDD Mode enabled - I will:
+- Detect test framework and patterns
+- Map existing tests to modified components
+- Generate test cases from acceptance criteria
+- Plan RED/GREEN/REFACTOR workflow for implementation
+
+[If --tdd mode disabled]:
+To enable Test-Driven Development workflow, use: `/devflow:plan-work --tdd [ISSUE-KEY]`
 
 ---
 
@@ -254,10 +264,10 @@ Researching: [tech1], [tech2]...
 
 Implementation plan is ready.
 
-**To implement:** Run `/implement`
+**To implement:** Run `/devflow:implement`
 
 **To revise:** Tell me what to change
 
 **To cancel:** Say cancel
 
-*(You're still in plan mode - it will exit when you run /implement)*
+*(You're still in plan mode - it will exit when you run /devflow:implement)*
