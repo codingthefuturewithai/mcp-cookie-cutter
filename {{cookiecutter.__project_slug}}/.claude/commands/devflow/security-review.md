@@ -10,18 +10,41 @@ I'll perform a comprehensive security analysis.
 
 ---
 
+## Step 0: Parse Arguments
+
+## Note for AI Assistants - PARSE ARGUMENTS
+
+Parse $ARGUMENTS to extract flags and issue key:
+
+```bash
+# Check for --show-dismissed flag
+if [[ "$ARGUMENTS" == *"--show-dismissed"* ]]; then
+    SHOW_DISMISSED=true
+    ISSUE_KEY="${ARGUMENTS//--show-dismissed/}"
+    ISSUE_KEY="${ISSUE_KEY// /}"  # Remove extra spaces
+else
+    SHOW_DISMISSED=false
+    ISSUE_KEY="$ARGUMENTS"
+fi
+```
+
+Store these values:
+- SHOW_DISMISSED: true/false
+- ISSUE_KEY: the actual issue key (or empty if no issue specified)
+
+---
+
 ## Step 1: Determine Scope
 
 ## Note for AI Assistants - DETERMINE SCOPE
 
-Check if $ARGUMENTS is provided:
+Check if ISSUE_KEY is provided:
 
-**If $ARGUMENTS is provided (e.g., "PROJ-123"):**
-- Treat as ISSUE-KEY
+**If ISSUE_KEY is provided (e.g., "PROJ-123"):**
 - Scope: Branch changes for that issue
 - Proceed to "Branch Changes Mode" below
 
-**If $ARGUMENTS is empty:**
+**If ISSUE_KEY is empty:**
 - Interactive mode
 - Ask user what to scan
 - Proceed to "Interactive Mode" below
@@ -30,7 +53,10 @@ Check if $ARGUMENTS is provided:
 
 ### Branch Changes Mode (when ISSUE-KEY provided)
 
-Analyzing branch changes for: $ARGUMENTS
+Analyzing branch changes for: [ISSUE_KEY]
+
+[If SHOW_DISMISSED is true]:
+**Note:** --show-dismissed flag detected. Will include previously dismissed issues in the report.
 
 ## Note for AI Assistants - BRANCH CHANGES
 
@@ -104,8 +130,8 @@ Use the Task tool with subagent_type="security-scanner" to analyze.
 
 Provide the agent with:
 - Context:
-  - If ISSUE-KEY: "Analyzing security of changes for $ARGUMENTS"
-  - If no ISSUE-KEY: "Security scan of [scope description]"
+  - If ISSUE_KEY is set: "Analyzing security of changes for [ISSUE_KEY]"
+  - If ISSUE_KEY is empty: "Security scan of [scope description]"
 - List of files to focus on
 - Request comprehensive analysis following OWASP Top 10 and agent's methodology
 
@@ -129,7 +155,7 @@ The security scanner has completed its analysis.
 
 ## 📋 Security Assessment Summary
 
-**Scope:** [Branch changes for $ARGUMENTS / Full repository / Specific files / Directory]
+**Scope:** [Branch changes for [ISSUE_KEY] / Full repository / Specific files / Directory]
 **Files Analyzed:** [N] files
 **Findings:**
 - CRITICAL: [count]
@@ -148,17 +174,26 @@ The security scanner has completed its analysis.
 **Only proceed with triage if there are findings. If no issues found, skip to Next Steps section.**
 
 **Before starting triage:**
-1. Check for `--show-dismissed` flag in $ARGUMENTS
-2. If present, load `.devflow/security/$ISSUE_KEY-dismissed.json` and display dismissed issues
-3. If issues were found by security scanner, proceed with triage
 
-**Load previously dismissed issues:**
-```bash
-if [ -f ".devflow/security/$ISSUE_KEY-dismissed.json" ]; then
-    # Load dismissed issues
-    # Filter these out of current findings
-fi
-```
+1. Check SHOW_DISMISSED value (from Step 0)
+2. Load previously dismissed issues if they exist:
+   ```bash
+   if [ -f ".devflow/security/[ISSUE_KEY]-dismissed.json" ]; then
+       # Load dismissed issues JSON
+       # Parse into array
+   fi
+   ```
+
+3. **If SHOW_DISMISSED is true:**
+   - Display all dismissed issues with their reasons
+   - Show: file, line, issue type, severity, reason, dismissed date
+   - Then continue to show current findings
+
+4. **If SHOW_DISMISSED is false (default):**
+   - Filter out dismissed issues from current scanner findings
+   - Only show new/unaddressed findings in triage loop
+
+5. If issues were found by security scanner (after filtering), proceed with triage
 
 **For each finding from security scanner:**
 
@@ -223,13 +258,13 @@ Type one of the following:
     "code_snippet": "[current code]"
   }
   ```
-- Write back to `.devflow/security/$ISSUE_KEY-dismissed.json`
+- Write back to `.devflow/security/[ISSUE_KEY]-dismissed.json`
 - Track as "dismissed" in summary
 - Continue to next finding
 
 **If "ticket":**
 - Get cloud ID: `mcp__atlassian__getAccessibleAtlassianResources`
-- Extract project key from $ISSUE_KEY (part before hyphen)
+- Extract project key from ISSUE_KEY (part before hyphen)
 - Get project metadata: `mcp__atlassian__getJiraProjectIssueTypesMetadata` for the project
 - Map severity to priority:
   - CRITICAL → Highest
@@ -243,7 +278,7 @@ Type one of the following:
     "projectKey": "[project_key]",
     "issueTypeName": "Bug",
     "summary": "[Security] [Vulnerability Type] in [filename]",
-    "description": "**Security Finding from $ISSUE_KEY**\n\n**File:** [file]:[line]\n\n**Vulnerability:** [type] ([severity] severity)\n\n**Issue:**\n[description]\n\n**Current Code:**\n```\n[code]\n```\n\n**Recommended Fix:**\n```\n[fix]\n```\n\n**Security Review Date:** [timestamp]\n**Original Issue:** $ISSUE_KEY",
+    "description": "**Security Finding from [ISSUE_KEY]**\n\n**File:** [file]:[line]\n\n**Vulnerability:** [type] ([severity] severity)\n\n**Issue:**\n[description]\n\n**Current Code:**\n```\n[code]\n```\n\n**Recommended Fix:**\n```\n[fix]\n```\n\n**Security Review Date:** [timestamp]\n**Original Issue:** [ISSUE_KEY]",
     "additional_fields": {
       "priority": { "name": "[mapped priority]" }
     }
@@ -296,14 +331,14 @@ After all findings have been triaged:
 
 ```bash
 git add [list of fixed files]
-git commit -m "fix: Address [count] security vulnerabilities from $ARGUMENTS
+git commit -m "fix: Address [count] security vulnerabilities from [ISSUE_KEY]
 
 [For each fix:]
 - Fix [vulnerability type] in [file]:[line]
 
 Security review: [applied count] fixed, [dismissed count] dismissed, [ticketed count] ticketed
 
-Refs: $ARGUMENTS"
+Refs: [ISSUE_KEY]"
 ```
 
 ✅ **Commit:** [commit hash]
@@ -312,17 +347,17 @@ Refs: $ARGUMENTS"
 
 [If any dismissals]:
 
-📝 **Dismissed issues documented in:** `.devflow/security/$ISSUE_KEY-dismissed.json`
+📝 **Dismissed issues documented in:** `.devflow/security/[ISSUE_KEY]-dismissed.json`
 
 Future security-review runs will skip these issues automatically.
 
-To review dismissed issues: `/devflow:security-review --show-dismissed $ISSUE_KEY`
+To review dismissed issues: `/devflow:security-review --show-dismissed [ISSUE_KEY]`
 
 ---
 
 ## ✅ Next Steps
 
-**If this was for a specific issue ($ARGUMENTS):**
+**If this was for a specific issue (ISSUE_KEY is set):**
 
 - **No issues found OR all issues triaged:**
 
@@ -336,14 +371,14 @@ To review dismissed issues: `/devflow:security-review --show-dismissed $ISSUE_KE
   [If no critical/high issues OR all handled]:
   ✅ **Ready to proceed:**
   ```bash
-  /devflow:complete $ARGUMENTS
+  /devflow:complete [ISSUE_KEY]
   ```
 
 - **Want to re-run security review:**
 
   If you manually fixed issues or want to verify fixes:
   ```bash
-  /devflow:security-review $ARGUMENTS
+  /devflow:security-review [ISSUE_KEY]
   ```
 
 **If this was a general security scan:**
