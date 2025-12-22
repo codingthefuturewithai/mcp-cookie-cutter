@@ -56,6 +56,22 @@ Type: [Issue type]
 - Test patterns: [test structure and conventions]
 - Integration points: [where this connects]
 
+---
+
+I've analyzed the codebase and issue. Should I proceed with creating a detailed implementation plan?
+
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+[If user says NO or wants to stop]:
+- End here
+- User can ask questions or provide more context
+
+[If user says YES or wants to proceed]:
+
+Excellent! Let me create a comprehensive implementation plan.
+
+---
+
 ### Test Strategy Analysis (if --tdd flag present)
 
 [Only if TDD Mode is ENABLED]
