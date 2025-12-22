@@ -351,7 +351,7 @@ Auto mode runs through all logical units from start to finish. Use this when you
 - Implement the code following your approved plan
 - Run tests (TDD workflow if --tdd was used)
 - Create commits referencing $ARGUMENTS
-- Prepare for security review and PR creation
+- Recommend security review before creating PR
 
 ### Option 2: Revise the Plan
 If you thought of improvements, just tell me what to change:
