@@ -73,3 +73,6 @@ logs/
 # Generated test projects
 my_mcp_server/
 post_fix_test_mcp/
+
+# DevFlow workspace (plans, state, etc.)
+.devflow/

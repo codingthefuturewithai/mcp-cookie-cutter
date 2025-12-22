@@ -1,284 +1,244 @@
 ---
-description: Analyze issue and develop implementation plan
+description: Analyze JIRA issue and develop implementation plan
 argument-hint: "[--tdd] [ISSUE-KEY]"
-allowed-tools: ["mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "Grep", "Glob", "Read", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "EnterPlanMode"]
+allowed-tools: ["mcp__atlassian__getJiraIssue", "mcp__atlassian__getAccessibleAtlassianResources", "Grep", "Glob", "Read", "Bash", "mcp__context7__resolve-library-id", "mcp__context7__get-library-docs", "Write"]
 ---
 
 # Plan Work
 
-I'll analyze the issue and develop a detailed implementation plan.
-
-Issue: $ARGUMENTS
-
-[Call `EnterPlanMode`]
-
-Now in Plan Mode - I'll fetch the issue details and analyze the codebase.
-
-[Check if $ARGUMENTS contains --tdd flag]
-
-**TDD Mode:** [If --tdd present: ENABLED | If absent: DISABLED]
-
-[If --tdd mode enabled, notify user]:
-✅ TDD Mode enabled - I will:
-- Detect test framework and patterns
-- Map existing tests to modified components
-- Generate test cases from acceptance criteria
-- Plan RED/GREEN/REFACTOR workflow for implementation
-
-[If --tdd mode disabled]:
-To enable Test-Driven Development workflow, use: `/devflow:plan-work --tdd [ISSUE-KEY]`
+I'll analyze issue $ARGUMENTS and create a detailed implementation plan.
 
 ---
 
-## Step 1: Fetch Issue Details
+## Step 1: Fetch JIRA Issue
 
-[Call `mcp__atlassian__getAccessibleAtlassianResources`]
-[Call `mcp__atlassian__getJiraIssue` with cloudId and issue key]
+Let me fetch the full issue details from JIRA.
 
-Issue: [ISSUE-KEY] - [Summary]
-Type: [Issue type]
+## Note for AI Assistants - FETCH PHASE
 
----
-
-## Step 2: Analyze Codebase & Create Implementation Plan
-
-### Analyze Codebase
-
-**Search for related code:**
-- Grep/Glob for related components and files
-- Read existing implementations to understand patterns
-- Identify: import conventions, error handling, logging, module structure
-- Find existing tests to understand testing patterns
-
-**Findings:**
-- Related files: [paths]
-- Code patterns: [import style, error handling, structure]
-- Test patterns: [test structure and conventions]
-- Integration points: [where this connects]
+1. Use `mcp__atlassian__getAccessibleAtlassianResources` to get cloud ID
+2. Use `mcp__atlassian__getJiraIssue` with $ARGUMENTS to fetch full issue details
+3. Extract: Summary, Description, Acceptance Criteria, Issue Type
+4. Check if $ARGUMENTS contains --tdd flag (if yes: TDD Mode ENABLED; if no: DISABLED)
+5. Proceed to Step 2
 
 ---
 
-I've analyzed the codebase and issue. Should I proceed with creating a detailed implementation plan?
+## Step 2: Analyze Codebase
 
-[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+Based on the issue requirements, let me analyze the existing codebase.
 
-[If user says NO or wants to stop]:
-- End here
-- User can ask questions or provide more context
+## Note for AI Assistants - ANALYSIS PHASE
 
-[If user says YES or wants to proceed]:
+**Codebase Analysis:**
+- Use Grep/Glob to search for related code
+- Identify existing patterns (imports, error handling, logging, structure)
+- Find integration points
+- Document code patterns to follow
 
-Excellent! Let me create a comprehensive implementation plan.
+**If TDD Mode is ENABLED:**
+- Detect test framework (pytest, jest, JUnit, RSpec, etc.)
+- Search for test directories: tests/, test/, spec/, __tests__/
+- Read 2-3 test files to extract patterns
+- Map existing tests to components that will be modified
+- Identify test commands: run all tests, run specific test
+
+After gathering this information, proceed to Step 3.
 
 ---
 
-### Test Strategy Analysis (if --tdd flag present)
+## Step 3: Research with Context7
 
-[Only if TDD Mode is ENABLED]
+Now I'll research relevant technologies, libraries, and frameworks to ensure we follow current best practices.
 
-**Test Framework Detection:**
-[Search codebase to discover test infrastructure - adapt to what exists]
+## Note for AI Assistants - RESEARCH PHASE
 
-1. **Find test files:**
-   - Search for common test directories: tests/, test/, spec/, __tests__/
-   - Search for test file patterns: *test*, *spec*, Test*.java, *Tests.cs
-   - Check package config: package.json, pom.xml, build.gradle, Gemfile, pyproject.toml, go.mod
+**ALWAYS use Context7 research when:**
+- Issue involves implementing a new feature (research the domain/approach)
+- Issue mentions ANY specific library or framework (research current docs)
+- Issue requires integration with external services/APIs
+- Issue involves a technology you need current best practices for
+- Issue type is Feature, Story, or Epic
 
-2. **Identify frameworks by analyzing what's found:**
-   - Read test files to see imports/annotations (pytest, jest, JUnit, NUnit, RSpec, etc.)
-   - Check config files for framework declarations
-   - Note: May find MULTIPLE frameworks in monorepos (React frontend + Java backend)
+**For each technology/library identified:**
+1. Use `mcp__context7__resolve-library-id` to identify the library
+2. Use `mcp__context7__get-library-docs` to fetch current documentation
+3. Document in your analysis:
+   - Current best practices and recommended patterns
+   - Version-specific considerations
+   - Common pitfalls to avoid
+   - Integration patterns relevant to this codebase
 
-3. **Report discovered test infrastructure:**
-   - Languages detected: [Python/JavaScript/Java/Go/Ruby/C#/etc.]
-   - Frameworks found: [pytest/jest/vitest/JUnit/TestNG/go test/RSpec/etc.]
-   - Test locations: [paths to test directories per language]
-   - Run commands: [framework-specific commands to run tests]
-   - Run specific: [commands to run individual test file/function]
+**Skip Context7 research ONLY when:**
+- Issue is a simple bug fix in existing code
+- Issue is refactoring with no new dependencies
+- Issue is documentation-only changes
 
-If NO tests found: Note this and skip test mapping (still generate test plan for TDD)
+After research, proceed to Step 4.
 
-**Existing Test Patterns:**
-[Read 2-3 representative test files to extract patterns]
+---
 
-Report discovered patterns:
-- File organization: [unit/integration structure, mirrors source or feature-based]
-- Test style: [class-based/function-based/describe blocks]
-- Assertion style: [assert/expect/should]
-- Fixture patterns: [discovered fixture names and usage]
-- Mocking approach: [unittest.mock/jest.mock/testify/rspec doubles/etc.]
-- Import conventions: [how tests import code under test]
+## Step 4: Present Draft Plan for Approval
 
-**Relevant Existing Tests:**
-[Map ticket components to existing tests]
+Based on my analysis, here's the proposed implementation plan for $ARGUMENTS:
 
-For each component being modified:
+**Issue Summary:**
+[Issue type, summary, key requirements]
 
-Component: [file/module being changed]
-Mapping strategy:
-  1. Direct mapping: [src/path → tests/path pattern]
-  2. Import analysis: [grep for "import component" in test files]
-  3. Naming convention: [ComponentName → test_component_name pattern]
+**Acceptance Criteria:**
+[Breakdown of each criterion]
 
-Categorized tests:
-  - MUST_RUN: [tests directly testing modified components] (~Xs)
-  - SHOULD_RUN: [tests for integration points] (~Xs)
-  - Estimated total runtime: ~[X]s vs ~[Y]min full suite
+**Codebase Analysis:**
+[Existing patterns found, integration points, files to modify]
 
-**New Tests Required:**
-[Extract testable behaviors from acceptance criteria]
+**Implementation Plan:**
+1. Files to create/modify: [specific paths]
+2. Functions/components to implement: [details]
+3. Code patterns to follow: [from codebase analysis]
+4. Integration approach: [how it connects]
 
-AC #1: "[acceptance criteria text]"
-Testable behaviors:
-- [Behavior 1: expected outcome]
-- [Behavior 2: edge case]
-- [Behavior 3: error condition]
+**Testing Strategy:**
+[Test framework, test cases, coverage approach]
 
-Test cases needed:
-- test_[behavior_1]()
-- test_[behavior_2_edge_case]()
-- test_[error_condition]()
+**If TDD Mode:**
+- Test framework detected: [pytest/jest/etc.]
+- Existing test patterns: [from analysis]
+- Test cases from acceptance criteria: [specific tests]
+- RED/GREEN/REFACTOR workflow:
+  1. RED: Write failing tests for [feature]
+  2. GREEN: Implement minimal code to pass
+  3. REFACTOR: Clean up and optimize
+  4. VALIDATE: Run full test suite
+- Test commands:
+  - Run all: [command]
+  - Run specific: [command]
 
-AC #2: "[acceptance criteria text]"
-Testable behaviors:
-- [Behavior: expected outcome]
-
-Test cases needed:
-- test_[another_behavior]()
-
-Test files to create:
-- tests/[unit|integration]/test_[component].py
-  (following [existing_pattern.py] structure)
-- tests/[unit|integration]/test_[feature].py
-  (following [existing_pattern.py] structure)
-
-**TDD Implementation Order:**
-Each logical unit follows: Write tests (RED) → Implement (GREEN) → Refactor → Validate
-
-### Context7 Research (if applicable)
-
-[If issue mentions technologies/libraries]:
-
-Researching: [tech1], [tech2]...
-
-[For each]:
-- Call `mcp__context7__resolve-library-id`
-- Call `mcp__context7__get-library-docs`
-
-**Research findings:**
-- [Tech]: [best practices, current patterns, versions]
-
-### Implementation Plan
-
-[Create plan adapted to issue type]
-
-**For Features:**
-- Logical components to build
-- Files to create/modify
-- Code patterns to follow
-- Test strategy
-- Integration points
-
-**For Bugs:**
-- Reproduction approach
-- Investigation strategy
-- Root cause hypothesis
-- Fix approach with file paths
-- Regression test requirement
-
-**For Infrastructure/Config:**
-- Files to create/modify
-- Validation strategy
-- Impact assessment
-
-**For Documentation:**
-- Files to update/create
-- Accuracy verification approach
-- Example testing strategy
-
-**All Plans Include:**
-
-**Code Pattern Compliance:**
-- Follow discovered import patterns
-- Follow error handling conventions
-- Follow logging patterns
-- Follow module structure
-- Maintain modular design
+**Context7 Research:**
+[Best practices, patterns, version notes - if applicable]
 
 **Documentation Updates:**
-- Search repository for all documentation files
-- Identify documentation affected by changes
-- Update all relevant documentation
-- Update code comments and docstrings
-
-**Validation Strategy:**
-[Type-appropriate validation]:
-- Features: Unit/integration tests following existing patterns
-- Bugs: Regression tests + verification
-- Infrastructure: Trigger and verify workflows/configs
-- Documentation: Accuracy and example validation
+[Files to update: README, docs/, code comments]
 
 **Commit Strategy:**
-- Commit after each logical unit is validated
-- Reference issue key in commits
+1. [Logical unit 1] - refs $ARGUMENTS
+2. [Logical unit 2] - refs $ARGUMENTS
+3. [etc.]
 
 ---
 
-Do you approve this plan?
+**Does this plan look good? Would you like any changes?**
+
+You can:
+- Type **"yes"** or **"approved"** to finalize and save the plan
+- Request changes like **"add more detail to testing"** or **"research authentication patterns"**
+- Ask questions about any part of the plan
+
+Take your time to review - we'll iterate until you're satisfied.
+
+## Note for AI Assistants - APPROVAL PHASE
 
 [WAIT FOR USER RESPONSE BEFORE CONTINUING]
 
-[If user says NO or requests changes]:
-- Stay in plan mode
-- Make requested revisions
-- Present updated plan
-- Ask again: "Do you approve this plan?"
-- [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+**After user responds:**
 
-[If user says YES or approves]:
+- **If user approves** (says "yes", "approved", "looks good", "go ahead", "lgtm", "ship it", etc.):
+  - Acknowledge approval
+  - Proceed to Step 5
+  - Write the final plan to `.devflow/plans/$ARGUMENTS.md`
 
-✅ **Plan approved.**
+- **If user requests changes** (says "change X", "add Y", "remove Z", "make it more detailed", "research [technology]", etc.):
+  - Acknowledge their feedback
+  - Re-analyze codebase if they want more technical details
+  - Re-research with Context7 if they mention new technologies/patterns
+  - Revise the specific sections they mentioned
+  - Present the COMPLETE revised plan using the same format as above
+  - Ask the same approval question again: "Does this plan look good? Would you like any changes?"
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+  - Repeat this cycle until they explicitly approve
 
-**To implement this plan, run:** `/devflow:implement`
+- **If user asks questions** (seeks clarification about approach, asks "why X", etc.):
+  - Answer their questions thoroughly
+  - Offer to revise the plan if needed based on the discussion
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
 
-**To make changes to the plan:** Provide your feedback and I'll revise it.
-
-**DO NOT proceed with implementation.** The `/devflow:implement` command handles all implementation work.
+**CRITICAL:** Do NOT proceed to Step 5 until user explicitly approves with phrases like "yes", "approved", "looks good", "go ahead", "lgtm", etc.
 
 ---
 
-## Detailed Implementation Order (For Reference)
+## Step 5: Save Approved Plan
 
-**Implementation Order:**
+✅ **Plan approved!**
 
-[If TDD Mode is DISABLED]:
-[Sequence of work with rationale]
+Now I'll save the final plan to `.devflow/plans/$ARGUMENTS.md`
 
-[If TDD Mode is ENABLED]:
-[Sequence with TDD workflow]
+## Note for AI Assistants - SAVE PHASE
 
-**TDD-Enhanced Implementation Order:**
+Use the Write tool to create `.devflow/plans/$ARGUMENTS.md` with the complete plan including all sections:
+- Issue Summary
+- Acceptance Criteria
+- Codebase Analysis
+- Implementation Plan
+- Testing Strategy (with TDD workflow if enabled)
+- Context7 Research (if performed)
+- Documentation Updates
+- Commit Strategy
 
-1. [Unit 1 Name]
-   - **RED**: Write tests in tests/[unit|integration]/test_[unit].py
-     - test_[behavior1]()
-     - test_[behavior2]()
-     - test_[edge_case]()
-   - **Run**: [framework-specific test command] → EXPECT RED (tests fail)
-   - **GREEN**: Implement [files to create/modify]
-   - **Run**: [same test command] → EXPECT GREEN (tests pass)
-   - **Validate**: [command to run relevant existing tests] → STAY GREEN
-   - **Commit**: "feat|fix|docs: [unit description] with tests\n\nRefs: [ISSUE-KEY]"
+After writing the file, proceed to Step 6.
 
-2. [Unit 2 Name]
-   - **RED**: Write tests in tests/[unit|integration]/test_[component].py
-     - test_[behavior]()
-   - **Run**: [test command] → EXPECT RED
-   - **GREEN**: Implement [integration code/files]
-   - **Run**: [test command] → EXPECT GREEN
-   - **Validate**: [relevant unit + integration tests] → STAY GREEN
-   - **Commit**: "feat|fix|docs: [unit description] with tests\n\nRefs: [ISSUE-KEY]"
+---
 
-[Continue for all logical units...]
+## ✅ Planning Complete
 
-**Note:** Each unit follows strict TDD cycle: Write failing tests first, implement to make them pass, validate against existing tests.
+Your implementation plan has been saved to: `.devflow/plans/$ARGUMENTS.md`
+
+---
+
+## 📋 What Happens Next?
+
+**You have 2 options:**
+
+### Option 1: Implement the Plan
+Run the implement command to start coding:
+```bash
+/devflow:implement $ARGUMENTS
+```
+
+This will:
+- Create a feature branch for $ARGUMENTS
+- Update JIRA status to "In Progress"
+- Implement the code following your approved plan
+- Run tests (TDD workflow if --tdd was used)
+- Create commits referencing $ARGUMENTS
+- Prepare for PR creation
+
+### Option 2: Revise the Plan
+If you thought of improvements, just tell me what to change:
+- "Add more detail about error handling"
+- "Research [library] for the authentication part"
+- "Include database migration steps"
+
+I'll update `.devflow/plans/$ARGUMENTS.md` and present the revised version.
+
+---
+
+## 🛑 Planning Phase Complete
+
+**This command has finished its job.** The plan is saved and ready for implementation.
+
+**No code has been written.** This command ONLY creates plans - the `/devflow:implement` command handles all code changes, testing, commits, and PR creation.
+
+---
+
+## Note for AI Assistants - COMMAND COMPLETE
+
+**This command is FINISHED. Stop here.**
+
+Do NOT:
+- Implement any code
+- Create branches
+- Make commits
+- Update JIRA
+- Create pull requests
+- Use Edit or MultiEdit tools
+
+The `/devflow:implement` command will handle all implementation tasks.

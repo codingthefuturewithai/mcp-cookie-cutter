@@ -12,6 +12,24 @@ Issue: $ARGUMENTS
 
 ---
 
+## 🔒 Recommended Prerequisites
+
+**Security review recommended before running complete:**
+
+If you haven't already, consider running:
+```bash
+/devflow:security-review $ARGUMENTS
+```
+
+This is especially important if your changes involve authentication, input validation, database queries, or other security-sensitive code.
+
+**Skip if:**
+- You already ran security-review and addressed all findings
+- Changes are documentation-only or other low-risk refactoring
+- You want to proceed without security analysis
+
+---
+
 ## Step 1: Final Validation
 
 **Strategy adapts to work type:**

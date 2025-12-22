@@ -13,10 +13,11 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 ## Workflow Overview
 
 ```
-/fetch-issue [KEY]  →  /plan-work [KEY]  →  /implement  →  /complete [KEY]  →  /post-merge
-     ↓                      ↓                    ↓               ↓                ↓
-  Fetch &              Branch +            Execute         PR + JIRA         Cleanup
-  Analyze              Plan Mode           Plan            Done              & Sync
+/fetch-issue [KEY]  →  /plan-work [KEY]  →  /implement  →  /security-review [KEY]  →  /complete [KEY]  →  /post-merge
+     ↓                      ↓                    ↓                    ↓                      ↓                ↓
+  Fetch &              Branch +            Execute           Security              PR + JIRA         Cleanup
+  Analyze              Plan Mode           Plan              Scan                  Done              & Sync
+                                                          (Recommended)
 ```
 
 ---
@@ -67,13 +68,44 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 - Commits after each validated logical unit
 - Auto re-plans if major deviation needed
 
-**Stops at:** Implementation complete, ready for final validation
+**Stops at:** Implementation complete, ready for security review (recommended)
 
-**Next:** `/devflow:complete [ISSUE-KEY]`
+**Next:** `/devflow:security-review [ISSUE-KEY]` (recommended) or `/devflow:complete [ISSUE-KEY]`
 
 ---
 
-### 4. `/devflow:complete [ISSUE-KEY]`
+### 4. `/devflow:security-review [ISSUE-KEY]` (Recommended)
+
+**Purpose:** Analyze code changes for security vulnerabilities
+
+**What it does:**
+- Analyzes all files modified on the current branch
+- Invokes security-scanner agent for comprehensive analysis
+- Checks for OWASP Top 10 vulnerabilities
+- Identifies unsafe patterns and provides remediation guidance
+- Reports findings by severity (CRITICAL, HIGH, MEDIUM, LOW)
+
+**When to use:**
+- **Always recommended** before creating PR
+- **Especially important** for:
+  - Authentication/authorization logic
+  - Input validation or API integrations
+  - Database queries or file operations
+  - Cryptographic functions or dependencies
+
+**Can also run standalone:**
+- `/devflow:security-review` (interactive mode: full repo, specific files, or directory)
+- Useful for baseline scans, legacy code review, or targeted analysis
+
+**Stops at:** Security assessment complete, vulnerabilities identified (if any)
+
+**Next:**
+- If issues found: Fix vulnerabilities, then re-run security-review
+- If clean: `/devflow:complete [ISSUE-KEY]`
+
+---
+
+### 5. `/devflow:complete [ISSUE-KEY]`
 
 **Purpose:** Final validation, create PR, mark JIRA done
 
@@ -89,7 +121,7 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 
 ---
 
-### 5. `/devflow:post-merge`
+### 6. `/devflow:post-merge`
 
 **Purpose:** Sync with remote and clean up
 
@@ -142,10 +174,13 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 # 3. Execute plan (after plan approval)
 /devflow:implement
 
-# 4. Finalize (after implementation complete)
+# 4. Security review (recommended, especially for sensitive changes)
+/devflow:security-review ACT-123
+
+# 5. Finalize (after security review or if skipped)
 /devflow:complete ACT-123
 
-# 5. Cleanup (after PR merged)
+# 6. Cleanup (after PR merged)
 /devflow:post-merge
 ```
 
@@ -165,9 +200,14 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 - ❌ Reject → Discuss alternative
 
 **After Implementation:**
-- ✅ Validated → Continue to complete
+- ✅ Validated → Run security review (recommended)
 - ❌ Failed validation → Fix and re-validate
 - 🔄 Major deviation → Auto re-plan with approval
+
+**After Security Review:**
+- ✅ No issues → Continue to complete
+- ⚠️ Issues found → Fix vulnerabilities, re-run security-review
+- ⏭️ Can skip if low-risk (docs only, etc.)
 
 **After Complete:**
 - Wait for PR review and merge
