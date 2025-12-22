@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "post_fix_test_mcp"
+version = "0.1.0"
+description = "MCP server with decorators, unified logging, and multiple transports"
+readme = "README.md"
+authors = [
+    {name = "tim", email = "t@gmail.com"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "mcp>=1.0.0",
+    "mcp[cli]>=1.0.0",
+    "anyio>=4.5",
+    "starlette>=0.36.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "platformdirs>=4.0.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.0.0",
+    "pyyaml>=6.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+monitoring = ["psutil>=5.9.0"]
+ui = ["streamlit>=1.29.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "pytest-timeout>=2.1.0",
+]
+
+[project.scripts]
+# Single entry point for server that handles both transports
+post_fix_test_mcp-server = "post_fix_test_mcp.server.app:main"
+post_fix_test_mcp-server-stdio = "post_fix_test_mcp.server.app:main_stdio"
+post_fix_test_mcp-server-http = "post_fix_test_mcp.server.app:main_http"
+post_fix_test_mcp-server-sse = "post_fix_test_mcp.server.app:main_sse"
+post_fix_test_mcp-client = "post_fix_test_mcp.client.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["post_fix_test_mcp*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=post_fix_test_mcp --cov-report=html --cov-report=term-missing" 

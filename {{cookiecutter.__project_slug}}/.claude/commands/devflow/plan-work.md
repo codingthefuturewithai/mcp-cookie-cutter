@@ -240,20 +240,24 @@ Researching: [tech1], [tech2]...
 
 **Note:** Each unit follows strict TDD cycle: Write failing tests first, implement to make them pass, validate against existing tests.
 
-[Call `ExitPlanMode`]
-
 ---
 
-## After Plan Approval
+Do you approve this plan?
 
-[Once ExitPlanMode returns with user approval]:
+[If user says NO or requests changes]:
+- Stay in plan mode
+- Make requested revisions
+- Present updated plan
+- Ask again: "Do you approve this plan?"
 
-✅ **Plan approved and saved to plan file.**
+[If user says YES or approves]:
 
-**Next Steps:**
+✅ **Plan approved.**
 
-To implement this plan, run: `/devflow:implement`
+**To implement this plan, run:** `/devflow:implement`
 
-To revise the plan, provide your feedback and I'll update it.
+**To make changes to the plan:** Provide your feedback and I'll revise it.
 
-**IMPORTANT:** Do NOT proceed with implementation. The `/devflow:implement` command handles branch creation, JIRA updates, and code changes.
+**DO NOT proceed with implementation.** The `/devflow:implement` command handles all implementation work.
+
+[Then stop - do not call ExitPlanMode, do not start implementing, just end the response naturally]

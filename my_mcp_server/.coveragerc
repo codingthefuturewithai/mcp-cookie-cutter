@@ -1,0 +1,39 @@
+[run]
+source = my_mcp_server
+parallel = true
+concurrency = multiprocessing
+data_file = .coverage
+omit = 
+    */site-packages/*
+    */dist-packages/*
+    */.venv/*
+    */venv/*
+    */tests/*
+    */__pycache__/*
+    */migrations/*
+    */node_modules/*
+    /opt/*
+    /usr/*
+    /Library/*
+    ~/.local/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self\.debug
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+directory = htmlcov
+
+[paths]
+source =
+    my_mcp_server/
+    */my_mcp_server
