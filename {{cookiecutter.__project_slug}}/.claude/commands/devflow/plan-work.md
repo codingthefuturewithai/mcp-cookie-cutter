@@ -198,18 +198,45 @@ Your implementation plan has been saved to: `.devflow/plans/$ARGUMENTS.md`
 **You have 2 options:**
 
 ### Option 1: Implement the Plan
-Run the implement command to start coding:
+
+**By default, implementation pauses after each increment for your review:**
+
 ```bash
 /devflow:implement $ARGUMENTS
 ```
 
-This will:
+This incremental mode will pause after each logical unit (commit) so you can:
+- Review what changed (tests, implementation, documentation)
+- Approve and continue to next increment
+- Request revisions to the current increment
+- Review specific files
+- Or stop implementation if needed
+
+**OR run all increments continuously without pauses:**
+
+```bash
+/devflow:implement --auto $ARGUMENTS
+```
+
+Auto mode runs through all logical units from start to finish. Use this when you trust the plan and want hands-off execution.
+
+---
+
+**Which mode should you use?**
+- **New to the codebase?** Use default incremental mode to learn as you go
+- **Complex feature?** Use incremental mode to catch issues early
+- **Simple bug fix?** Use --auto if the plan is straightforward
+- **High confidence?** Use --auto for faster execution
+
+---
+
+**What implement does:**
 - Create a feature branch for $ARGUMENTS
 - Update JIRA status to "In Progress"
 - Implement the code following your approved plan
 - Run tests (TDD workflow if --tdd was used)
 - Create commits referencing $ARGUMENTS
-- Prepare for PR creation
+- Prepare for security review and PR creation
 
 ### Option 2: Revise the Plan
 If you thought of improvements, just tell me what to change:
