@@ -1,7 +1,7 @@
 ---
 description: Execute approved implementation plan
 argument-hint: "[--auto] [ISSUE-KEY]"
-allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue"]
+allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue"]
 ---
 
 # Implement Work
@@ -139,8 +139,13 @@ git checkout -b [branch-name]
 
 ## Step 2: Update JIRA Status
 
-[Call `mcp__atlassian__getTransitionsForJiraIssue`]
-[Call `mcp__atlassian__transitionJiraIssue` to "In Progress"]
+## Note for AI Assistants - JIRA UPDATE
+
+1. Call `mcp__atlassian__getAccessibleAtlassianResources` to get cloud ID
+2. Extract cloudId from the response
+3. Call `mcp__atlassian__getTransitionsForJiraIssue` with cloudId and issue key
+4. Find transition ID for "In Progress" status
+5. Call `mcp__atlassian__transitionJiraIssue` with cloudId, issue key, and transition ID
 
 ✅ JIRA: In Progress
 
