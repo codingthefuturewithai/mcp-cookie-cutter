@@ -149,8 +149,21 @@ gh pr create --title "[ISSUE-KEY]: [Summary]" --body "[generated description]"
 - ✅ JIRA: Done
 
 **Next Steps:**
-- Review PR or request reviews
-- Address feedback if any
-- Merge when approved
+1. Review PR or request reviews
+2. Address feedback if any
+3. Merge when approved
+4. **After PR is merged,** run post-merge cleanup:
+   ```bash
+   /devflow:post-merge
+   ```
 
-Work complete!
+The post-merge command will:
+- Switch back to main branch
+- Pull the merged changes
+- Delete the feature branch
+- Update dependencies (optional)
+- Run tests to verify (optional)
+
+---
+
+Work complete! Remember to run `/devflow:post-merge` after your PR is merged.

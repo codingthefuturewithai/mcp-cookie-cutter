@@ -673,7 +673,7 @@ Run the complete command to finalize:
 This will:
 - Run final full test suite validation
 - Create pull request with all commits
-- Update JIRA status to "Ready for Review"
+- Update JIRA status to "Done"
 - Link PR to JIRA issue
 
 **DO NOT CONTINUE** - User must run `/devflow:complete $ARGUMENTS` to finalize

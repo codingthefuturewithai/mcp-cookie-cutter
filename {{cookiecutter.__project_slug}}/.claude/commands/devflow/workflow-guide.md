@@ -41,15 +41,15 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 
 ### 2. `/devflow:plan-work [ISSUE-KEY]`
 
-**Purpose:** Create branch, update JIRA, develop implementation plan
+**Purpose:** Analyze JIRA issue and develop implementation plan
 
 **What it does:**
-- Creates git branch (feature/bugfix/task based on type)
-- Updates JIRA to "In Progress"
+- Fetches JIRA issue details
 - Enters Plan Mode for analysis
 - Discovers code patterns, test patterns, documentation
 - Researches technologies with Context7 (if applicable)
 - Creates type-aware plan (features vs bugs vs infrastructure vs docs)
+- Saves approved plan to `.devflow/plans/[ISSUE-KEY].md`
 
 **Stops at:** Plan approval - review before implementation
 
@@ -62,8 +62,10 @@ A streamlined JIRA development workflow broken into focused phases with human-in
 **Purpose:** Execute approved plan with validation
 
 **What it does:**
+- Creates git branch (feature/bugfix/task based on type)
+- Updates JIRA status to "In Progress"
 - Implements changes following discovered patterns
-- Tests each component incrementally
+- Tests each component incrementally (pauses after each unit by default)
 - Updates documentation (Definition of Done)
 - Commits after each validated logical unit
 - Auto re-plans if major deviation needed
