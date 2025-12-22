@@ -44,8 +44,9 @@ Let me load the approved plan for $ARGUMENTS.
    - If not found: AUTO_MODE = false, ISSUE_KEY = $ARGUMENTS
    - Store AUTO_MODE for reference throughout execution
 7. **Count logical units from plan:**
-   - Search for "Commit Strategy" or numbered commits in the plan
-   - Count pattern matches to determine TOTAL_UNITS
+   - Search for "Unit X of Y" pattern in plan's Incremental Implementation Schedule
+   - Extract Y as TOTAL_UNITS
+   - Fallback to counting "### Commit" or numbered list if new format not found
    - If no clear pattern, default to "?" for unknown total
    - Store TOTAL_UNITS for progress tracking
 8. **Initialize progress tracking:**
@@ -72,8 +73,14 @@ fi
 
 **2. Count logical units:**
 ```bash
-# Try to count commits in plan's Commit Strategy section
-TOTAL_UNITS=$(grep -c "^### Commit [0-9]" ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || grep -c "^[0-9]\." ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || echo "?")
+# Extract total from "Unit X of Y" pattern in plan
+# First try new format: "### Unit 1 of 5"
+TOTAL_UNITS=$(grep -oP "Unit \d+ of \K\d+" ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null | head -1)
+
+# Fallback to old format if new format not found
+if [ -z "$TOTAL_UNITS" ]; then
+    TOTAL_UNITS=$(grep -c "^### Commit [0-9]" ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || grep -c "^[0-9]\." ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || echo "?")
+fi
 ```
 
 **3. Initialize tracking:**
@@ -96,9 +103,27 @@ TOTAL_UNITS=$(grep -c "^### Commit [0-9]" ".devflow/plans/$ISSUE_KEY.md" 2>/dev/
 
 [If auto-mode DISABLED]: Will pause after each logical unit for review and approval
 
-**Progress tracking:** Ready to start Unit 1 of [TOTAL_UNITS]
+**Progress:** Unit 1 of [TOTAL_UNITS] commits
+**Each commit = 1 mandatory pause point**
+**After this unit: STOP and wait for approval**
 
 **Implementation approach:** [Brief summary from plan]
+
+---
+
+## ⚠️ MANDATORY: PAUSE AFTER EVERY COMMIT
+
+**NON-NEGOTIABLE RULE:**
+- Each commit in the plan = exactly ONE pause point
+- After EVERY commit: generate summary + stop + wait for user response
+- Do NOT proceed to next unit without explicit user approval
+
+**If plan has 3 commits → you will pause 3 times**
+**If plan has 5 commits → you will pause 5 times**
+
+**This applies to ALL modes including TDD (RED/GREEN/REFACTOR).**
+
+**Exception:** If AUTO_MODE is true (--auto flag), skip all pauses and run continuously.
 
 ---
 
