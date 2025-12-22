@@ -1,6 +1,6 @@
 ---
 description: Execute approved implementation plan
-argument-hint: "[ISSUE-KEY]"
+argument-hint: "[--auto] [ISSUE-KEY]"
 allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue"]
 ---
 
@@ -38,7 +38,47 @@ Let me load the approved plan for $ARGUMENTS.
    - If present → TDD Mode ENABLED
    - If absent → TDD Mode DISABLED
 5. Store extracted plan details for reference throughout implementation
-6. Proceed to Step 1
+6. **Parse $ARGUMENTS for flags:**
+   - Check if $ARGUMENTS contains ` --auto` (with spaces around it)
+   - If found: AUTO_MODE = true, strip `--auto` from ISSUE_KEY
+   - If not found: AUTO_MODE = false, ISSUE_KEY = $ARGUMENTS
+   - Store AUTO_MODE for reference throughout execution
+7. **Count logical units from plan:**
+   - Search for "Commit Strategy" or numbered commits in the plan
+   - Count pattern matches to determine TOTAL_UNITS
+   - If no clear pattern, default to "?" for unknown total
+   - Store TOTAL_UNITS for progress tracking
+8. **Initialize progress tracking:**
+   - Set CURRENT_UNIT = 0
+   - Will increment after each unit completion
+9. Proceed to Step 1
+
+## Note for AI Assistants - FLAG DETECTION & COUNTING
+
+After loading the plan file:
+
+**1. Detect auto mode:**
+```bash
+# Check for --auto flag in $ARGUMENTS
+if [[ "$ARGUMENTS" == *" --auto"* ]] || [[ "$ARGUMENTS" == *"--auto "* ]]; then
+    AUTO_MODE="true"
+    ISSUE_KEY="${ARGUMENTS//--auto/}"
+    ISSUE_KEY="${ISSUE_KEY// /}"  # Remove extra spaces
+else
+    AUTO_MODE="false"
+    ISSUE_KEY="$ARGUMENTS"
+fi
+```
+
+**2. Count logical units:**
+```bash
+# Try to count commits in plan's Commit Strategy section
+TOTAL_UNITS=$(grep -c "^### Commit [0-9]" ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || grep -c "^[0-9]\." ".devflow/plans/$ISSUE_KEY.md" 2>/dev/null || echo "?")
+```
+
+**3. Initialize tracking:**
+- Set CURRENT_UNIT=0
+- Store AUTO_MODE and TOTAL_UNITS for later reference
 
 [Read the plan file and extract key information]
 
@@ -49,6 +89,14 @@ Let me load the approved plan for $ARGUMENTS.
 **Issue:** [Issue type from plan] - [Summary from plan]
 
 **TDD Mode:** [ENABLED if RED/GREEN/REFACTOR workflow found in plan, DISABLED otherwise]
+
+**Auto-mode:** [ENABLED if --auto detected in $ARGUMENTS, DISABLED otherwise]
+
+[If auto-mode ENABLED]: Will run all [TOTAL_UNITS] logical units continuously without pausing
+
+[If auto-mode DISABLED]: Will pause after each logical unit for review and approval
+
+**Progress tracking:** Ready to start Unit 1 of [TOTAL_UNITS]
 
 **Implementation approach:** [Brief summary from plan]
 
@@ -182,11 +230,97 @@ Commit after validation passes, following the commit strategy from the approved 
 - Note validation status
 - Follow commit message format from plan
 
-**5. Report Progress**
+**5. Generate Unit Summary**
 
-✅ Unit complete: [description]
-Validation: [test results / verification method]
-Docs: [what was updated]
+Analyzing what was implemented in this unit...
+
+## Note for AI Assistants - GENERATE SUMMARY
+
+Use Bash to get commit details:
+```bash
+# Get the latest commit details
+git log -1 --format="%h%n%s%n%b"
+
+# Get files changed in this commit
+git diff-tree --no-commit-id --name-status HEAD
+```
+
+Analyze the commit diff and describe what actually changed:
+- For test files: what behaviors are being tested?
+- For implementation files: what functionality was added/modified?
+- For documentation: what was documented?
+
+Present the analysis in the Unit Summary below.
+
+---
+
+**Unit Summary:**
+
+**Unit [CURRENT_UNIT + 1] of [TOTAL_UNITS]**
+
+- **Commit:** [short hash] - [commit message]
+- **Files changed:** [count] files
+  - [path/to/file1.ext] - [Added/Modified/Deleted]
+  - [path/to/file2.ext] - [Added/Modified/Deleted]
+  - [... list all files ...]
+- **Tests:** [X total passing] ([if new tests]: +Y new tests)
+- **What changed:**
+  - **Testing:** [Describe test behaviors if test files were added/modified, or "None" if no tests]
+  - **Implementation:** [Describe functionality that was added or modified]
+  - **Documentation:** [Describe what was documented, or "None" if no doc changes]
+
+---
+
+[If AUTO_MODE is false]:
+
+**6. Review and Approval**
+
+This completes Unit [CURRENT_UNIT + 1] of [TOTAL_UNITS].
+
+**What would you like to do?**
+
+- Type **"continue"** or **"next"** → Proceed to next logical unit
+- Type **"review [filename]"** → Inspect a specific file
+- Type **"revise [instructions]"** → Make changes to this unit before continuing
+- Type **"stop"** → Stop implementation here (all work so far is committed)
+
+## Note for AI Assistants - APPROVAL HANDLING
+
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+**After user responds:**
+
+- **If "continue", "next", "yes", "ok", "proceed", "go ahead"**:
+  - Increment CURRENT_UNIT by 1
+  - If CURRENT_UNIT < TOTAL_UNITS: proceed to next logical unit (loop back to step 1)
+  - If CURRENT_UNIT >= TOTAL_UNITS: proceed to Implementation Summary section
+
+- **If "review [filename]"**:
+  - Use Read tool to show the requested file
+  - Re-display the "What would you like to do?" question
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+- **If "revise [instructions]"**:
+  - Acknowledge: "I'll revise [what they asked for]"
+  - Use Edit tool to make the requested changes
+  - Re-run validation (tests if applicable)
+  - Show new validation results
+  - Amend the commit: `git commit --amend --no-edit` (or with updated message if needed)
+  - Re-generate and display the unit summary with updated information
+  - Re-ask: "What would you like to do?"
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+  - Track revision attempts (warn after 3 attempts)
+
+- **If "stop", "exit", "halt", "done"**:
+  - Acknowledge: "Stopping implementation. All completed work has been committed."
+  - Show summary: "[CURRENT_UNIT + 1] of [TOTAL_UNITS] logical units completed"
+  - Skip remaining units
+  - Proceed to Implementation Summary section
+
+---
+
+[If AUTO_MODE is true]:
+[Skip approval section entirely, increment CURRENT_UNIT, and immediately proceed to next logical unit or Implementation Summary]
 
 ---
 
@@ -358,6 +492,105 @@ Tests: [X new, Y passing total]
 
 ---
 
+**STEP 7: Generate TDD Cycle Summary**
+
+Analyzing what was delivered in this TDD cycle...
+
+## Note for AI Assistants - GENERATE TDD SUMMARY
+
+Use Bash to get commit details:
+```bash
+# Get the latest commit details
+git log -1 --format="%h%n%s%n%b"
+
+# Get files changed in this commit
+git diff-tree --no-commit-id --name-status HEAD
+```
+
+Analyze the commit diff and describe what was delivered in each TDD phase:
+- **RED phase:** What test behaviors were specified?
+- **GREEN phase:** What functionality was implemented to make tests pass?
+- **REFACTOR phase:** What improvements were made (if any)?
+- **Documentation:** What was documented?
+
+Present the analysis in the TDD Cycle Summary below.
+
+---
+
+**TDD Cycle Summary:**
+
+**Unit [CURRENT_UNIT + 1] of [TOTAL_UNITS]**
+
+- **Commit:** [short hash] - [commit message]
+- **Files changed:** [count] files
+  - **Tests:**
+    - [path/to/test_file1.py] - [Added/Modified/Deleted]
+  - **Implementation:**
+    - [path/to/impl_file1.py] - [Added/Modified/Deleted]
+  - **Documentation:**
+    - [path/to/doc_file1.md] - [Added/Modified/Deleted]
+- **Test Results:** [X new tests passing], [Y total tests passing]
+- **What was delivered:**
+  - **RED phase:** [Describe test behaviors that were specified]
+  - **GREEN phase:** [Describe implementation that makes tests pass]
+  - **REFACTOR phase:** [Describe any code quality improvements, or "None" if skipped]
+  - **Documentation:** [Describe what was documented, or "None" if no doc changes]
+
+---
+
+[If AUTO_MODE is false]:
+
+**STEP 8: Review and Approval**
+
+This completes TDD Cycle [CURRENT_UNIT + 1] of [TOTAL_UNITS].
+
+**What would you like to do?**
+
+- Type **"continue"** or **"next"** → Proceed to next TDD cycle
+- Type **"review [filename]"** → Inspect a specific file
+- Type **"revise [instructions]"** → Make changes to this cycle before continuing
+- Type **"stop"** → Stop implementation here (all work so far is committed)
+
+## Note for AI Assistants - TDD APPROVAL HANDLING
+
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+**After user responds:**
+
+- **If "continue", "next", "yes", "ok", "proceed", "go ahead"**:
+  - Increment CURRENT_UNIT by 1
+  - If CURRENT_UNIT < TOTAL_UNITS: proceed to next TDD cycle (loop back to STEP 1: Write Failing Tests)
+  - If CURRENT_UNIT >= TOTAL_UNITS: proceed to Implementation Summary section
+
+- **If "review [filename]"**:
+  - Use Read tool to show the requested file
+  - Re-display the "What would you like to do?" question
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+- **If "revise [instructions]"**:
+  - Acknowledge: "I'll revise [what they asked for]"
+  - Use Edit tool to make the requested changes
+  - Re-run tests (both new and relevant existing tests)
+  - Show new test results
+  - Amend the commit: `git commit --amend --no-edit` (or with updated message if needed)
+  - Re-generate and display the TDD Cycle Summary with updated information
+  - Re-ask: "What would you like to do?"
+  - [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+  - Track revision attempts (warn after 3 attempts)
+
+- **If "stop", "exit", "halt", "done"**:
+  - Acknowledge: "Stopping implementation. All completed TDD cycles have been committed."
+  - Show summary: "[CURRENT_UNIT + 1] of [TOTAL_UNITS] TDD cycles completed"
+  - Skip remaining cycles
+  - Proceed to Implementation Summary section
+
+---
+
+[If AUTO_MODE is true]:
+[Skip approval section entirely, increment CURRENT_UNIT, and immediately proceed to next TDD cycle or Implementation Summary]
+
+---
+
 [Repeat TDD cycle for next logical unit...]
 
 ---
@@ -384,11 +617,15 @@ DO NOT continue implementation - the plan at `.devflow/plans/$ARGUMENTS.md` must
 
 **Plan executed:** `.devflow/plans/$ARGUMENTS.md`
 
+**Progress:** [CURRENT_UNIT] of [TOTAL_UNITS] logical units completed
+
+**Mode:** [Auto-mode ENABLED / Auto-mode DISABLED - paused after each unit]
+
 **Completed:**
-- [X] logical units implemented (from plan)
+- [CURRENT_UNIT] logical units implemented (from plan)
 - [Y] validations passing
 - [Z] documentation files updated
-- [N] commits created
+- [CURRENT_UNIT] commits created (one per logical unit)
 
 **Files Modified:**
 [List with paths - compare with plan's expected files]
