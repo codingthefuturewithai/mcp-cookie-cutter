@@ -173,17 +173,132 @@ Now I'll save the final plan to `.devflow/plans/$ARGUMENTS.md`
 
 ## Note for AI Assistants - SAVE PHASE
 
-Use the Write tool to create `.devflow/plans/$ARGUMENTS.md` with the complete plan including all sections:
-- Issue Summary
-- Acceptance Criteria
-- Codebase Analysis
-- Implementation Plan
-- Testing Strategy (with TDD workflow if enabled)
-- Context7 Research (if performed)
-- Documentation Updates
-- Commit Strategy
+Use the Write tool to create `.devflow/plans/$ARGUMENTS.md` with the complete plan including all sections **IN THIS ORDER**:
 
-After writing the file, proceed to Step 6.
+**1. Mandatory Implementation Rules (FIRST - CRITICAL)**
+**2. Issue Summary**
+**3. Acceptance Criteria**
+**4. Codebase Analysis**
+**5. Implementation Plan**
+**6. Testing Strategy** (with TDD workflow if enabled)
+**7. Context7 Research** (if performed)
+**8. Documentation Updates**
+**9. Commit Strategy**
+**10. Incremental Implementation Schedule (LAST - CRITICAL)**
+
+See detailed templates below for sections 1 and 10.
+
+---
+
+### Template: Section 1 - Mandatory Implementation Rules
+
+This MUST be the first section after the plan title:
+
+```markdown
+## ⚠️ MANDATORY IMPLEMENTATION RULES - READ FIRST
+
+**PAUSE AFTER EVERY COMMIT:**
+- This plan contains [X] commits = [X] mandatory pause points
+- After EACH commit: generate summary, STOP, wait for user approval
+- Do NOT proceed to next unit without explicit "continue" response
+- If --auto flag: skip pauses and run all units continuously
+
+**Progress Tracking:**
+- Current format: "Unit X of [X]"
+- Each unit = exactly one commit
+- After each unit: STOP and wait for approval (unless --auto)
+
+**Non-Negotiable:**
+- [X] commits in this plan = [X] pauses during implementation
+- Read the Incremental Implementation Schedule below for explicit pause points
+
+---
+```
+
+Replace [X] with the actual number of commits from the Commit Strategy section.
+
+---
+
+### Template: Section 10 - Incremental Implementation Schedule
+
+This MUST be the last section of the plan, after Commit Strategy:
+
+```markdown
+## 🔄 Incremental Implementation Schedule
+
+**CRITICAL: Each unit below = ONE mandatory pause point for user review**
+
+**Total Pause Points:** [X]
+
+---
+
+### Unit 1 of [X]: [Commit 1 Title from Commit Strategy]
+
+**Changes:** [Detailed description of what this commit includes]
+
+**Commit message:**
+```
+[Commit message from Commit Strategy]
+```
+
+⏸️ 🛑 **PAUSE POINT #1 - STOP AND WAIT FOR USER APPROVAL**
+
+After committing this unit:
+1. Generate unit summary showing what changed
+2. Display "What would you like to do?" prompt with options: continue/review/revise/stop
+3. STOP and WAIT for user response
+4. Only proceed to Unit 2 after explicit approval
+
+---
+
+### Unit 2 of [X]: [Commit 2 Title from Commit Strategy]
+
+**Changes:** [Detailed description of what this commit includes]
+
+**Commit message:**
+```
+[Commit message from Commit Strategy]
+```
+
+⏸️ 🛑 **PAUSE POINT #2 - STOP AND WAIT FOR USER APPROVAL**
+
+After committing this unit:
+1. Generate unit summary showing what changed
+2. Display "What would you like to do?" prompt with options: continue/review/revise/stop
+3. STOP and WAIT for user response
+4. Only proceed to Unit 3 after explicit approval
+
+---
+
+[Repeat this structure for ALL commits in the Commit Strategy]
+
+---
+
+### Final Unit [X] of [X]: [Final Commit Title]
+
+**Changes:** [Detailed description]
+
+**Commit message:**
+```
+[Commit message]
+```
+
+⏸️ 🛑 **PAUSE POINT #[X] - FINAL UNIT - STOP AND WAIT FOR USER APPROVAL**
+
+After committing this unit:
+1. Generate unit summary showing what changed
+2. Display "What would you like to do?" prompt
+3. STOP and WAIT for user response
+4. After approval: Proceed to Implementation Summary
+
+---
+```
+
+**Important:** Number each pause point (PAUSE POINT #1, #2, #3, etc.) and make the visual markers (⏸️ 🛑) prominent.
+
+---
+
+After writing the file with ALL sections in the correct order, proceed to Step 6.
 
 ---
 
@@ -236,7 +351,7 @@ Auto mode runs through all logical units from start to finish. Use this when you
 - Implement the code following your approved plan
 - Run tests (TDD workflow if --tdd was used)
 - Create commits referencing $ARGUMENTS
-- Prepare for security review and PR creation
+- Recommend security review before creating PR
 
 ### Option 2: Revise the Plan
 If you thought of improvements, just tell me what to change:
