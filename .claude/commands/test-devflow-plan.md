@@ -259,11 +259,14 @@ Each logical unit follows: Write tests (RED) → Implement (GREEN) → Refactor 
 
 Do you approve this plan?
 
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
 [If user says NO or requests changes]:
 - Stay in plan mode
 - Make requested revisions
 - Present updated plan
 - Ask again: "Do you approve this plan?"
+- [WAIT FOR USER RESPONSE BEFORE CONTINUING]
 
 [If user says YES or approves]:
 
@@ -274,5 +277,3 @@ Do you approve this plan?
 **To make changes to the plan:** Provide your feedback and I'll revise it.
 
 **DO NOT proceed with implementation.** The `/devflow:implement` command handles all implementation work.
-
-[Then stop - do not call ExitPlanMode, do not start implementing, just end the response naturally]

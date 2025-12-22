@@ -2,6 +2,37 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 CRITICAL LEARNINGS - NEVER FORGET THESE
+
+### Slash Commands CAN Pause and Wait for User Input
+
+**PROVEN FACT:** Slash commands can absolutely pause mid-execution and wait for user responses. This works identically in both normal mode and plan mode.
+
+**How:** Use the instruction `[WAIT FOR USER RESPONSE BEFORE CONTINUING]` in the slash command markdown. The agent will stop at that point, wait for user input, then continue with the same command context.
+
+**Evidence:** The `/project:getting-started` command in generated projects pauses 20+ times during execution, asking questions and waiting for responses. This behavior is identical whether in plan mode or normal mode.
+
+**Key Insights:**
+- ✅ Slash commands ARE multi-turn capable
+- ✅ Plan mode does NOT prevent slash commands from pausing
+- ✅ Use `[WAIT FOR USER RESPONSE BEFORE CONTINUING]` to create interactive flows
+- ✅ The slash command context persists across all these user interactions
+
+**Example Pattern:**
+```markdown
+Present information here.
+
+Do you understand?
+
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+[If user says yes]:
+- Continue to next concept
+
+[If user says no]:
+- Re-explain current concept
+```
+
 ## Project Overview
 
 This is a Python Cookiecutter template for creating MCP (Model Context Protocol) servers. MCP enables AI assistants to interact with external tools and services through a standardized protocol.
