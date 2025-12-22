@@ -1,7 +1,7 @@
 ---
 description: Execute approved implementation plan
 argument-hint: "[--auto] [ISSUE-KEY]"
-allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue"]
+allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "TodoWrite", "mcp__atlassian__getAccessibleAtlassianResources", "mcp__atlassian__getJiraIssue", "mcp__atlassian__getTransitionsForJiraIssue", "mcp__atlassian__transitionJiraIssue"]
 ---
 
 # Implement Work
@@ -141,13 +141,38 @@ git checkout -b [branch-name]
 
 ## Note for AI Assistants - JIRA UPDATE
 
-1. Call `mcp__atlassian__getAccessibleAtlassianResources` to get cloud ID
-2. Extract cloudId from the response
-3. Call `mcp__atlassian__getTransitionsForJiraIssue` with cloudId and issue key
-4. Find transition ID for "In Progress" status
-5. Call `mcp__atlassian__transitionJiraIssue` with cloudId, issue key, and transition ID
+**Check current status first, then transition if needed:**
 
-✅ JIRA: In Progress
+1. Call `mcp__atlassian__getAccessibleAtlassianResources` to get cloud ID
+2. Extract cloudId from the response (first item in array)
+
+3. Call `mcp__atlassian__getJiraIssue` with:
+   - cloudId
+   - issueIdOrKey = $ARGUMENTS
+   - fields = ["status"]
+
+4. Extract current status from response: `fields.status.name`
+
+5. **If current status is already "In Progress":**
+   - Skip transition (already set)
+   - Display: "✅ JIRA: In Progress (already set)"
+   - Proceed to next step
+
+6. **If current status is NOT "In Progress":**
+   - Call `mcp__atlassian__getTransitionsForJiraIssue` with cloudId and issue key
+   - Find transition where `to.name` equals "In Progress"
+   - Extract the `id` field from that transition (e.g., "21")
+   - Call `mcp__atlassian__transitionJiraIssue` with:
+     ```json
+     {
+       "cloudId": "[cloudId]",
+       "issueIdOrKey": "$ARGUMENTS",
+       "transition": { "id": "[transition_id]" }
+     }
+     ```
+   - Display: "✅ JIRA: In Progress"
+
+**IMPORTANT:** The `to.name` field in transitions shows the DESTINATION status, not the current status. Don't confuse seeing "In Progress" in the transitions list with the issue already being in that status.
 
 ---
 
