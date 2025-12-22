@@ -195,6 +195,32 @@ Each logical unit follows: Write tests (RED) → Implement (GREEN) → Refactor 
 - Commit after each logical unit is validated
 - Reference issue key in commits
 
+---
+
+Do you approve this plan?
+
+[WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+[If user says NO or requests changes]:
+- Make requested revisions to the plan above
+- Present updated plan
+- Ask again: "Do you approve this plan?"
+- [WAIT FOR USER RESPONSE BEFORE CONTINUING]
+
+[If user says YES or approves]:
+
+✅ **Plan approved.**
+
+**To implement this plan, run:** `/devflow:implement`
+
+**To make changes to the plan:** Provide your feedback and I'll revise it.
+
+**DO NOT proceed with implementation.** The `/devflow:implement` command handles all implementation work.
+
+---
+
+## Detailed Implementation Order (For Reference)
+
 **Implementation Order:**
 
 [If TDD Mode is DISABLED]:
