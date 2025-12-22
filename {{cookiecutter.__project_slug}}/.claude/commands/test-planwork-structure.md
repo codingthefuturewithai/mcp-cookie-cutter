@@ -55,4 +55,6 @@ Type: Feature
 
 ---
 
-**Do you approve this plan?**
+## Step 3: Review Plan with User
+
+Do you approve this plan?

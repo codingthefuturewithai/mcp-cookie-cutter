@@ -242,4 +242,6 @@ Researching: [tech1], [tech2]...
 
 ---
 
+## Step 3: Review Plan with User
+
 Do you approve this plan?
