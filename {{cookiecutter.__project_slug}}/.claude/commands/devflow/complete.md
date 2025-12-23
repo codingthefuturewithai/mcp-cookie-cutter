@@ -100,7 +100,81 @@ git log --oneline [base-branch]...HEAD
 
 ---
 
-## Step 4: Create Pull Request
+## Step 3.5: Verify GitHub CLI Authentication
+
+Before attempting any GitHub operations, verify the user is authenticated.
+
+```bash
+gh auth status
+```
+
+**If not authenticated:**
+
+⚠️ **GitHub CLI not authenticated**
+
+Please authenticate with GitHub:
+
+```bash
+gh auth login
+```
+
+Then run complete again:
+```bash
+/devflow:complete $ARGUMENTS
+```
+
+**STOP** - Cannot proceed without GitHub authentication.
+
+**If authenticated:** ✅ Continue to next step
+
+---
+
+## Step 3.6: Ensure GitHub Repo Exists
+
+Check if the repository exists on GitHub, and create it if needed.
+
+```bash
+# Get current branch name
+CURRENT_BRANCH=$(git branch --show-current)
+
+# Check if GitHub repo exists
+if gh repo view >/dev/null 2>&1; then
+    echo "✅ GitHub repo exists"
+else
+    echo "📦 Creating GitHub repository..."
+    # Automatically create repo and push
+    # Uses current directory name as repo name
+    # Adjust --public to --private if needed
+    gh repo create --source=. --public --push
+    echo "✅ GitHub repo created and code pushed"
+fi
+```
+
+This automatically:
+- Creates the GitHub repository if it doesn't exist
+- Uses the current directory name as the repo name
+- Pushes all local branches
+- Sets up the remote tracking
+
+---
+
+## Step 4: Push Current Branch
+
+Ensure the feature branch is pushed to GitHub.
+
+```bash
+# Get current branch name
+CURRENT_BRANCH=$(git branch --show-current)
+
+# Push current branch to origin with upstream tracking
+git push -u origin $CURRENT_BRANCH
+```
+
+✅ Branch pushed: `$CURRENT_BRANCH`
+
+---
+
+## Step 5: Create Pull Request
 
 Using GitHub CLI to create PR with auto-generated description.
 
@@ -132,7 +206,7 @@ gh pr create --title "[ISSUE-KEY]: [Summary]" --body "[generated description]"
 
 ---
 
-## Step 5: Update JIRA
+## Step 6: Update JIRA
 
 [Call `mcp__atlassian__getTransitionsForJiraIssue`]
 [Call `mcp__atlassian__transitionJiraIssue` to "Done"]
