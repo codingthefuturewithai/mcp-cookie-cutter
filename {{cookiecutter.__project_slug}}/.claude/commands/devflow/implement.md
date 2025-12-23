@@ -697,7 +697,11 @@ All tasks from the approved plan have been implemented and validated.
 
 ## 🔒 Security Review (Recommended)
 
-**Before creating your PR, consider running a security analysis:**
+**You have two options:**
+
+### Option 1: Run Security Scan First (Recommended)
+
+Scan your changes for OWASP Top 10 vulnerabilities:
 
 ```bash
 /devflow:security-review $ARGUMENTS
@@ -709,13 +713,14 @@ This is especially important if you modified:
 - Database queries or file operations
 - Cryptographic functions or dependencies
 
-Skip if: Documentation-only changes or low-risk refactoring
+After the scan completes, you'll be prompted to run `/devflow:complete`.
 
 ---
 
-**Next step:**
+### Option 2: Skip Security Scan and Create PR
 
-Run the complete command to finalize:
+If you prefer to skip the security scan (e.g., documentation-only changes):
+
 ```bash
 /devflow:complete $ARGUMENTS
 ```
@@ -726,4 +731,6 @@ This will:
 - Update JIRA status to "Done"
 - Link PR to JIRA issue
 
-**DO NOT CONTINUE** - User must run `/devflow:complete $ARGUMENTS` to finalize
+---
+
+**DO NOT CONTINUE** - User must choose one of the options above to finalize

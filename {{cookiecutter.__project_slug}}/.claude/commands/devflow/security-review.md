@@ -355,40 +355,49 @@ To review dismissed issues: `/devflow:security-review --show-dismissed [ISSUE_KE
 
 ---
 
-## ✅ Next Steps
 
-**If this was for a specific issue (ISSUE_KEY is set):**
+## ✅ Security Review Complete
 
-- **No issues found OR all issues triaged:**
-
-  [Check if any CRITICAL or HIGH severity issues remain unaddressed]
-
-  [If critical/high issues remain (marked as manual/deferred/skipped)]:
-  ⚠️ **Warning:** You have unaddressed CRITICAL or HIGH severity issues. Consider:
-  - Re-running triage to fix or ticket them
-  - Or explicitly accepting the risk before proceeding
-
-  [If no critical/high issues OR all handled]:
-  ✅ **Ready to proceed:**
-  ```bash
-  /devflow:complete [ISSUE_KEY]
-  ```
-
-- **Want to re-run security review:**
-
-  If you manually fixed issues or want to verify fixes:
-  ```bash
-  /devflow:security-review [ISSUE_KEY]
-  ```
-
-**If this was a general security scan:**
-
-- **Issues found:** Triage complete - review summary above
-- **No issues found:** Your code looks secure!
-- **Re-scan after manual fixes:** `/devflow:security-review [ISSUE-KEY]`
+Security analysis and triage finished.
 
 ---
 
-## 🛑 Security Review Complete
+## 📋 Next Step: Create Pull Request
 
-Security analysis and triage finished. Review the triage summary above before proceeding.
+**If this was part of implementing a feature or bug fix:**
+
+Review the triage summary above, then proceed to create your PR:
+
+```bash
+/devflow:complete [ISSUE_KEY]
+```
+
+This will:
+- Run final validation
+- Create pull request with all commits
+- Update JIRA status to "Done"
+- Link PR to JIRA issue
+
+---
+
+**If you need to make manual fixes first:**
+
+1. Fix the security issues in your code
+2. Re-run security scan to verify fixes:
+   ```bash
+   /devflow:security-review [ISSUE_KEY]
+   ```
+3. Then run complete when ready:
+   ```bash
+   /devflow:complete [ISSUE_KEY]
+   ```
+
+---
+
+**⚠️ Important:** If CRITICAL or HIGH severity issues remain unaddressed (marked as manual/deferred/skipped), consider fixing them or creating follow-up tickets before creating the PR.
+
+---
+
+## 🛑 Security Review Session Ended
+
+Do not continue - user must run `/devflow:complete [ISSUE_KEY]` when ready.
