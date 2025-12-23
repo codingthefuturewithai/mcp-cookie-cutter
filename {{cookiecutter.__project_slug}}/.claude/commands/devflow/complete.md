@@ -100,15 +100,59 @@ git log --oneline [base-branch]...HEAD
 
 ---
 
-## Step 3.5: Verify GitHub CLI Authentication
+## Step 3.5: Verify GitHub CLI Installation and Authentication
 
-Before attempting any GitHub operations, verify the user is authenticated.
+Before attempting any GitHub operations, verify GitHub CLI is installed and authenticated.
 
 ```bash
+# Check if gh command is available
+if ! command -v gh >/dev/null 2>&1; then
+    echo "❌ GitHub CLI not installed"
+    exit 1
+fi
+
+# Check authentication
 gh auth status
 ```
 
-**If not authenticated:**
+**If `gh` is not installed:**
+
+⚠️ **GitHub CLI not installed**
+
+Please install GitHub CLI:
+
+**macOS:**
+```bash
+brew install gh
+```
+
+**Linux:**
+```bash
+# Debian/Ubuntu
+sudo apt install gh
+
+# Fedora/RHEL
+sudo dnf install gh
+
+# Or download from: https://cli.github.com/
+```
+
+**Windows:**
+```bash
+winget install --id GitHub.cli
+# Or download from: https://cli.github.com/
+```
+
+Then run complete again:
+```bash
+/devflow:complete $ARGUMENTS
+```
+
+**STOP** - Cannot proceed without GitHub CLI.
+
+---
+
+**If `gh` is installed but not authenticated:**
 
 ⚠️ **GitHub CLI not authenticated**
 
@@ -125,7 +169,9 @@ Then run complete again:
 
 **STOP** - Cannot proceed without GitHub authentication.
 
-**If authenticated:** ✅ Continue to next step
+---
+
+**If installed and authenticated:** ✅ Continue to next step
 
 ---
 
