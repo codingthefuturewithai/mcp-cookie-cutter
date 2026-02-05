@@ -14,6 +14,21 @@ A cookie cutter template for creating new MCP (Model Context Protocol) servers. 
 - **DevFlow Integration**: Built-in JIRA workflow commands (plan-work, implement, security-review, complete)
 - **Comprehensive Documentation**: Templates for README, development guide, and setup prompts
 
+## MCP Design Principles (Included in the Template)
+
+The template now ships with design guidance derived from production refactoring work:
+
+- Explicit tool schemas and canonical parameter names
+- Token storage strategy with secure defaults and fallbacks
+- Pagination-first list/read behaviors
+- Structured logging and operational status reporting
+- SemVer + tag-based release guidance
+- Unit and integration test expectations
+- Security and documentation checklists
+- Standard pre-commit lint/format/test workflows
+
+See `AGENTS.md` and the generated project docs (`docs/MCP_DESIGN_PRINCIPLES.md`) for details.
+
 ## Prerequisites
 
 1. Python 3.11 or higher
