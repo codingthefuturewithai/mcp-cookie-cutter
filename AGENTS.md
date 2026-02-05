@@ -99,53 +99,18 @@ The template generates projects with this structure:
 - Use MCP Inspector for interactive development and testing
 - The protocol requires proper error handling and response formatting
 
-## MCP Design Principles (Applied in This Template)
+## MCP Design Principles
 
-These principles capture the lessons from the OneNote MCP refactor and align with this template’s
-existing guidance and structure.
+The template’s MCP design principles are consolidated in
+`{{cookiecutter.__project_slug}}/docs/MCP_DESIGN_PRINCIPLES.md`. It covers:
 
-### Tool Schemas and Inputs
-- Define explicit tool input schemas and canonical parameter names.
-- Accept a minimal set of aliases only when you need backward compatibility.
-- Validate inputs at the boundary and return actionable errors for missing/invalid params.
-
-### Token Storage and Secrets
-- Default to secure OS-backed storage where possible; provide file/env fallback.
-- Make storage mode configurable and surface the effective mode in status/info.
-- Avoid printing secrets in logs or commands; document safe setup paths.
-
-### Pagination and Data Completeness
-- Prefer pagination helpers for list endpoints to avoid partial results.
-- Provide a consistent “fetch all pages” utility for list/read tools.
-
-### Logging and Operational Clarity
-- Emit structured logs to a file destination with optional console output.
-- Add an `info`/status tool to expose version, config flags, and dependency checks.
-
-### Versioning and Releases
-- Use SemVer from package metadata and document tag-based release flow.
-- Keep runtime version in server metadata and status tools.
-
-### Testing Strategy
-- Pair unit tests (parsers, helpers) with integration tests (mocked API/fetch).
-- Make tests deterministic; avoid live network calls in CI.
-
-### Documentation and Security Notes
-- Provide `.env.example`, `LICENSE`, and security guidance for secrets handling.
-- Document tool schemas, configuration, and known platform caveats.
-
-### Standard Developer Workflow
-- Use pre-commit hooks for lint/format/test in the generated project.
-- Enforce commit message rules where possible (commitlint or equivalent).
-
-### Language-Specific Guidance
-
-If you are implementing the server in Python, follow the template’s default structure and
-tooling (uv, pyproject, pytest, and the decorators/logging stack).
-
-If you are implementing the server in Node/TypeScript, mirror the same principles with
-TypeScript tooling: explicit schemas (zod or JSON schema), lint/format/test hooks, and a
-build pipeline that emits runnable JavaScript.
+- Tool schema conventions and canonical parameter names
+- Token storage defaults, security guidance, and status reporting
+- Pagination expectations for list/read tools
+- Logging and operational status practices
+- Versioning and release guidance
+- Testing expectations (including mocked API responses)
+- Language-specific guidance for Python vs Node/TypeScript
 
 ### Template Guidance (Existing Structure)
 - Keep tool logic isolated (`tools/`) and register via a single server entrypoint.
