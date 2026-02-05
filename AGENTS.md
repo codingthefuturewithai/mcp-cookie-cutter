@@ -138,6 +138,15 @@ existing guidance and structure.
 - Use pre-commit hooks for lint/format/test in the generated project.
 - Enforce commit message rules where possible (commitlint or equivalent).
 
+### Language-Specific Guidance
+
+If you are implementing the server in Python, follow the template’s default structure and
+tooling (uv, pyproject, pytest, and the decorators/logging stack).
+
+If you are implementing the server in Node/TypeScript, mirror the same principles with
+TypeScript tooling: explicit schemas (zod or JSON schema), lint/format/test hooks, and a
+build pipeline that emits runnable JavaScript.
+
 ### Template Guidance (Existing Structure)
 - Keep tool logic isolated (`tools/`) and register via a single server entrypoint.
 - Use absolute imports for clarity and stable packaging.

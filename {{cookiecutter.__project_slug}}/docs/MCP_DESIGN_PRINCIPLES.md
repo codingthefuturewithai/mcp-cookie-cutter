@@ -36,3 +36,11 @@ implementation and review expectations.
 ## Standard Developer Workflow
 - Use pre-commit hooks for lint/format/test checks.
 - Enforce commit message rules where possible.
+
+## Language-Specific Guidance
+
+For Python servers, use the template’s default structure and Python-native tooling
+(uv, pyproject, pytest, and the decorators/logging stack).
+
+For Node/TypeScript servers, apply the same principles with TypeScript tooling:
+explicit schemas, lint/format/test hooks, and a build step that emits runnable JavaScript.

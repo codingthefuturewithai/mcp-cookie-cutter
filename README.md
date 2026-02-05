@@ -27,6 +27,9 @@ The template now ships with design guidance derived from production refactoring 
 - Security and documentation checklists
 - Standard pre-commit lint/format/test workflows
 
+The guidance is differentiated for Python vs Node/TypeScript implementations so teams can map
+the same principles onto their chosen stack.
+
 See `AGENTS.md` and the generated project docs (`docs/MCP_DESIGN_PRINCIPLES.md`) for details.
 
 ## Prerequisites
