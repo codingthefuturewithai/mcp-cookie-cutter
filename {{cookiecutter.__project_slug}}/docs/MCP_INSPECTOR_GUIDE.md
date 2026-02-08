@@ -91,6 +91,9 @@ Open the Inspector URL in your browser.
 | STDIO | Desktop clients (Claude Desktop) | N/A | Simple, reliable |
 | SSE | Web clients (legacy) | Multiple endpoints | Separate streams per operation |
 | Streamable HTTP | Modern web clients | Single `/mcp` endpoint | Unified API, resumability, better performance |
+| Docker | Containerized deployment | `http://localhost:<port>/mcp` | Isolated, reproducible, uses streamable HTTP |
+
+**Docker transport**: Run `python scripts/docker.py start` to deploy in a container. See [README.md](../README.md#docker-deployment) for details.
 
 
 ## Testing Example Tools

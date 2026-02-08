@@ -58,11 +58,12 @@ Based on user's choice (1, 2, or 3), follow the appropriate path:
    [WAIT FOR USER RESPONSE BEFORE CONTINUING]
    
    **Concept**: How MCP connects
-   - "Three transport methods:"
+   - "Three transport methods (plus Docker):"
    - "• STDIO (local) - what Claude Desktop uses"
    - "• SSE (network) - traditional HTTP transport"
    - "• Streamable HTTP - modern unified transport with session management"
-   - "This server supports all three transports. FastMCP handles the complexity."
+   - "• Docker - containerized deployment using streamable HTTP (`python scripts/docker.py start`)"
+   - "This server supports all three transports, and can run in Docker for isolated deployments. FastMCP handles the complexity."
    - "Making sense?"
    [WAIT FOR USER RESPONSE BEFORE CONTINUING]
    

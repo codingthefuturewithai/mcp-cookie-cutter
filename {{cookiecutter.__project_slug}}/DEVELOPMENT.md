@@ -9,6 +9,7 @@ This guide covers development practices, architecture, and contribution guidelin
 - Python 3.11-3.12
 - uv (recommended) or pip
 - Git for version control
+- Docker (optional, for containerized deployment)
 
 ### Initial Setup
 
@@ -138,6 +139,10 @@ The MCP Server Project is built with a modular architecture featuring:
 ├── test_correlation_id_integration.py  # Correlation ID test
 ├── test_unified_logging.py            # Logging system test
 ├── pyproject.toml                     # Package configuration
+├── Dockerfile                         # Docker container build
+├── docker-compose.yml                 # Docker Compose configuration
+├── scripts/
+│   └── docker.py                      # Docker management script
 ├── README.md                          # User documentation
 └── DEVELOPMENT.md                     # This file
 ```
@@ -550,6 +555,29 @@ curl -X POST http://localhost:3001/tools/echo \
   -d '{"text": "Hello SSE"}'
 ```
 
+### Docker Testing
+
+Run the server in a Docker container for isolated, production-like testing:
+
+```bash
+# Build and start container
+python scripts/docker.py start
+
+# Check status
+python scripts/docker.py status
+
+# View logs
+python scripts/docker.py logs
+
+# Rebuild after code changes
+python scripts/docker.py update
+
+# Stop container
+python scripts/docker.py stop
+```
+
+The container exposes the MCP endpoint at `http://localhost:<port>/mcp` using streamable-http transport. See [README.md](README.md#docker-deployment) for full details.
+
 ### Logging and Debugging
 
 ```bash
@@ -631,6 +659,7 @@ PYTHONPATH=. mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 
 - **STDIO**: Check for stdout pollution (use stderr for debugging)
 - **SSE/HTTP**: Verify port availability and firewall settings
+- **Docker**: Use `python scripts/docker.py status` and `python scripts/docker.py logs` to diagnose container issues
 - **General**: Check logs for detailed error messages
 
 ### Decorator Issues

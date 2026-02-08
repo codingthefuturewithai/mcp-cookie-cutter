@@ -214,6 +214,7 @@ Once you have your own tools working:
 - [ ] Configuration reviewed (`config.yaml`)
 - [ ] README.md updated with your tools' documentation
 - [ ] License and credits updated
+- [ ] Docker deployment tested (`python scripts/docker.py start`)
 
 ---
 
@@ -227,6 +228,10 @@ Once you have your own tools working:
 │   └── example_tools.py # Example tools (remove when ready)
 ├── decorators/          # Decorators (don't modify)
 ├── tests/              # Test suite
+├── scripts/
+│   └── docker.py       # Docker management (start/stop/update)
+├── Dockerfile          # Container build definition
+├── docker-compose.yml  # Docker Compose configuration
 ├── .reference/         # Patterns and examples (always available)
 └── .claude/commands/   # Claude Code commands
 ```

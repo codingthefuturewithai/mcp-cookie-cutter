@@ -14,6 +14,15 @@ which {{cookiecutter.__project_slug}}-server  # macOS/Linux
 where {{cookiecutter.__project_slug}}-server  # Windows
 ```
 
+### Docker Deployment (Alternative)
+```bash
+# Build and start in a container
+python scripts/docker.py start
+
+# MCP endpoint available at http://localhost:<port>/mcp
+# See README.md for full Docker documentation
+```
+
 ### Development Setup
 ```bash
 # Clone and setup for development
@@ -42,8 +51,21 @@ uv pip install -e ".[ui,test,monitoring]"
 # Start with streamable HTTP transport
 {{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001
 
+# Start with Docker (streamable HTTP, auto port discovery)
+python scripts/docker.py start
+
 # Get help
 {{cookiecutter.__project_slug}}-server --help
+```
+
+### Docker Commands
+```bash
+python scripts/docker.py start     # Build and start container
+python scripts/docker.py stop      # Stop and remove container
+python scripts/docker.py restart   # Restart without rebuild
+python scripts/docker.py update    # Rebuild and restart (after code changes)
+python scripts/docker.py status    # Show container status
+python scripts/docker.py logs      # Tail container logs
 ```
 
 ### Testing Commands
@@ -170,6 +192,7 @@ streamlit run {{cookiecutter.__project_slug}}/ui/app.py
 - **STDIO**: Default, for MCP clients like Claude Desktop
 - **SSE**: Server-Sent Events for web clients
 - **Streamable HTTP**: HTTP streaming for advanced clients
+- **Docker**: Containerized deployment using streamable HTTP (via `python scripts/docker.py`)
 
 ### Decorator Chain
 1. **exception_handler**: Error handling and logging
@@ -252,6 +275,11 @@ Stop-Job -Name Job1
 - **MCP_SERVER_NAME**: Custom server name (default: "{{cookiecutter.project_name}}")
 - **MCP_SERVER_PORT**: Default port for SSE/HTTP (default: 3001)
 
+### Docker Configuration
+- **MCP_PORT**: Host port mapped to the container (default: 19000)
+- **MCP_DNS_REBINDING_PROTECTION**: Enable DNS rebinding protection (default: false)
+- **MCP_ALLOWED_HOSTS**: Comma-separated allowed Host headers
+
 ### Development Variables
 - **PYTHONPATH**: Set to "." when using MCP Inspector
 - **MCP_DEBUG**: Enable additional debug output
@@ -275,5 +303,6 @@ When working with this project:
 5. ✅ Check logs for correlation ID tracking
 6. ✅ Test different transports if needed
 7. ✅ Use Streamlit UI for monitoring
+8. ✅ Test Docker deployment with `python scripts/docker.py start` (optional)
 
 This setup guide should get you productive with {{cookiecutter.project_name}} quickly!

@@ -169,12 +169,17 @@ server = create_mcp_server()
     help="Port to listen on for SSE or Streamable HTTP transport"
 )
 @click.option(
+    "--host",
+    default="127.0.0.1",
+    help="Host to bind to (use 0.0.0.0 for Docker)"
+)
+@click.option(
     "--transport",
     type=click.Choice(["stdio", "sse", "streamable-http"]),
     default="stdio",
     help="Transport type (stdio, sse, or streamable-http)"
 )
-def main(port: int, transport: str) -> int:
+def main(port: int, host: str, transport: str) -> int:
     """Run the {{ cookiecutter.project_name }} server with specified transport."""
     async def run_server():
         """Inner async function to run the server and manage the event loop."""
@@ -186,11 +191,13 @@ def main(port: int, transport: str) -> int:
                 logger.info("Starting server with STDIO transport")
                 await server.run_stdio_async()
             elif transport == "sse":
-                logger.info(f"Starting server with SSE transport on port {port}")
+                logger.info(f"Starting server with SSE transport on {host}:{port}")
+                server.settings.host = host
                 server.settings.port = port
                 await server.run_sse_async()
             elif transport == "streamable-http":
-                logger.info(f"Starting server with Streamable HTTP transport on port {port}")
+                logger.info(f"Starting server with Streamable HTTP transport on {host}:{port}")
+                server.settings.host = host
                 server.settings.port = port
                 server.settings.streamable_http_path = "/mcp"
                 await server.run_streamable_http_async()

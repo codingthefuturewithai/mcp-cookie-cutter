@@ -326,6 +326,46 @@ Logs rotate at 10MB with 5 backups kept. Control verbosity with `LOG_LEVEL`:
 LOG_LEVEL=DEBUG uvx {{ cookiecutter.__project_slug }}-server
 ```
 
+## Docker Deployment
+
+Run the MCP server as a Docker container for isolated, reproducible deployments.
+
+### Quick Start
+
+```bash
+python scripts/docker.py start
+```
+
+This builds the image, starts the container, and verifies health. The MCP endpoint will be available at `http://localhost:<port>/mcp`.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `python scripts/docker.py start` | Build image and start container |
+| `python scripts/docker.py stop` | Stop and remove container |
+| `python scripts/docker.py restart` | Restart container (without rebuild) |
+| `python scripts/docker.py update` | Rebuild image and restart (for code changes) |
+| `python scripts/docker.py status` | Show container status |
+| `python scripts/docker.py logs` | Tail container logs |
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_PORT` | `19000` | Host port mapped to the container |
+| `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
+| `MCP_DNS_REBINDING_PROTECTION` | `false` | Enable DNS rebinding protection |
+| `MCP_ALLOWED_HOSTS` | _(empty)_ | Comma-separated allowed Host headers |
+
+### Adding to Claude Code
+
+After starting the container:
+
+```bash
+claude mcp add {{ cookiecutter.__project_slug | replace('_', '-') }} --transport http http://localhost:19000/mcp
+```
+
 ## Development
 
 For development setup, testing, and contribution guidelines, see [DEVELOPMENT.md](DEVELOPMENT.md).

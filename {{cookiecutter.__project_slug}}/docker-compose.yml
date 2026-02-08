@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  {{ cookiecutter.__project_slug | replace('_', '-') }}:
+    build: .
+    container_name: {{ cookiecutter.__project_slug | replace('_', '-') }}-mcp
+    ports:
+      - "${MCP_PORT:-19000}:{{ cookiecutter.server_port }}"
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PORT={{ cookiecutter.server_port }}
+      # DNS rebinding protection (disabled by default for development)
+      - MCP_DNS_REBINDING_PROTECTION=${MCP_DNS_REBINDING_PROTECTION:-false}
+      # Comma-separated allowed Host headers (only used when protection enabled)
+      - MCP_ALLOWED_HOSTS=${MCP_ALLOWED_HOSTS:-}
+    volumes:
+      - {{ cookiecutter.__project_slug }}_data:/home/appuser/.{{ cookiecutter.__project_slug }}
+      - {{ cookiecutter.__project_slug }}_config:/home/appuser/.config/{{ cookiecutter.__project_slug }}
+      - {{ cookiecutter.__project_slug }}_logs:/home/appuser/.local/share/{{ cookiecutter.__project_slug }}
+    restart: unless-stopped
+
+volumes:
+  {{ cookiecutter.__project_slug }}_data:
+  {{ cookiecutter.__project_slug }}_config:
+  {{ cookiecutter.__project_slug }}_logs:
