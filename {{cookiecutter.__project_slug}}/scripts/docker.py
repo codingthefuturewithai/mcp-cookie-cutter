@@ -178,12 +178,9 @@ def build_image() -> bool:
     return True
 
 
-def start_container(port: Optional[int] = None) -> bool:
-    """Start the container"""
+def start_container(port: int) -> bool:
+    """Start the container on the specified port"""
     import os
-
-    if port is None:
-        port = find_available_port()
 
     print_info(f"Starting container on port {port}...")
 
@@ -216,11 +213,36 @@ def start_container(port: Optional[int] = None) -> bool:
     return True
 
 
+def get_container_port() -> Optional[int]:
+    """Get the host port from a running container's port mapping"""
+    code, stdout, _ = run_command(
+        ["docker", "port", CONTAINER_NAME, "{{ cookiecutter.server_port }}"]
+    )
+    if code == 0 and stdout.strip():
+        # Output format: "0.0.0.0:19000" or ":::19000"
+        try:
+            return int(stdout.strip().split(":")[-1])
+        except (ValueError, IndexError):
+            pass
+    return None
+
+
 def stop_container() -> bool:
     """Stop and remove the container"""
     print_info("Stopping container...")
-    run_command(["docker", "stop", CONTAINER_NAME])
-    run_command(["docker", "rm", CONTAINER_NAME])
+    stop_code, _, stop_err = run_command(["docker", "stop", CONTAINER_NAME])
+    rm_code, _, rm_err = run_command(["docker", "rm", CONTAINER_NAME])
+
+    # Verify the container is actually gone
+    exists, running, _ = get_container_status()
+    if running:
+        print_error("Container is still running after stop attempt")
+        print_info(f"Try manually: docker stop {CONTAINER_NAME} && docker rm {CONTAINER_NAME}")
+        return False
+    if exists:
+        print_warning("Container stopped but not removed, forcing removal...")
+        run_command(["docker", "rm", "-f", CONTAINER_NAME])
+
     print_success("Container stopped")
     return True
 
@@ -309,14 +331,39 @@ def cmd_stop():
     stop_container()
 
 
+def resolve_port() -> int:
+    """Resolve the port for an existing deployment.
+
+    Checks state file first, then falls back to querying the running container.
+    Exits with an error if no port can be determined — callers should use
+    cmd_start() for initial deployment instead.
+    """
+    state = load_state()
+    port = state.get("port")
+    if port is not None:
+        return port
+
+    # State file missing or corrupt — try to recover from the running container
+    recovered = get_container_port()
+    if recovered is not None:
+        print_info(f"Recovered port {recovered} from running container")
+        save_state({"port": recovered})
+        return recovered
+
+    print_error("No saved port found. Cannot determine which port this server uses.")
+    print_info("Run 'python scripts/docker.py start' for initial deployment.")
+    sys.exit(1)
+
+
 def cmd_restart():
     """Restart the container (without rebuild)"""
     print(f"\n{Colors.BOLD}{Colors.GREEN}{{ cookiecutter.project_name }} MCP - Restart{Colors.RESET}\n")
 
-    state = load_state()
-    port = state.get("port", BASE_PORT)
+    port = resolve_port()
 
-    stop_container()
+    if not stop_container():
+        print_error("Cannot proceed with restart — failed to stop existing container")
+        sys.exit(1)
 
     print_header("Starting Container")
     if not start_container(port):
@@ -339,23 +386,24 @@ def cmd_update():
     if not check_docker_running():
         sys.exit(1)
 
-    state = load_state()
-    port = state.get("port")
-
     # Check if container exists
-    exists, _, _ = get_container_status()
-    if not exists and port is None:
+    exists, running, _ = get_container_status()
+
+    if not exists and not load_state().get("port"):
         print_warning("No existing deployment found")
         print_info("Running 'start' instead...")
         cmd_start()
         return
 
-    if port is None:
-        port = find_available_port()
+    # Resolve port from state file or running container — never pick a new one
+    port = resolve_port()
 
+    # Always stop the container first to prevent duplicate containers
     print_header("Step 1: Stopping Container")
     if exists:
-        stop_container()
+        if not stop_container():
+            print_error("Cannot proceed with update — failed to stop existing container")
+            sys.exit(1)
     else:
         print_info("Container not running")
 
