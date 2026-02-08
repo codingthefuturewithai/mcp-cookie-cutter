@@ -38,11 +38,10 @@ dev = [
 ]
 
 [project.scripts]
-# Single entry point for server that handles both transports
+# Entry points for server transports (stdio and streamable-http)
 {{ cookiecutter.__project_slug }}-server = "{{ cookiecutter.__project_slug }}.server.app:main"
 {{ cookiecutter.__project_slug }}-server-stdio = "{{ cookiecutter.__project_slug }}.server.app:main_stdio"
 {{ cookiecutter.__project_slug }}-server-http = "{{ cookiecutter.__project_slug }}.server.app:main_http"
-{{ cookiecutter.__project_slug }}-server-sse = "{{ cookiecutter.__project_slug }}.server.app:main_sse"
 {{ cookiecutter.__project_slug }}-client = "{{ cookiecutter.__project_slug }}.client.app:main"
 
 [tool.setuptools.packages.find]

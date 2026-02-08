@@ -1,7 +1,7 @@
 """{{ cookiecutter.project_name }} - MCP Server with Decorators
 
 This module implements the core MCP server using FastMCP with multi-transport support
-(STDIO, SSE, and Streamable HTTP) and automatic application of decorators
+(STDIO and Streamable HTTP) and automatic application of decorators
 (exception handling, logging, parallelization).
 """
 
@@ -166,7 +166,7 @@ server = create_mcp_server()
 @click.option(
     "--port",
     default={{ cookiecutter.server_port }},
-    help="Port to listen on for SSE or Streamable HTTP transport"
+    help="Port to listen on for Streamable HTTP transport"
 )
 @click.option(
     "--host",
@@ -175,9 +175,9 @@ server = create_mcp_server()
 )
 @click.option(
     "--transport",
-    type=click.Choice(["stdio", "sse", "streamable-http"]),
+    type=click.Choice(["stdio", "streamable-http"]),
     default="stdio",
-    help="Transport type (stdio, sse, or streamable-http)"
+    help="Transport type (stdio or streamable-http)"
 )
 def main(port: int, host: str, transport: str) -> int:
     """Run the {{ cookiecutter.project_name }} server with specified transport."""
@@ -190,11 +190,6 @@ def main(port: int, host: str, transport: str) -> int:
             if transport == "stdio":
                 logger.info("Starting server with STDIO transport")
                 await server.run_stdio_async()
-            elif transport == "sse":
-                logger.info(f"Starting server with SSE transport on {host}:{port}")
-                server.settings.host = host
-                server.settings.port = port
-                await server.run_sse_async()
             elif transport == "streamable-http":
                 logger.info(f"Starting server with Streamable HTTP transport on {host}:{port}")
                 server.settings.host = host
@@ -224,11 +219,6 @@ def main_stdio() -> int:
 def main_http() -> int:
     """Entry point for Streamable HTTP transport (convenience wrapper)."""
     return main.callback(port={{ cookiecutter.server_port }}, transport="streamable-http")
-
-def main_sse() -> int:
-    """Entry point for SSE transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="sse")
-
 
 if __name__ == "__main__":
     sys.exit(main())
