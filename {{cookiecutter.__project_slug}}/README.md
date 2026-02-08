@@ -49,6 +49,22 @@ Add this configuration to your MCP client settings using the absolute path from 
 ```
 **[End of optional environment variables section]**
 
+**For SSE/HTTP transport with DNS rebinding protection (optional):**
+```json
+{
+  "{{ cookiecutter.__project_slug }}": {
+    "command": "/absolute/path/to/{{ cookiecutter.__project_slug }}-server",
+    "args": ["--transport", "sse"],
+    "env": {
+      "MCP_DNS_REBINDING_PROTECTION": "false",
+      "MCP_ALLOWED_HOSTS": ""
+    }
+  }
+}
+```
+- `MCP_DNS_REBINDING_PROTECTION`: Set to `true` to enable Host header validation (default: `false`)
+- `MCP_ALLOWED_HOSTS`: Comma-separated list of allowed Host headers (e.g., `localhost:{{ cookiecutter.server_port }},myhost:{{ cookiecutter.server_port }}`)
+
 **Alternative: Quick start with uvx** (may have dependency conflicts):
 ```json
 {
@@ -242,7 +258,18 @@ Note: This requires the package to be published to PyPI. See [DEVELOPMENT.md](DE
    - Verify your MCP client configuration is correct
    - Try restarting your MCP client
 
-3. **Missing environment variables**
+3. **HTTP 421 Misdirected Request** (when using SSE/HTTP transport from VMs or non-localhost clients)
+   - This is caused by DNS rebinding protection validating Host headers
+   - For development/testing, disable protection:
+     ```bash
+     MCP_DNS_REBINDING_PROTECTION=false uvx {{ cookiecutter.__project_slug }}-server --transport sse
+     ```
+   - For production with specific allowed hosts:
+     ```bash
+     MCP_DNS_REBINDING_PROTECTION=true MCP_ALLOWED_HOSTS=localhost:{{ cookiecutter.server_port }},myhost:{{ cookiecutter.server_port }} uvx {{ cookiecutter.__project_slug }}-server --transport sse
+     ```
+
+4. **Missing environment variables**
    - Ensure all required environment variables are set in your configuration
    - Check for typos in variable names
    - Verify credentials are valid and not expired

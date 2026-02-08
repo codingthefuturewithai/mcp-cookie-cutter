@@ -1,17 +1,19 @@
 """{{ cookiecutter.project_name }} - MCP Server with Decorators
 
 This module implements the core MCP server using FastMCP with multi-transport support
-(STDIO, SSE, and Streamable HTTP) and automatic application of decorators 
+(STDIO, SSE, and Streamable HTTP) and automatic application of decorators
 (exception handling, logging, parallelization).
 """
 
 import asyncio
+import os
 import sys
 from typing import Optional, Callable, Any
 
 import click
 from mcp import types
 from mcp.server.fastmcp import FastMCP
+from mcp.server.auth.settings import TransportSecuritySettings
 
 from {{ cookiecutter.__project_slug }}.config import ServerConfig, get_config
 from {{ cookiecutter.__project_slug }}.logging_config import setup_logging, logger
@@ -70,8 +72,25 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
     unified_logger = logging.getLogger('{{ cookiecutter.__project_slug }}')
     unified_logger.info(f"Unified logging initialized with {len(UnifiedLogger.get_available_destinations())} available destination types")
     unified_logger.info(f"Server config: {config.name} at log level {config.log_level}")
-    
-    mcp_server = FastMCP(config.name or "{{ cookiecutter.project_name }}")
+
+    # Configure DNS rebinding protection from environment variables
+    # Disabled by default for development; enable in production
+    dns_protection = os.getenv("MCP_DNS_REBINDING_PROTECTION", "false").lower() == "true"
+    allowed_hosts_env = os.getenv("MCP_ALLOWED_HOSTS", "")
+    allowed_hosts = [h.strip() for h in allowed_hosts_env.split(",") if h.strip()] if allowed_hosts_env else []
+
+    if dns_protection:
+        unified_logger.info(f"DNS rebinding protection enabled with allowed hosts: {allowed_hosts or ['default']}")
+    else:
+        unified_logger.info("DNS rebinding protection disabled (development mode)")
+
+    mcp_server = FastMCP(
+        config.name or "{{ cookiecutter.project_name }}",
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=dns_protection,
+            allowed_hosts=allowed_hosts
+        )
+    )
     
     
     # Register all tools with the server
