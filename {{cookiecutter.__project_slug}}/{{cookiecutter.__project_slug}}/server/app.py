@@ -13,7 +13,7 @@ from typing import Optional, Callable, Any
 import click
 from mcp import types
 from mcp.server.fastmcp import FastMCP
-from mcp.server.auth.settings import TransportSecuritySettings
+from mcp.server.transport_security import TransportSecuritySettings
 
 from {{ cookiecutter.__project_slug }}.config import ServerConfig, get_config
 from {{ cookiecutter.__project_slug }}.logging_config import setup_logging, logger
