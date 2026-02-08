@@ -43,7 +43,6 @@ This guide covers development practices, architecture, and contribution guidelin
    
    # Test different transports
    {{ cookiecutter.__project_slug }}-server --transport stdio
-   {{ cookiecutter.__project_slug }}-server --transport sse --port 3001
    {{ cookiecutter.__project_slug }}-server --transport streamable-http --port 3001
    ```
 
@@ -543,16 +542,15 @@ Features:
 ```bash
 # Test different transports
 {{ cookiecutter.__project_slug }}-server --transport stdio
-{{ cookiecutter.__project_slug }}-server --transport sse --port 3001
 {{ cookiecutter.__project_slug }}-server --transport streamable-http --port 3001
 
 # Test client
 {{ cookiecutter.__project_slug }}-client "Hello, World!"
 
-# Test with curl (SSE transport)
-curl -X POST http://localhost:3001/tools/echo \
+# Test with curl (Streamable HTTP transport)
+curl -X POST http://localhost:3001/mcp \
   -H "Content-Type: application/json" \
-  -d '{"text": "Hello SSE"}'
+  -d '{"text": "Hello HTTP"}'
 ```
 
 ### Docker Testing
@@ -658,7 +656,7 @@ PYTHONPATH=. mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 ### Transport Issues
 
 - **STDIO**: Check for stdout pollution (use stderr for debugging)
-- **SSE/HTTP**: Verify port availability and firewall settings
+- **Streamable HTTP**: Verify port availability and firewall settings
 - **Docker**: Use `python scripts/docker.py status` and `python scripts/docker.py logs` to diagnose container issues
 - **General**: Check logs for detailed error messages
 

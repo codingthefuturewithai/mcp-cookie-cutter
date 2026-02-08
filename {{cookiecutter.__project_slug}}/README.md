@@ -49,12 +49,12 @@ Add this configuration to your MCP client settings using the absolute path from 
 ```
 **[End of optional environment variables section]**
 
-**For SSE/HTTP transport with DNS rebinding protection (optional):**
+**For Streamable HTTP transport with DNS rebinding protection (optional):**
 ```json
 {
   "{{ cookiecutter.__project_slug }}": {
     "command": "/absolute/path/to/{{ cookiecutter.__project_slug }}-server",
-    "args": ["--transport", "sse"],
+    "args": ["--transport", "streamable-http"],
     "env": {
       "MCP_DNS_REBINDING_PROTECTION": "false",
       "MCP_ALLOWED_HOSTS": ""
@@ -93,7 +93,7 @@ Once configured, you can ask your AI assistant to:
 
 **[➡️ REPLACE: List the key features of your MCP server:]
 - Example echo tool with text transformation
-- Support for both stdio and SSE transports
+- Support for both stdio and Streamable HTTP transports
 - Comprehensive logging with automatic rotation
 - Cross-platform compatibility (Linux, macOS, Windows)
 
@@ -254,19 +254,19 @@ Note: This requires the package to be published to PyPI. See [DEVELOPMENT.md](DE
    - Verify your MCP client is connected to the server
 
 2. **Connection errors**
-   - Check that no other process is using port {{ cookiecutter.server_port }} (for SSE transport)
+   - Check that no other process is using port {{ cookiecutter.server_port }} (for Streamable HTTP transport)
    - Verify your MCP client configuration is correct
    - Try restarting your MCP client
 
-3. **HTTP 421 Misdirected Request** (when using SSE/HTTP transport from VMs or non-localhost clients)
+3. **HTTP 421 Misdirected Request** (when using Streamable HTTP transport from VMs or non-localhost clients)
    - This is caused by DNS rebinding protection validating Host headers
    - For development/testing, disable protection:
      ```bash
-     MCP_DNS_REBINDING_PROTECTION=false uvx {{ cookiecutter.__project_slug }}-server --transport sse
+     MCP_DNS_REBINDING_PROTECTION=false uvx {{ cookiecutter.__project_slug }}-server --transport streamable-http
      ```
    - For production with specific allowed hosts:
      ```bash
-     MCP_DNS_REBINDING_PROTECTION=true MCP_ALLOWED_HOSTS=localhost:{{ cookiecutter.server_port }},myhost:{{ cookiecutter.server_port }} uvx {{ cookiecutter.__project_slug }}-server --transport sse
+     MCP_DNS_REBINDING_PROTECTION=true MCP_ALLOWED_HOSTS=localhost:{{ cookiecutter.server_port }},myhost:{{ cookiecutter.server_port }} uvx {{ cookiecutter.__project_slug }}-server --transport streamable-http
      ```
 
 4. **Missing environment variables**
