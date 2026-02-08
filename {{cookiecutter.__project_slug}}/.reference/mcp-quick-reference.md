@@ -5,7 +5,7 @@
 You know MCP. Here's what's unique about this implementation:
 
 ### What We Use
-- **FastMCP** server with STDIO/SSE/Streamable HTTP transports
+- **FastMCP** server with STDIO/Streamable HTTP transports
 - **Tools** only (no resources, prompts, completions)
 - **Context** for logging and progress
 - **Type conversion** decorator handles string parameters
@@ -82,7 +82,6 @@ your_project/
 ### What You Don't Need
 - Resources (file serving)
 - Prompts (templates)
-- StreamableHTTP
 - OAuth/Authentication
 - WebSocket transport
 

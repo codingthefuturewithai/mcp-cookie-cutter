@@ -49,11 +49,6 @@ How clients connect to servers:
 - Fast and secure
 - No network needed
 
-**SSE (Server-Sent Events)**:
-- Network connection
-- Traditional HTTP
-- Good for web clients
-
 **Streamable HTTP**:
 - Modern network connection
 - Supports sessions

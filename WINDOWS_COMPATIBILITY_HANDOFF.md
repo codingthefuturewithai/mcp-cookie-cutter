@@ -132,7 +132,7 @@ setup.py (if exists)
 
 3. **Server Start Test**
    - Test stdio mode
-   - Test SSE mode
+   - Test Streamable HTTP mode
    - Test client connection
 
 4. **UI Test**
