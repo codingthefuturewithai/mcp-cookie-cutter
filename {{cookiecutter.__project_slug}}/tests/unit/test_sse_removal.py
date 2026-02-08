@@ -106,6 +106,10 @@ class TestSSETransportRemoval:
         docstring_match = re.search(r'^"""(.*?)"""', source, re.DOTALL)
         if docstring_match:
             docstring = docstring_match.group(1)
-            assert "SSE" not in docstring, (
-                f"Module docstring still references SSE — update to mention only STDIO and Streamable HTTP"
+            # Skip the first line (project name) which may contain "SSE" as part
+            # of a user-chosen project name like "Test SSE Removal"
+            docstring_lines = docstring.strip().split("\n")
+            description_lines = "\n".join(docstring_lines[1:]) if len(docstring_lines) > 1 else ""
+            assert "SSE" not in description_lines, (
+                f"Module docstring description still references SSE — update to mention only STDIO and Streamable HTTP"
             )
