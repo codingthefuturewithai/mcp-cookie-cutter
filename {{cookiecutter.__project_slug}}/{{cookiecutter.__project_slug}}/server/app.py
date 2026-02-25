@@ -11,9 +11,7 @@ import sys
 from typing import Optional, Callable, Any
 
 import click
-from mcp import types
-from mcp.server.fastmcp import FastMCP
-from mcp.server.auth.settings import TransportSecuritySettings
+from fastmcp import FastMCP
 
 from {{ cookiecutter.__project_slug }}.config import ServerConfig, get_config
 from {{ cookiecutter.__project_slug }}.logging_config import setup_logging, logger
@@ -85,11 +83,7 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
         unified_logger.info("DNS rebinding protection disabled (development mode)")
 
     mcp_server = FastMCP(
-        config.name or "{{ cookiecutter.project_name }}",
-        transport_security=TransportSecuritySettings(
-            enable_dns_rebinding_protection=dns_protection,
-            allowed_hosts=allowed_hosts
-        )
+        config.name or "{{ cookiecutter.project_name }}"
     )
     
     
@@ -127,14 +121,12 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
         # Apply decorator chain: exception_handler → tool_logger → type_converter
         decorated_func = exception_handler(tool_logger(type_converter(tool_func), config.__dict__))
         
-        # Extract metadata from the original function
-        tool_name = tool_func.__name__
+        # The decorated function preserves the original __name__
+        tool_name = decorated_func.__name__
         
-        # Register the decorated function directly with MCP
-        # This preserves the function signature for parameter introspection
-        mcp_server.tool(
-            name=tool_name
-        )(decorated_func)
+        # Register the decorated function with MCP using add_tool
+        # The name is inferred from the function's __name__ attribute
+        mcp_server.add_tool(decorated_func)
         
         unified_logger.info(f"Registered tool: {tool_name}")
     
@@ -144,13 +136,11 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
         # Note: type_converter is applied to the base function before parallelize
         decorated_func = exception_handler(tool_logger(parallelize(type_converter(tool_func)), config.__dict__))
         
-        # Extract metadata
-        tool_name = tool_func.__name__
+        # The decorated function preserves the original __name__
+        tool_name = decorated_func.__name__
         
-        # Register directly with MCP
-        mcp_server.tool(
-            name=tool_name
-        )(decorated_func)
+        # Register with MCP using add_tool
+        mcp_server.add_tool(decorated_func)
         
         unified_logger.info(f"Registered parallel tool: {tool_name}")
     
@@ -166,7 +156,7 @@ server = create_mcp_server()
 @click.option(
     "--port",
     default={{ cookiecutter.server_port }},
-    help="Port to listen on for SSE or Streamable HTTP transport"
+    help="Port to listen on for SSE or HTTP transport"
 )
 @click.option(
     "--host",
@@ -175,40 +165,24 @@ server = create_mcp_server()
 )
 @click.option(
     "--transport",
-    type=click.Choice(["stdio", "sse", "streamable-http"]),
+    type=click.Choice(["stdio", "sse", "http"]),
     default="stdio",
-    help="Transport type (stdio, sse, or streamable-http)"
+    help="Transport type (stdio, sse, or http)"
 )
 def main(port: int, host: str, transport: str) -> int:
     """Run the {{ cookiecutter.project_name }} server with specified transport."""
-    async def run_server():
-        """Inner async function to run the server and manage the event loop."""
-        # Set the event loop in UnifiedLogger for async operations
-        UnifiedLogger.set_event_loop(asyncio.get_running_loop())
-        
-        try:
-            if transport == "stdio":
-                logger.info("Starting server with STDIO transport")
-                await server.run_stdio_async()
-            elif transport == "sse":
-                logger.info(f"Starting server with SSE transport on {host}:{port}")
-                server.settings.host = host
-                server.settings.port = port
-                await server.run_sse_async()
-            elif transport == "streamable-http":
-                logger.info(f"Starting server with Streamable HTTP transport on {host}:{port}")
-                server.settings.host = host
-                server.settings.port = port
-                server.settings.streamable_http_path = "/mcp"
-                await server.run_streamable_http_async()
-            else:
-                raise ValueError(f"Unknown transport: {transport}")
-        finally:
-            # Clean up unified logger
-            await UnifiedLogger.close()
-    
     try:
-        asyncio.run(run_server())
+        if transport == "stdio":
+            logger.info("Starting server with STDIO transport")
+            server.run(transport="stdio")
+        elif transport == "sse":
+            logger.info(f"Starting server with SSE transport on {host}:{port}")
+            server.run(transport="sse", host=host, port=port)
+        elif transport == "http":
+            logger.info(f"Starting server with HTTP transport on {host}:{port}")
+            server.run(transport="http", host=host, port=port, path="/mcp")
+        else:
+            raise ValueError(f"Unknown transport: {transport}")
         return 0
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
@@ -219,15 +193,21 @@ def main(port: int, host: str, transport: str) -> int:
 
 def main_stdio() -> int:
     """Entry point for STDIO transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="stdio")
+    import sys
+    sys.argv = [sys.argv[0], "--port", "{{ cookiecutter.server_port }}", "--host", "127.0.0.1", "--transport", "stdio"] + sys.argv[1:]
+    return main()
 
 def main_http() -> int:
-    """Entry point for Streamable HTTP transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="streamable-http")
+    """Entry point for HTTP transport (convenience wrapper)."""
+    import sys
+    sys.argv = [sys.argv[0], "--port", "{{ cookiecutter.server_port }}", "--host", "127.0.0.1", "--transport", "http"] + sys.argv[1:]
+    return main()
 
 def main_sse() -> int:
     """Entry point for SSE transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="sse")
+    import sys
+    sys.argv = [sys.argv[0], "--port", "{{ cookiecutter.server_port }}", "--host", "127.0.0.1", "--transport", "sse"] + sys.argv[1:]
+    return main()
 
 
 if __name__ == "__main__":

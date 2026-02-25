@@ -5,6 +5,7 @@ This document explains the SAAGA decorator patterns used in your MCP server and 
 ## Overview
 
 Your MCP server automatically applies decorators to all tools. These decorators follow strict async-only patterns and provide:
+
 - **Exception handling**: Standard error responses
 - **Logging**: Comprehensive execution tracking with SQLite persistence
 - **Parallelization**: Concurrent execution with signature transformation
@@ -38,6 +39,7 @@ async def my_tool(param: str) -> dict:
 ```
 
 **Error Format:**
+
 ```python
 {
     "Status": "Exception",
@@ -48,6 +50,7 @@ async def my_tool(param: str) -> dict:
 ```
 
 **What it does:**
+
 - Catches any exception thrown by your tool
 - Returns standard error response format
 - Logs the error with full stack trace
@@ -62,7 +65,7 @@ Tracks execution metrics and logs all tool invocations to SQLite database.
 For correlation IDs to work properly with MCP clients that provide them, all tools MUST include a `ctx: Context = None` parameter:
 
 ```python
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 # ✅ CORRECT - Includes Context parameter
 async def my_tool(param: str, ctx: Context = None) -> dict:
@@ -81,6 +84,7 @@ async def my_tool(param: str) -> dict:
 ```
 
 The Context parameter:
+
 - Must be imported from `mcp.server.fastmcp`
 - Should be the last parameter in the function signature
 - Should have a default value of `None`
@@ -90,6 +94,7 @@ The Context parameter:
 When a client provides a correlation ID in the request metadata, the tool_logger decorator will extract it from the Context and use it for all related logs. If no correlation ID is provided, the system will auto-generate one.
 
 **What it logs:**
+
 - Correlation ID (client-provided or auto-generated)
 - Tool name and parameters
 - Execution time in milliseconds
@@ -122,11 +127,12 @@ async def process_item(item: str, operation: str = "upper") -> str:
 ## 📞 How to Call Parallel Tools
 
 ### In MCP Inspector or Client:
+
 ```python
 # Call parallel tool with List[Dict] format
 result = await process_item([
     {"item": "hello", "operation": "upper"},
-    {"item": "world", "operation": "lower"}, 
+    {"item": "world", "operation": "lower"},
     {"item": "test", "operation": "upper"}
 ])
 
@@ -134,6 +140,7 @@ result = await process_item([
 ```
 
 ### Error Handling in Parallel Tools:
+
 ```python
 # If one item fails, it returns error format
 result = await process_item([
@@ -141,7 +148,7 @@ result = await process_item([
     {"item": "world", "operation": "invalid"}  # This will fail
 ])
 
-# Returns: 
+# Returns:
 # [
 #   "HELLO",
 #   {
@@ -160,6 +167,7 @@ The parallelize decorator is **NOT** suitable for all tools. Use it ONLY when:
 ### ✅ Good Candidates for Parallelization
 
 1. **Batch Processing Tools**
+
    ```python
    async def process_single_item(item: str) -> dict:
        """Process one item - will be parallelized automatically."""
@@ -167,6 +175,7 @@ The parallelize decorator is **NOT** suitable for all tools. Use it ONLY when:
    ```
 
 2. **Independent Computations**
+
    ```python
    async def analyze_document(doc_id: str) -> dict:
        """Analyze one document - will be parallelized automatically."""
@@ -183,6 +192,7 @@ The parallelize decorator is **NOT** suitable for all tools. Use it ONLY when:
 ### ❌ Bad Candidates for Parallelization
 
 1. **Sequential Operations**
+
    ```python
    async def sequential_process(data: str) -> str:
        """Operations that depend on order."""
@@ -192,6 +202,7 @@ The parallelize decorator is **NOT** suitable for all tools. Use it ONLY when:
    ```
 
 2. **Shared State Operations**
+
    ```python
    def update_database(records: List[dict]) -> dict:
        """Operations that modify shared state."""
@@ -228,7 +239,7 @@ Add to the `example_tools` list in `tools/__init__.py`:
 
 ```python
 # tools/my_tools.py
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def my_regular_tool(param: str, ctx: Context = None) -> dict:
     """A regular tool with automatic exception handling and logging."""
@@ -245,7 +256,7 @@ Add to the `parallel_example_tools` list ONLY if suitable:
 
 ```python
 # tools/batch_tools.py
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def batch_processor(items: List[str], ctx: Context = None) -> List[dict]:
     """Process multiple items in parallel."""
@@ -278,7 +289,7 @@ decorated = exception_handler(tool_logger(parallelize(your_tool)))
 MCP passes parameters as strings. Handle conversion in your tools and always include the Context parameter:
 
 ```python
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def calculate(a: str, b: str, ctx: Context = None) -> dict:
     """Handle string inputs from MCP."""
@@ -296,7 +307,7 @@ async def calculate(a: str, b: str, ctx: Context = None) -> dict:
 All tools must be async and include the Context parameter:
 
 ```python
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def fetch_data(url: str, ctx: Context = None) -> dict:
     """Async tools work automatically."""
@@ -311,7 +322,7 @@ For long-running operations, log progress and include the Context parameter:
 
 ```python
 import logging
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 logger = logging.getLogger(__name__)
 
@@ -319,10 +330,10 @@ async def long_operation(data: str, ctx: Context = None) -> dict:
     """Log progress for long operations."""
     logger.info("Starting phase 1...")
     result1 = await phase1(data)
-    
+
     logger.info("Starting phase 2...")
     result2 = await phase2(result1)
-    
+
     logger.info("Operation complete")
     return {"result": result2}
 ```
@@ -334,6 +345,7 @@ async def long_operation(data: str, ctx: Context = None) -> dict:
    - Return values should be JSON-serializable
 
 2. **Enable Debug Logging**
+
    ```bash
    python -m {{ cookiecutter.__project_slug }}.server.app --log-level DEBUG
    ```

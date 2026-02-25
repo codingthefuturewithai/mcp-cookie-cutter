@@ -31,7 +31,7 @@ import inspect
 
 from {{ cookiecutter.__project_slug }}.log_system.correlation import set_correlation_id, get_correlation_id, clear_correlation_id, generate_correlation_id
 from {{ cookiecutter.__project_slug }}.log_system.unified_logger import UnifiedLogger
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 
 def tool_logger(func: Callable[..., Awaitable[Any]] = None, config: dict = None) -> Callable[..., Awaitable[Any]]:

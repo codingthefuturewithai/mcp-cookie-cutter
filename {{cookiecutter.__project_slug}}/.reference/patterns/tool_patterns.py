@@ -14,7 +14,7 @@ CRITICAL RULES:
 """
 
 from typing import Dict, List, Any, Optional
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 
 # ============================================================================

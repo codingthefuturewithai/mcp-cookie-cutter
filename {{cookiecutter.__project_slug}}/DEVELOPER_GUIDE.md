@@ -27,6 +27,7 @@ claude
 ```
 
 This command will:
+
 - Detect your experience level (new to MCP, new to this server, or experienced)
 - Explain MCP concepts if needed
 - Show you how THIS server's architecture works
@@ -43,6 +44,7 @@ This command will:
 ### What Makes This Server Special
 
 This isn't a typical MCP server. It uses a **decorator pattern** which automatically adds:
+
 - 🛡️ **Exception handling** - All errors are caught and returned cleanly
 - 📊 **Logging** - Every tool execution is logged to SQLite
 - 🔄 **Type conversion** - MCP sends strings, your tools get proper types
@@ -76,6 +78,7 @@ Whether you're adding your first tool or your fiftieth:
 ```
 
 This command will:
+
 1. Research any needed libraries (uses context7 if available)
 2. Create a detailed implementation plan
 3. Wait for your approval
@@ -88,10 +91,11 @@ This command will:
 If you prefer to write tools manually:
 
 1. **Create your tool file**:
+
 ```python
 # {{cookiecutter.__project_slug}}/tools/my_tools.py
 from typing import Dict, Any
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def my_tool(
     param1: str,
@@ -108,6 +112,7 @@ my_parallel_tools = []  # Tools that process lists
 ```
 
 2. **Register in server/app.py**:
+
 ```python
 from {{cookiecutter.__project_slug}}.tools.my_tools import my_tools, my_parallel_tools
 ```
@@ -117,6 +122,7 @@ That's it! The decorators are applied automatically.
 ### Critical Rules for Tools
 
 ⚠️ **NEVER use Optional parameters** - they break MCP clients
+
 ```python
 # ❌ WRONG
 async def bad_tool(text: Optional[str] = None): ...
@@ -180,6 +186,7 @@ This is what CI/CD will run, so always verify tests pass before committing.
 ## Development Workflow Summary
 
 ### For New Developers
+
 1. `/getting-started` - Learn the system
 2. `/add-tool` - Create your first tool
 3. `/generate-tests` - Generate tests
@@ -187,6 +194,7 @@ This is what CI/CD will run, so always verify tests pass before committing.
 5. `/remove-examples` - Clean up when ready
 
 ### For Returning Developers
+
 1. `/add-tool` - Add new features
 2. `/generate-tests` - Test them
 3. Commit and push
@@ -243,15 +251,18 @@ Once you have your own tools working:
 ## Troubleshooting
 
 ### Import Errors
+
 - Old MCP processes running → Kill them and restart
 - Virtual environment issues → `uv sync`
 
 ### Tool Not Appearing
+
 - Check it's in the export list (`my_tools = [...]`)
 - Check it's imported in `server/app.py`
 - Restart the MCP Inspector
 
 ### Tests Failing
+
 - Check for Optional parameters (not allowed)
 - Verify async function signature
 - Ensure `ctx: Context = None` parameter exists

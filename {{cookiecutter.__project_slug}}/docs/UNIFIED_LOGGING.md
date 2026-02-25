@@ -49,7 +49,7 @@ The system supports two modes of correlation ID management:
 For client-provided correlation IDs to work, your tools MUST include a `ctx: Context = None` parameter:
 
 ```python
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 # ✅ CORRECT - Can receive client correlation IDs
 async def my_tool(param: str, ctx: Context = None) -> dict:
@@ -107,13 +107,13 @@ class LogEntry:
 
 ```python
 from {{ cookiecutter.__project_slug }}.log_system import get_tool_logger
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 async def my_custom_tool(param: str, ctx: Context = None) -> str:
     logger = get_tool_logger("my_custom_tool")
-    
+
     logger.debug(f"Received parameter: {param}")
-    
+
     try:
         # Tool logic
         result = process_data(param)
@@ -132,7 +132,7 @@ The `@tool_logger` decorator automatically handles correlation IDs and tool exec
 
 ```python
 from {{ cookiecutter.__project_slug }}.decorators import tool_logger
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 
 @tool_logger
 async def my_tool(data: str, ctx: Context = None) -> dict:
@@ -141,6 +141,7 @@ async def my_tool(data: str, ctx: Context = None) -> dict:
 ```
 
 This automatically logs:
+
 - Correlation ID (extracted from Context or auto-generated)
 - Tool start with status "running"
 - Input parameters
@@ -160,13 +161,13 @@ from {{ cookiecutter.__project_slug }}.log_system import CorrelationContext, get
 async def complex_workflow():
     async with CorrelationContext() as correlation_id:
         logger = get_tool_logger("workflow")
-        
+
         logger.info(f"Starting workflow with ID: {correlation_id}")
-        
+
         # All logs within this context share the same correlation ID
         await step1()
         await step2()
-        
+
         logger.info("Workflow completed")
 ```
 
@@ -230,6 +231,7 @@ stats = destination.get_statistics()
 ### From Streamlit UI
 
 The admin UI provides a comprehensive log viewer at `/logs` with:
+
 - Real-time log display
 - Filtering by level, type, status, and time range
 - Search by correlation ID, tool name, or message

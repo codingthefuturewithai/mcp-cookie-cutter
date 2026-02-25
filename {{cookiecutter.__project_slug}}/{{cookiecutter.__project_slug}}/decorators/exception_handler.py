@@ -54,7 +54,9 @@ def exception_handler(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awai
             tb_str = traceback.format_exc()
             # Escape { } so loguru doesn't interpret source code like
             # {variable_name} in tracebacks as format placeholders
+            {% raw %}
             safe_tb = tb_str.replace("{", "{{").replace("}", "}}")
+            {% endraw %}
             logger.error(
                 f"Exception in {func.__name__}: {safe_tb}",
                 log_type="tool_execution",

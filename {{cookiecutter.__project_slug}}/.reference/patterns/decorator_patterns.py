@@ -9,7 +9,7 @@ MCP compatibility and proper error handling.
 """
 
 from typing import Dict, List, Any, Optional
-from mcp.server.fastmcp import Context
+from fastmcp import Context
 import inspect
 import functools
 
@@ -342,7 +342,7 @@ async def server_decorator_application_example():
     """
     from mcp_server_project.decorators import exception_handler, tool_logger, type_converter, parallelize
     from mcp_server_project.tools import example_tools, parallel_example_tools
-    from mcp.server.fastmcp import FastMCP
+    from fastmcp import FastMCP
     
     # Create MCP server
     server = FastMCP("Your Server")

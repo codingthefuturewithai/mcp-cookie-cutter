@@ -24,6 +24,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
 from unittest.mock import patch, MagicMock
+from mcp.types import TextContent
 import pytest
 
 # Import decorators from template
@@ -167,7 +168,7 @@ class TestParallelize:
         # Verify signature transformation - includes ctx for MCP context
         assert params == ["kwargs_list", "ctx"]
         assert sig.parameters["kwargs_list"].annotation == List[Dict[str, Any]]
-        assert sig.return_annotation == List[Any]
+        assert sig.return_annotation == List[TextContent]
     
     @pytest.mark.asyncio
     async def test_parallel_execution(self):
@@ -187,10 +188,11 @@ class TestParallelize:
         
         results = await test_tool(kwargs_list)
         
+        # Results are now List[TextContent] for FastMCP 3 compatibility
         assert len(results) == 3
-        assert results[0] == "aaa"
-        assert results[1] == "bb"
-        assert results[2] == "c"
+        assert json.loads(results[0].text) == "aaa"
+        assert json.loads(results[1].text) == "bb"
+        assert json.loads(results[2].text) == "c"
     
     @pytest.mark.asyncio
     async def test_empty_list_handling(self):
@@ -295,7 +297,10 @@ class TestDecoratorChaining:
         
         result = await decorated_tool(kwargs_list)
         
-        assert result == ["processed_a", "processed_b"]
+        # Results are now List[TextContent] for FastMCP 3 compatibility
+        assert len(result) == 2
+        assert json.loads(result[0].text) == "processed_a"
+        assert json.loads(result[1].text) == "processed_b"
     
     def test_chained_signature_preservation(self):
         """Test that signature is preserved through decorator chaining."""
@@ -601,12 +606,16 @@ class TestIntegrationPattern:
             if tool_func.__name__ == "batch_process_tool":
                 kwargs_list = [{"item": "a"}, {"item": "b"}]
                 result = await decorated_func(kwargs_list)
-                assert result == ["processed_a", "processed_b"]
+                # Results are now List[TextContent] for FastMCP 3 compatibility
+                assert len(result) == 2
+                assert json.loads(result[0].text) == "processed_a"
+                assert json.loads(result[1].text) == "processed_b"
             
             # Verify signature transformation
             sig = inspect.signature(decorated_func)
             assert list(sig.parameters.keys()) == ["kwargs_list", "ctx"]
             assert sig.parameters["kwargs_list"].annotation == List[Dict[str, Any]]
+            assert sig.return_annotation == List[TextContent]
 
 
 if __name__ == "__main__":

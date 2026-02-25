@@ -9,9 +9,9 @@ parallelization.
 import time
 import random
 from typing import List, Dict, Any
-from mcp.server.fastmcp import Context
-from mcp.server.session import ServerSession
+from fastmcp import Context
 from pydantic import BaseModel, Field
+import mcp.types
 from {{cookiecutter.__project_slug}}.log_system.unified_logger import UnifiedLogger
 
 async def echo(message: str, ctx: Context = None) -> str:
@@ -167,7 +167,7 @@ async def elicit_example(date: str, time: str, party_size: int, ctx: Context = N
         # Date unavailable - ask user for alternative
         result = await ctx.elicit(
             message=(f"No tables available for {party_size} on {date}. Would you like to try another date?"),
-            schema=BookingPreferences,
+            response_type=BookingPreferences,
         )
 
         if result.action == "accept" and result.data:
@@ -190,7 +190,7 @@ async def notification_example(data: str, ctx: Context = None) -> str:
     await ctx.error("Error: (This is just a demo)")
 
     # Notify about resource changes
-    await ctx.session.send_resource_list_changed()
+    await ctx.send_notification(mcp.types.ResourceListChangedNotification())
 
     return f"Processed: {data}"
 

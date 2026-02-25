@@ -30,6 +30,8 @@ from functools import wraps
 from typing import Callable, Any, Awaitable, List, Dict, Union
 import logging
 import inspect
+import json
+from mcp.types import TextContent
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ def _set_parallelized_signature_and_annotations(
     # Add Context parameter if requested (for MCP compatibility)
     if preserve_context:
         # Import here to avoid circular imports
-        from mcp.server.fastmcp import Context
+        from fastmcp import Context
         
         ctx_param = inspect.Parameter(
             name='ctx',
@@ -75,7 +77,7 @@ def _set_parallelized_signature_and_annotations(
         'return': return_annotation
     }
     if preserve_context:
-        from mcp.server.fastmcp import Context
+        from fastmcp import Context
         annotations['ctx'] = Context
     
     wrapper_func.__annotations__ = annotations
@@ -199,7 +201,9 @@ def parallelize(func: Callable[..., Awaitable[Any]]) -> Callable[[List[Dict]], A
         # Wait for all tasks to complete - fail-fast behavior
         results = await asyncio.gather(*tasks)
         
-        return results
+        # Convert results to list of TextContent for FastMCP 3 compatibility
+        # This ensures each result becomes a separate content block
+        return [TextContent(type="text", text=json.dumps(r)) for r in results]
     
     # Update the docstring and signature for the wrapper function
     wrapper.__doc__ = _build_parallelized_docstring(func)
@@ -207,7 +211,7 @@ def parallelize(func: Callable[..., Awaitable[Any]]) -> Callable[[List[Dict]], A
         wrapper_func=wrapper,
         param_name="kwargs_list",
         param_annotation=List[Dict[str, Any]],
-        return_annotation=List[Any]
+        return_annotation=List[TextContent]
     )
     
     return wrapper

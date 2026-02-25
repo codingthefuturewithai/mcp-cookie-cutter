@@ -14,10 +14,11 @@ This guide covers development practices, architecture, and contribution guidelin
 ### Initial Setup
 
 1. **Clone and create virtual environment:**
+
    ```bash
    git clone <repository-url>
    cd {{ cookiecutter.__project_slug }}
-   
+
    # Create and activate virtual environment
    uv venv
    source venv/bin/activate  # Linux/macOS
@@ -25,22 +26,24 @@ This guide covers development practices, architecture, and contribution guidelin
    ```
 
 2. **Install in development mode:**
+
    ```bash
    # Install with all optional dependencies
    uv pip install -e ".[ui,test,monitoring]"
-   
+
    # Or install just core dependencies
    uv pip install -e .
    ```
 
 3. **Verify installation:**
+
    ```bash
    # Test the server
    {{ cookiecutter.__project_slug }}-server --help
-   
+
    # Test the client
    {{ cookiecutter.__project_slug }}-client "Hello, World!"
-   
+
    # Test different transports
    {{ cookiecutter.__project_slug }}-server --transport stdio
    {{ cookiecutter.__project_slug }}-server --transport sse --port 3001
@@ -150,14 +153,18 @@ The MCP Server Project is built with a modular architecture featuring:
 ### Design Patterns
 
 #### 1. Decorator Pattern
+
 All tools are automatically decorated with:
+
 - **Exception Handler**: Catches and logs errors
 - **Tool Logger**: Logs calls with correlation IDs
 - **Type Converter**: Ensures proper parameter types
 - **Parallelize**: Parallelizes compute-intensive tools
 
 #### 2. Factory Pattern
+
 Log destinations use a factory pattern for flexibility:
+
 ```python
 from {{ cookiecutter.__project_slug }}.log_system.destinations.factory import create_destination
 
@@ -166,7 +173,9 @@ destination = create_destination("sqlite", settings)
 ```
 
 #### 3. Correlation ID Pattern
+
 All requests are tracked with unique correlation IDs:
+
 - Generated at request entry
 - Passed through the entire call chain
 - Logged with all operations
@@ -177,30 +186,31 @@ All requests are tracked with unique correlation IDs:
 ### Basic Tool Structure
 
 1. **Create tool function:**
+
    ```python
    # tools/my_tool.py
    import logging
    from typing import Dict, Any
-   from mcp.server.fastmcp import Context
-   
+   from fastmcp import Context
+
    logger = logging.getLogger(__name__)
-   
+
    async def my_tool(param1: str, param2: int = 10, ctx: Context = None) -> Dict[str, Any]:
        """My custom tool implementation.
-       
+
        Args:
            param1: Description of first parameter
            param2: Description of second parameter (optional)
            ctx: MCP Context (automatically provided)
-           
+
        Returns:
            Dictionary with results
        """
        logger.info(f"Processing {param1} with {param2}")
-       
+
        # Your logic here
        result = process_data(param1, param2)
-       
+
        return {
            "input": param1,
            "multiplier": param2,
@@ -210,10 +220,11 @@ All requests are tracked with unique correlation IDs:
    ```
 
 2. **Register tool in server:**
+
    ```python
    # server/app.py
    from {{ cookiecutter.__project_slug }}.tools.my_tool import my_tool
-   
+
    # Add to appropriate list
    example_tools = [
        # ... existing tools
@@ -224,7 +235,9 @@ All requests are tracked with unique correlation IDs:
 ### Tool Types
 
 #### Regular Tools
+
 For most tools, add to `example_tools` list:
+
 ```python
 example_tools = [
     echo_tool,
@@ -234,7 +247,9 @@ example_tools = [
 ```
 
 #### Parallel Tools
+
 For compute-intensive tools, add to `parallel_example_tools`:
+
 ```python
 parallel_example_tools = [
     process_batch_data,
@@ -260,28 +275,29 @@ The `Context` parameter provides access to MCP features:
 async def advanced_tool(data: str, ctx: Context = None) -> str:
     # Progress reporting
     await ctx.report_progress(progress=0.5, message="Halfway done")
-    
+
     # Logging at different levels
     await ctx.debug("Debug information")
     await ctx.info("Processing started")
     await ctx.warning("This might take a while")
     await ctx.error("Something went wrong")
-    
+
     # User interaction (elicit input)
     result = await ctx.elicit(
         message="Choose an option:",
         schema=MySchema
     )
-    
+
     # Resource notifications
-    await ctx.session.send_resource_list_changed()
-    
+    await ctx.send_notification(mcp.types.ResourceListChangedNotification())
+
     return "Processing complete"
 ```
 
 ## Decorator System Explained
 
 ### Exception Handler
+
 ```python
 # decorators/exception_handler.py
 def exception_handler(func):
@@ -296,6 +312,7 @@ def exception_handler(func):
 ```
 
 ### Tool Logger
+
 ```python
 # decorators/tool_logger.py
 def tool_logger(func, config):
@@ -303,17 +320,18 @@ def tool_logger(func, config):
     async def wrapper(*args, **kwargs):
         correlation_id = get_correlation_id()
         logger.info(f"[{correlation_id}] Calling {func.__name__}")
-        
+
         start_time = time.time()
         result = await func(*args, **kwargs)
         duration = time.time() - start_time
-        
+
         logger.info(f"[{correlation_id}] {func.__name__} completed in {duration:.3f}s")
         return result
     return wrapper
 ```
 
 ### Type Converter
+
 ```python
 # decorators/type_converter.py
 def type_converter(func):
@@ -326,6 +344,7 @@ def type_converter(func):
 ```
 
 ### Parallelize
+
 ```python
 # decorators/parallelize.py
 def parallelize(func):
@@ -367,6 +386,7 @@ python test_unified_logging.py
 ### Writing Tests
 
 #### Unit Tests
+
 ```python
 # tests/unit/test_my_tool.py
 import pytest
@@ -376,7 +396,7 @@ from {{ cookiecutter.__project_slug }}.tools.my_tool import my_tool
 async def test_my_tool_basic():
     """Test basic functionality."""
     result = await my_tool("test", 5)
-    
+
     assert result["input"] == "test"
     assert result["multiplier"] == 5
     assert "result" in result
@@ -386,11 +406,12 @@ async def test_my_tool_basic():
 async def test_my_tool_defaults():
     """Test default parameters."""
     result = await my_tool("test")  # param2 should default to 10
-    
+
     assert result["multiplier"] == 10
 ```
 
 #### Integration Tests
+
 ```python
 # tests/integration/test_my_tool_integration.py
 import pytest
@@ -400,10 +421,10 @@ from {{ cookiecutter.__project_slug }}.server.app import create_mcp_server
 async def test_tool_through_server():
     """Test tool through MCP server."""
     server = create_mcp_server()
-    
+
     # Test tool registration
     assert "my_tool" in server.list_tools()
-    
+
     # Test tool execution
     result = await server.call_tool("my_tool", {"param1": "test"})
     assert result is not None
@@ -462,17 +483,20 @@ mypy {{ cookiecutter.__project_slug }}/
 ### Git Workflow
 
 1. **Create feature branch:**
+
    ```bash
    git checkout -b feature/my-new-tool
    ```
 
 2. **Make changes with good commit messages:**
+
    ```bash
    git add .
    git commit -m "feat: add my_new_tool with batch processing"
    ```
 
 3. **Run tests:**
+
    ```bash
    pytest
    python test_correlation_id_integration.py
@@ -488,6 +512,7 @@ mypy {{ cookiecutter.__project_slug }}/
 ### Commit Message Format
 
 Use conventional commit format:
+
 - `feat:` new features
 - `fix:` bug fixes
 - `docs:` documentation changes
@@ -518,6 +543,7 @@ PYTHONPATH=. mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 ```
 
 Access at http://localhost:5173 to:
+
 - Test tools interactively
 - View tool parameters and responses
 - Debug tool execution
@@ -533,6 +559,7 @@ streamlit run {{ cookiecutter.__project_slug }}/ui/app.py
 ```
 
 Features:
+
 - Server status monitoring
 - Configuration management
 - Real-time log viewing
@@ -601,6 +628,7 @@ python test_unified_logging.py
 ### Parallel Tools
 
 Use parallelization for:
+
 - CPU-intensive computations
 - Batch processing operations
 - Long-running calculations
@@ -625,15 +653,15 @@ async def async_tool(data: str, ctx: Context = None) -> Dict[str, Any]:
     # Good: async I/O
     async with aiofiles.open('file.txt', 'r') as f:
         content = await f.read()
-    
+
     # Good: yielding control
     await asyncio.sleep(0.1)  # Not time.sleep(0.1)
-    
+
     # Good: async HTTP requests
     async with aiohttp.ClientSession() as session:
         async with session.get('https://api.example.com') as response:
             data = await response.json()
-    
+
     return {"result": data}
 ```
 
@@ -695,13 +723,14 @@ class MyDestination(BaseDestination):
     async def log(self, entry: LogEntry) -> None:
         # Implement custom logging logic
         pass
-    
+
     async def close(self) -> None:
         # Cleanup resources
         pass
 ```
 
 Register in factory:
+
 ```python
 # log_system/destinations/factory.py
 def create_destination(dest_type: str, settings: Dict) -> BaseDestination:
@@ -727,6 +756,7 @@ def my_decorator(func):
 ```
 
 Apply in server:
+
 ```python
 # Apply custom decorator in decorator chain
 decorated_func = my_decorator(exception_handler(tool_logger(func)))
@@ -744,6 +774,7 @@ class ServerConfig:
 ```
 
 Use in tools:
+
 ```python
 async def my_tool(ctx: Context = None) -> str:
     config = get_config()

@@ -92,7 +92,7 @@ class TestToolEdgeCases:
         # Either way, we should get an error message about unknown operation
         if result.isError:
             # MCP validation error
-            assert "Error executing tool" in error_msg or "Exception" in error_msg
+            assert "Error calling tool" in error_msg or "Error executing tool" in error_msg or "Exception" in error_msg
         else:
             # Decorator caught it
             assert "Unknown operation" in error_msg
@@ -113,7 +113,7 @@ class TestToolEdgeCases:
         error_msg = self._extract_error_message(result)
         if result.isError:
             # MCP validation error
-            assert "Error executing tool" in error_msg or "Exception" in error_msg
+            assert "Error calling tool" in error_msg or "Error executing tool" in error_msg or "Exception" in error_msg
         else:
             # Decorator caught it
             assert "complexity must be between 1 and 10" in error_msg
@@ -134,7 +134,7 @@ class TestToolEdgeCases:
         error_msg = self._extract_error_message(result)
         if result.isError:
             # MCP validation error
-            assert "Error executing tool" in error_msg or "Exception" in error_msg
+            assert "Error calling tool" in error_msg or "Error executing tool" in error_msg or "Exception" in error_msg
         else:
             # Decorator caught it
             assert "complexity must be between 1 and 10" in error_msg

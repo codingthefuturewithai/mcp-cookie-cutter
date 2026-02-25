@@ -20,11 +20,11 @@ from mcp.client.stdio import stdio_client, get_default_environment
 
 # Conditional import for streamable_http
 try:
-    from mcp.client.streamable_http import streamablehttp_client
+    from fastmcp import Client
+    from fastmcp.client.transports import StreamableHttpTransport
     HAS_STREAMABLE_HTTP = True
 except ImportError:
     HAS_STREAMABLE_HTTP = False
-    streamablehttp_client = None
 
 
 # Mark all tests in this module as async
@@ -58,10 +58,10 @@ class StreamableHTTPServer:
         
         # Start server process
         self.process = subprocess.Popen(
-            [sys.executable, "-m", self.server_module, "--transport", "streamable-http", "--port", str(self.port)],
+            [sys.executable, "-m", self.server_module, "--transport", "http", "--port", str(self.port)],
             env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=sys.stdout,  # Let server output go to test output for debugging
+            stderr=sys.stderr,
             cwd=str(self.project_root)
         )
         
@@ -70,13 +70,29 @@ class StreamableHTTPServer:
             StreamableHTTPServer._active_servers.append(self)
             self._cleanup_registered = True
         
-        # Wait for server to be ready
-        time.sleep(2)  # Give server time to start
+        # Wait for server to be ready with health check
+        import socket
+        max_wait = 30  # Maximum wait time in seconds
+        wait_interval = 0.5
+        waited = 0
         
-        # Check if process is still running
-        if self.process.poll() is not None:
-            stdout, stderr = self.process.communicate()
-            raise RuntimeError(f"Server failed to start. stdout: {stdout.decode()}, stderr: {stderr.decode()}")
+        while waited < max_wait:
+            time.sleep(wait_interval)
+            waited += wait_interval
+            
+            # Check if server is accepting connections
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            try:
+                result = sock.connect_ex(("127.0.0.1", self.port))
+                if result == 0:
+                    break
+            finally:
+                sock.close()
+        else:
+            raise RuntimeError(
+                f"Server did not start accepting connections within {max_wait} seconds"
+            )
     
     def stop(self) -> None:
         """Stop the Streamable HTTP server with multiple fallback strategies."""
@@ -124,14 +140,17 @@ class StreamableHTTPServer:
     def _kill_port_processes(self) -> None:
         """Kill any processes using the server's port."""
         try:
-            for proc in psutil.process_iter(['pid', 'connections']):
+            for proc in psutil.process_iter(['pid']):
                 try:
-                    connections = proc.info.get('connections')
-                    if connections:
-                        for conn in connections:
-                            if hasattr(conn, 'laddr') and conn.laddr.port == self.port:
-                                proc.kill()
-                                break
+                    # Use net_connections() (available in psutil 7.x+) with fallback to connections()
+                    if hasattr(proc, 'net_connections'):
+                        connections = proc.net_connections()
+                    else:
+                        connections = proc.connections()
+                    for conn in connections:
+                        if hasattr(conn, 'laddr') and conn.laddr.port == self.port:
+                            proc.kill()
+                            break
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
         except Exception as e:
@@ -162,7 +181,7 @@ atexit.register(StreamableHTTPServer.cleanup_all)
 # Skip streamable-http if not available
 TRANSPORTS = ["stdio"]
 if HAS_STREAMABLE_HTTP:
-    TRANSPORTS.append("streamable-http")
+    TRANSPORTS.append("http")
 
 @pytest.fixture(params=TRANSPORTS)
 async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None]:
@@ -266,7 +285,7 @@ async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None
             
             cleanup_funcs.append(cleanup_stdio)
             
-        elif transport == "streamable-http":
+        elif transport == "http":
             if not HAS_STREAMABLE_HTTP:
                 pytest.skip("streamable_http module not available")
             
@@ -278,32 +297,83 @@ async def mcp_session(request) -> AsyncGenerator[Tuple[ClientSession, str], None
             server_instance = server  # Track for emergency cleanup
             server.start()
             
-            # Connect via Streamable HTTP
-            url = f"http://localhost:{port}/mcp"
-            http_context = streamablehttp_client(url)
-            read, write, get_session_id = await http_context.__aenter__()
+            # Connect via Streamable HTTP using fastmcp Client
+            url = f"http://127.0.0.1:{port}/mcp"
+            http_transport = StreamableHttpTransport(url=url)
+            client = Client(http_transport)
             
-            # Create and initialize session
-            session = ClientSession(read, write)
-            await session.__aenter__()
-            await session.initialize()
+            # Enter the client context
+            await client.__aenter__()
             
-            # Store session ID for debugging
-            session._streamable_session_id = get_session_id()
+            # Wrap client to provide MCP ClientSession-compatible API
+            # FastMCP Client returns list[Tool] from list_tools() instead of object with .tools attribute
+            # and uses .is_error instead of .isError
+            class ClientSessionAdapter:
+                """Adapter to make fastmcp Client API compatible with MCP ClientSession API."""
+                
+                def __init__(self, client):
+                    self._client = client
+                
+                async def list_tools(self):
+                    """Wrap list_tools to return object with .tools attribute."""
+                    tools = await self._client.list_tools()
+                    
+                    class ToolsResponse:
+                        def __init__(self, tools_list):
+                            self.tools = tools_list
+                    
+                    return ToolsResponse(tools)
+                
+                async def call_tool(self, name: str, arguments: Optional[dict] = None):
+                    """Call tool with same signature as MCP ClientSession, wrapping results."""
+                    if arguments is None:
+                        arguments = {}
+                    
+                    try:
+                        result = await self._client.call_tool(name, arguments)
+                        return self._wrap_result(result)
+                    except Exception as e:
+                        from mcp import types
+                        error_text = str(e)
+                        error_content = [types.TextContent(type="text", text=error_text)]
+                        return self._wrap_error_result(error_text, error_content)
+                
+                def _wrap_result(self, result):
+                    """Wrap CallToolResult to add .isError attribute for compatibility."""
+                    if isinstance(result, list):
+                        return [self._wrap_result(r) for r in result]
+                    
+                    if not hasattr(result, 'isError'):
+                        if hasattr(result, 'is_error'):
+                            result.isError = result.is_error
+                        else:
+                            result.isError = False
+                    return result
+                
+                def _wrap_error_result(self, error_text: str, content: list):
+                    """Create a result object that looks like an MCP error result."""
+                    from mcp import types
+                    
+                    class ErrorResult:
+                        def __init__(self, content, error_text):
+                            self.isError = True
+                            self.content = content
+                            self.error_text = error_text
+                    
+                    return ErrorResult(content, error_text)
+                
+                def __getattr__(self, name):
+                    return getattr(self._client, name)
             
-            # Add cleanup for streamable-http
+            session = ClientSessionAdapter(client)
+            
+            # Add cleanup for HTTP
             async def cleanup_http():
                 try:
-                    if session:
-                        await session.__aexit__(None, None, None)
+                    await client.__aexit__(None, None, None)
                 except Exception as e:
                     print(f"Session cleanup error: {e}", file=sys.stderr)
                 
-                try:
-                    await http_context.__aexit__(None, None, None)
-                except Exception as e:
-                    print(f"HTTP context cleanup error: {e}", file=sys.stderr)
-                    
                 try:
                     server.stop()
                 except Exception as e:
@@ -343,8 +413,8 @@ async def streamable_http_session() -> AsyncGenerator[ClientSession, None]:
     
     Use this fixture when you need to test Streamable HTTP-specific functionality.
     """
-    async for session, transport in mcp_session(pytest.FixtureRequest(param="streamable-http")):
-        if transport == "streamable-http":
+    async for session, transport in mcp_session(pytest.FixtureRequest(param="http")):
+        if transport == "http":
             yield session
 
 
