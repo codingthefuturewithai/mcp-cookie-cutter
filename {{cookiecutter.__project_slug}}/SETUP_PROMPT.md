@@ -45,10 +45,7 @@ uv pip install -e ".[ui,test,monitoring]"
 # Start server (stdio - default transport)
 {{cookiecutter.__project_slug}}-server
 
-# Start with SSE transport
-{{cookiecutter.__project_slug}}-server --transport sse --port 3001
-
-# Start with streamable HTTP transport
+# Start with Streamable HTTP transport
 {{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001
 
 # Start with Docker (streamable HTTP, auto port discovery)
@@ -150,10 +147,10 @@ isort {{cookiecutter.__project_slug}}/
 {{cookiecutter.__project_slug}}-client "Hello, World!"
 
 # 2. Test different transports
-{{cookiecutter.__project_slug}}-server --transport sse --port 3001 &
-curl -X POST http://localhost:3001/tools/echo_tool \
+{{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001 &
+curl -X POST http://localhost:3001/mcp \
   -H "Content-Type: application/json" \
-  -d '{"message": "SSE Test"}'
+  -d '{"message": "HTTP Test"}'
 kill %1  # Stop background server
 ```
 
@@ -190,8 +187,7 @@ streamlit run {{cookiecutter.__project_slug}}/ui/app.py
 
 ### Transport Support
 - **STDIO**: Default, for MCP clients like Claude Desktop
-- **SSE**: Server-Sent Events for web clients
-- **Streamable HTTP**: HTTP streaming for advanced clients
+- **Streamable HTTP**: HTTP-based transport for web and advanced clients
 - **Docker**: Containerized deployment using streamable HTTP (via `python scripts/docker.py`)
 
 ### Decorator Chain
@@ -245,18 +241,7 @@ Get-Content -Wait "$env:LOCALAPPDATA\mcp-servers\logs\{{cookiecutter.__project_s
 # Test stdio (default)
 echo '{"method": "ping"}' | {{cookiecutter.__project_slug}}-server
 
-# Test SSE
-# macOS/Linux:
-{{cookiecutter.__project_slug}}-server --transport sse --port 3001 &
-curl -s http://localhost:3001/health
-kill %1
-
-# Windows PowerShell:
-Start-Job { {{cookiecutter.__project_slug}}-server --transport sse --port 3001 }
-Invoke-RestMethod -Uri http://localhost:3001/health
-Stop-Job -Name Job1
-
-# Test streamable HTTP
+# Test Streamable HTTP
 # macOS/Linux:
 {{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001 &
 curl -s http://localhost:3001/mcp
@@ -273,7 +258,7 @@ Stop-Job -Name Job1
 ### Optional Configuration
 - **LOG_LEVEL**: DEBUG, INFO, WARNING, ERROR (default: INFO)
 - **MCP_SERVER_NAME**: Custom server name (default: "{{cookiecutter.project_name}}")
-- **MCP_SERVER_PORT**: Default port for SSE/HTTP (default: 3001)
+- **MCP_SERVER_PORT**: Default port for Streamable HTTP (default: 3001)
 
 ### Docker Configuration
 - **MCP_PORT**: Host port mapped to the container (default: 19000)

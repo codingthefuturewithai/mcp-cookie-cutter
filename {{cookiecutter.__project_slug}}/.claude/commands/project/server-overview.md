@@ -87,7 +87,6 @@ _Decorator chain:_
 
 **Deployment:**
   - STDIO: `[entry-point-name]` or `python -m [package] --transport stdio`
-  - SSE: `[entry-point-name] --transport sse --port [port]`
   - Streamable HTTP: `[entry-point-name] --transport streamable-http --port [port]`
   - Docker: `python scripts/docker.py start` (if Dockerfile exists, otherwise omit)
 

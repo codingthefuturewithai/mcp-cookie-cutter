@@ -29,9 +29,8 @@ This document tracks the relationship between MCP specification versions, Python
 | Type System | ✅ Full | ✅ Yes | Stable |
 | **Transports** | | | |
 | STDIO | ✅ Full | ✅ Yes | Stable |
-| SSE | ✅ Full | ✅ Yes | Stable |
+| Streamable HTTP | ✅ Full | ✅ Yes | Stable |
 | WebSocket | ✅ Full | ❌ No | Available |
-| StreamableHTTP | ✅ Full | ❌ No | New |
 | **Advanced** | | | |
 | Resources | ✅ Full | ❌ No | Stable |
 | Prompts | ✅ Full | ❌ No | Stable |
@@ -58,7 +57,7 @@ from mcp import types  # Type definitions
 - `FastMCP()` - Constructor
 - `server.tool()` - Tool registration
 - `server.run_stdio_async()` - STDIO transport
-- `server.run_sse_async()` - SSE transport
+- `server.run_streamable_http_async()` - Streamable HTTP transport
 
 ### Context Methods Used
 - `ctx.info()`, `ctx.debug()`, `ctx.warning()`, `ctx.error()` - Logging
@@ -99,7 +98,7 @@ from mcp import types  # Type definitions
 - Transport initialization changed
 
 ### Future Considerations
-- StreamableHTTP may become preferred transport
+- Streamable HTTP is now the preferred HTTP transport
 - OAuth may become required for some uses
 - Resources/Prompts may be commonly needed
 - Elicitation could be useful for interactive tools
@@ -163,5 +162,5 @@ When helping users:
 ### Future (Planned)
 - Resource support (if requested)
 - Prompt templates (if needed)
-- StreamableHTTP (when stable)
+- Additional transport options (if needed)
 - Authentication (for enterprise)

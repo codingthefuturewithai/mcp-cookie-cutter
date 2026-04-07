@@ -63,13 +63,7 @@ mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 mcp dev {{ cookiecutter.__project_slug }}/server/app.py
 ```
 
-### SSE Transport
-To test with SSE transport, run the server directly:
-```bash
-python -m {{ cookiecutter.__project_slug }}.server.app --transport sse
-```
-
-### Streamable HTTP Transport (Recommended for Testing)
+### Streamable HTTP Transport
 The Streamable HTTP transport provides the best testing experience with its unified endpoint:
 ```bash
 python -m {{ cookiecutter.__project_slug }}.server.app --transport streamable-http
@@ -89,8 +83,7 @@ Open the Inspector URL in your browser.
 | Transport | Use Case | Endpoint | Features |
 |-----------|----------|----------|----------|
 | STDIO | Desktop clients (Claude Desktop) | N/A | Simple, reliable |
-| SSE | Web clients (legacy) | Multiple endpoints | Separate streams per operation |
-| Streamable HTTP | Modern web clients | Single `/mcp` endpoint | Unified API, resumability, better performance |
+| Streamable HTTP | Web and modern clients | Single `/mcp` endpoint | Unified API, resumability, better performance |
 | Docker | Containerized deployment | `http://localhost:<port>/mcp` | Isolated, reproducible, uses streamable HTTP |
 
 **Docker transport**: Run `python scripts/docker.py start` to deploy in a container. See [README.md](../README.md#docker-deployment) for details.

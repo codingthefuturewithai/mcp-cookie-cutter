@@ -274,7 +274,7 @@ def show_next_steps():
     print("  - Getting started guides")
     print("  - Adding new tools")
     print("  - Testing your tools")
-    print("  - Different transport modes (SSE, HTTP)")
+    print("  - Different transport modes (stdio, Streamable HTTP)")
     print("  - Correlation ID tracking")
     print("  - And much more...")
     

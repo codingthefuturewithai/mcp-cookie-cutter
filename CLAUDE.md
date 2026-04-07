@@ -54,8 +54,8 @@ uv pip install -e .
 # Test with stdio transport (default)
 {{cookiecutter.__project_slug}}-client "Hello, World"
 
-# Test with SSE transport
-{{cookiecutter.__project_slug}}-server --transport sse --port 3001
+# Test with Streamable HTTP transport
+{{cookiecutter.__project_slug}}-server --transport streamable-http --port 3001
 
 # Test with MCP Inspector
 mcp dev {{cookiecutter.__project_slug}}/server/app.py
@@ -67,7 +67,7 @@ python -m build --wheel
 ## Architecture
 
 The template generates projects with this structure:
-- `server/app.py`: Unified MCP server supporting both stdio and SSE transports
+- `server/app.py`: Unified MCP server supporting both stdio and Streamable HTTP transports
 - `client/app.py`: Test client for development (stdio only)
 - `tools/`: Directory for tool implementations (business logic)
 - `config.py`: Runtime configuration management
@@ -89,12 +89,12 @@ The template generates projects with this structure:
 
 - Python 3.11-3.13 required
 - Main dependencies: `mcp`, `anyio`, `starlette`, `uvicorn`
-- Default SSE port: 3001 (configurable)
+- Default Streamable HTTP port: 3001 (configurable)
 - Logging: Writes to OS-specific locations with 10MB rotation
 
 ## MCP-Specific Notes
 
-- The server supports both stdio (for direct integration) and SSE (for HTTP-based access) transports
+- The server supports both stdio (for direct integration) and Streamable HTTP (for HTTP-based access) transports
 - Tools must handle various content types: Text, Image, JSON, File, Binary
 - Use MCP Inspector for interactive development and testing
 - The protocol requires proper error handling and response formatting

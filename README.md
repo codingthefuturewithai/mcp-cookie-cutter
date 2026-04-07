@@ -1,10 +1,10 @@
 # MCP Server Cookie Cutter Template
 
-A cookie cutter template for creating new MCP (Model Context Protocol) servers. This template generates a fully functional MCP server with multi-transport support (stdio, SSE, and streamable HTTP), advanced logging, automatic decorators, and a web-based management UI.
+A cookie cutter template for creating new MCP (Model Context Protocol) servers. This template generates a fully functional MCP server with multi-transport support (stdio and streamable HTTP), advanced logging, automatic decorators, and a web-based management UI.
 
 ## Features
 
-- **Multi-Transport Support**: stdio, SSE, and streamable HTTP in a single implementation
+- **Multi-Transport Support**: stdio and streamable HTTP in a single implementation
 - **Automatic Decorators**: Exception handling, logging, type conversion, and parallelization
 - **Unified Logging System**: SQLite-based logging with correlation IDs and extensible destinations
 - **Web Management UI**: Streamlit-based interface for configuration, logs, and documentation
@@ -66,7 +66,7 @@ You'll be asked for:
 - `description`: Short description of your project
 - `author_name`: Your name
 - `email`: Your email address
-- `server_port`: Port for SSE and HTTP transports (default: 3001)
+- `server_port`: Port for Streamable HTTP transport (default: 3001)
 
 ## Generated Project Structure
 
@@ -84,7 +84,7 @@ my_mcp_server/              # Your project directory
 │   │   └── app.py         # Test client for development
 │   ├── server/            # Server implementation
 │   │   ├── __init__.py
-│   │   └── app.py        # Multi-transport MCP server (stdio, SSE, HTTP)
+│   │   └── app.py        # Multi-transport MCP server (stdio, streamable HTTP)
 │   ├── tools/             # Tool implementations
 │   │   ├── __init__.py
 │   │   └── example_tools.py  # Example tools with decorators
@@ -130,7 +130,6 @@ Once your project is generated:
 
 3. **Explore Transports**
    - **STDIO**: `python -m your_project_name --transport stdio`
-   - **SSE**: `python -m your_project_name --transport sse --port 3001`
    - **Streamable HTTP**: `python -m your_project_name --transport streamable-http --port 3001`
 
 4. **Test with MCP Inspector**

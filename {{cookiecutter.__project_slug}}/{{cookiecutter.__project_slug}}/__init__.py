@@ -12,14 +12,14 @@ def main(transport: str = "stdio"):
     """Entry point for MCP server
 
     Args:
-        transport: Transport mode to use ("sse" or "stdio")
+        transport: Transport mode to use ("stdio" or "streamable-http")
     """
     try:
         logger = logging.getLogger(__name__)
         if transport == "stdio":
             asyncio.run(server.run_stdio_async())
         else:
-            asyncio.run(server.run_sse_async())
+            asyncio.run(server.run_streamable_http_async())
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except Exception as e:

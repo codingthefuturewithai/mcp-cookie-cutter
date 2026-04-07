@@ -13,7 +13,7 @@ This document provides a comprehensive reference for the MCP (Model Context Prot
 
 1. **FastMCP Server** (`from mcp.server.fastmcp import FastMCP`)
    - High-level server interface
-   - Triple transport support (STDIO, SSE, and Streamable HTTP)
+   - Dual transport support (STDIO and Streamable HTTP)
    - Tool registration and management
    - Not using: Resources, Prompts, Completions
 
@@ -30,7 +30,6 @@ This document provides a comprehensive reference for the MCP (Model Context Prot
 
 4. **Transport Protocols**
    - **STDIO**: Standard input/output for CLI integration
-   - **SSE**: Server-Sent Events for HTTP-based communication
    - **Streamable HTTP**: Modern unified HTTP transport with session management
    - Not using: WebSocket
 
@@ -105,11 +104,6 @@ The template uses a re-raise pattern:
 - Communication: JSON-RPC over standard input/output
 - Configuration: Default transport mode
 
-### SSE Transport
-- Used by: Web applications, HTTP clients
-- Communication: Server-Sent Events + POST endpoints
-- Configuration: Requires port specification
-
 ### Streamable HTTP Transport
 - Used by: Modern web applications, HTTP clients with session management
 - Communication: Unified `/mcp` endpoint with POST/GET + SSE streaming
@@ -121,7 +115,7 @@ The template uses a re-raise pattern:
 ### Why These Features?
 
 1. **Tools Only**: Most MCP servers primarily need tool functionality
-2. **Triple Transport**: Covers CLI, traditional web, and modern web use cases
+2. **Dual Transport**: Covers CLI and web use cases
 3. **Context for Logging**: Essential for debugging and user feedback
 4. **No Resources/Prompts**: Complexity not needed for most use cases
 
@@ -162,7 +156,7 @@ This preserves function signatures for MCP introspection while adding functional
 
 ### What Remains Stable
 - Core tool registration and execution
-- Transport protocols (STDIO, SSE, Streamable HTTP)
+- Transport protocols (STDIO, Streamable HTTP)
 - Context object for logging
 - JSON-RPC message format
 

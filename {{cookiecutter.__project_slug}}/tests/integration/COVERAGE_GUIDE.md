@@ -158,13 +158,13 @@ coverage html
 - **Overall**: ~40-45% (includes untested UI components)
 - **example_tools.py**: 98% (comprehensive tool testing)
 - **decorators/**: 80-100% (decorator functionality)
-- **server/app.py**: 82% (main entry point, SSE transport not tested)
+- **server/app.py**: 82% (main entry point, some transport paths not tested)
 - **config.py**: 80% (configuration management)
 
 ### Why Some Lines Aren't Covered
 
 1. **UI Components** (`ui/` directory): Not tested (0% coverage) as they require Streamlit
-2. **SSE Transport**: Some transport-specific lines may not be tested
+2. **Transport Paths**: Some transport-specific lines may not be tested
 3. **Error Recovery**: Some error paths may not be reachable in tests
 4. **Main Block**: `if __name__ == "__main__"` blocks aren't executed during imports
 
