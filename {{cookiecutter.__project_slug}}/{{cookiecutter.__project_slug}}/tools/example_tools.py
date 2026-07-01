@@ -11,6 +11,7 @@ import random
 from typing import List, Dict, Any
 from mcp.server.fastmcp import Context
 from mcp.server.session import ServerSession
+from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
 from {{cookiecutter.__project_slug}}.log_system.unified_logger import UnifiedLogger
 
@@ -148,6 +149,47 @@ async def search_tool(
         "results": results,
         "message": f"Found {len(results)} results for '{query}' in {len(actual_dirs)} directories"
     }
+
+class WeatherReport(BaseModel):
+    """Structured weather report.
+
+    Demonstrates MCP structured output (SDK 1.10+): because this tool's
+    return type is a Pydantic model, the SDK automatically publishes an
+    output_schema in tools/list and returns validated structured_content
+    alongside the human-readable text content.
+    """
+
+    location: str = Field(description="Location name")
+    temperature_c: float = Field(description="Temperature in Celsius")
+    condition: str = Field(description="Sky condition (sunny, cloudy, rainy, ...)")
+    humidity_pct: float = Field(description="Relative humidity percentage (0-100)")
+    observed_at: str = Field(description="Observation timestamp (ISO 8601)")
+
+
+async def get_weather(city: str, ctx: Context = None) -> WeatherReport:
+    """Get simulated weather for a city (structured output demo).
+
+    Returns a typed Pydantic model instead of a plain dict. Clients that
+    understand structured output receive validated, schema-conformant data;
+    all other clients still receive the JSON text representation.
+
+    Args:
+        city: Name of the city to report weather for
+
+    Returns:
+        A structured WeatherReport
+    """
+    logger = UnifiedLogger.get_logger(__name__)
+    logger.info(f"get_weather called for city: {city}")
+    conditions = ["sunny", "partly cloudy", "cloudy", "rainy"]
+    return WeatherReport(
+        location=city,
+        temperature_c=round(random.uniform(-5.0, 35.0), 1),
+        condition=random.choice(conditions),
+        humidity_pct=round(random.uniform(20.0, 95.0), 1),
+        observed_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
+    )
+
 
 class BookingPreferences(BaseModel):
     """Schema for collecting user preferences."""
@@ -305,10 +347,62 @@ example_tools = [
     random_number,
     calculate_fibonacci,
     search_tool,
+    get_weather,
     elicit_example,
     notification_example,
     progress_example
 ]
+
+# Per-tool metadata: human-readable titles and behavior annotations.
+# Annotations (SDK 1.8+/spec 2025-03-26) are hints that hosts use for
+# safety prompts and UX: readOnlyHint, destructiveHint, idempotentHint,
+# openWorldHint. They are advisory only - never rely on them for security.
+TOOL_METADATA: Dict[str, Dict[str, Any]] = {
+    "echo": {
+        "title": "Echo Message",
+        "annotations": ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    },
+    "get_time": {
+        "title": "Get Current Time",
+        "annotations": ToolAnnotations(readOnlyHint=True, idempotentHint=False, openWorldHint=False),
+    },
+    "random_number": {
+        "title": "Generate Random Number",
+        "annotations": ToolAnnotations(readOnlyHint=True, idempotentHint=False, openWorldHint=False),
+    },
+    "calculate_fibonacci": {
+        "title": "Calculate Fibonacci Number",
+        "annotations": ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    },
+    "search_tool": {
+        "title": "Search Content",
+        "annotations": ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    },
+    "get_weather": {
+        "title": "Get Weather (Structured Output)",
+        "annotations": ToolAnnotations(readOnlyHint=True, idempotentHint=False, openWorldHint=False),
+    },
+    "elicit_example": {
+        "title": "Book Table (Elicitation Demo)",
+        "annotations": ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False),
+    },
+    "notification_example": {
+        "title": "Process Data (Notifications Demo)",
+        "annotations": ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False),
+    },
+    "progress_example": {
+        "title": "Long Task (Progress Demo)",
+        "annotations": ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    },
+    "process_batch_data": {
+        "title": "Process Batch Data (Parallel)",
+        "annotations": ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    },
+    "simulate_heavy_computation": {
+        "title": "Simulate Heavy Computation (Parallel)",
+        "annotations": ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    },
+}
 
 async def get_tool_info() -> Dict[str, Any]:
     """Get information about available tools.

@@ -24,7 +24,13 @@ from {{ cookiecutter.__project_slug }}.log_system.correlation import (
 )
 from {{ cookiecutter.__project_slug }}.log_system.unified_logger import UnifiedLogger
 
-from {{ cookiecutter.__project_slug }}.tools.example_tools import example_tools, parallel_example_tools
+from {{ cookiecutter.__project_slug }}.tools.example_tools import (
+    example_tools,
+    parallel_example_tools,
+    TOOL_METADATA,
+)
+from {{ cookiecutter.__project_slug }}.resources.example_resources import register_resources
+from {{ cookiecutter.__project_slug }}.prompts.example_prompts import register_prompts
 
 
 def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
@@ -86,21 +92,30 @@ def create_mcp_server(config: Optional[ServerConfig] = None) -> FastMCP:
 
     mcp_server = FastMCP(
         config.name or "{{ cookiecutter.project_name }}",
+        # Instructions are sent to clients at initialize time and help
+        # models understand how to use this server.
+        instructions=(
+            "{{ cookiecutter.description }} "
+            "Provides example tools (including structured output, elicitation, "
+            "and progress demos), resources, and prompts."
+        ),
         transport_security=TransportSecuritySettings(
             enable_dns_rebinding_protection=dns_protection,
             allowed_hosts=allowed_hosts
         )
     )
-    
-    
-    # Register all tools with the server
+
+
+    # Register all tools, resources, and prompts with the server
     register_tools(mcp_server, config)
-    
-    
+    register_resources(mcp_server)
+    register_prompts(mcp_server)
+
+
     # Clear initialization correlation ID after initialization
     unified_logger.info("Server initialization complete")
     clear_initialization_correlation_id()
-    
+
     return mcp_server
 
 
@@ -126,32 +141,40 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
     for tool_func in example_tools:
         # Apply decorator chain: exception_handler → tool_logger → type_converter
         decorated_func = exception_handler(tool_logger(type_converter(tool_func), config.__dict__))
-        
+
         # Extract metadata from the original function
         tool_name = tool_func.__name__
-        
+        metadata = TOOL_METADATA.get(tool_name, {})
+
         # Register the decorated function directly with MCP
-        # This preserves the function signature for parameter introspection
+        # This preserves the function signature for parameter introspection.
+        # title/annotations (SDK 1.8+) give hosts display names and behavior
+        # hints (readOnlyHint, destructiveHint, idempotentHint, openWorldHint).
         mcp_server.tool(
-            name=tool_name
+            name=tool_name,
+            title=metadata.get("title"),
+            annotations=metadata.get("annotations"),
         )(decorated_func)
-        
+
         unified_logger.info(f"Registered tool: {tool_name}")
-    
-    # Register parallel tools with decorators  
+
+    # Register parallel tools with decorators
     for tool_func in parallel_example_tools:
         # Apply decorator chain: exception_handler → tool_logger → parallelize(type_converter)
         # Note: type_converter is applied to the base function before parallelize
         decorated_func = exception_handler(tool_logger(parallelize(type_converter(tool_func)), config.__dict__))
-        
+
         # Extract metadata
         tool_name = tool_func.__name__
-        
+        metadata = TOOL_METADATA.get(tool_name, {})
+
         # Register directly with MCP
         mcp_server.tool(
-            name=tool_name
+            name=tool_name,
+            title=metadata.get("title"),
+            annotations=metadata.get("annotations"),
         )(decorated_func)
-        
+
         unified_logger.info(f"Registered parallel tool: {tool_name}")
     
     
@@ -179,29 +202,48 @@ server = create_mcp_server()
     default="stdio",
     help="Transport type (stdio or streamable-http)"
 )
-def main(port: int, host: str, transport: str) -> int:
+@click.option(
+    "--stateless",
+    is_flag=True,
+    default=False,
+    help="Run Streamable HTTP in stateless mode (no session state; "
+         "suitable for serverless / load-balanced deployments)"
+)
+@click.option(
+    "--json-response",
+    is_flag=True,
+    default=False,
+    help="Return plain JSON responses instead of streaming responses "
+         "(Streamable HTTP only)"
+)
+def main(port: int, host: str, transport: str, stateless: bool, json_response: bool) -> int:
     """Run the {{ cookiecutter.project_name }} server with specified transport."""
     async def run_server():
         """Inner async function to run the server and manage the event loop."""
         # Set the event loop in UnifiedLogger for async operations
         UnifiedLogger.set_event_loop(asyncio.get_running_loop())
-        
+
         try:
             if transport == "stdio":
                 logger.info("Starting server with STDIO transport")
                 await server.run_stdio_async()
             elif transport == "streamable-http":
-                logger.info(f"Starting server with Streamable HTTP transport on {host}:{port}")
+                logger.info(
+                    f"Starting server with Streamable HTTP transport on {host}:{port} "
+                    f"(stateless={stateless}, json_response={json_response})"
+                )
                 server.settings.host = host
                 server.settings.port = port
                 server.settings.streamable_http_path = "/mcp"
+                server.settings.stateless_http = stateless
+                server.settings.json_response = json_response
                 await server.run_streamable_http_async()
             else:
                 raise ValueError(f"Unknown transport: {transport}")
         finally:
             # Clean up unified logger
             await UnifiedLogger.close()
-    
+
     try:
         asyncio.run(run_server())
         return 0
@@ -214,11 +256,17 @@ def main(port: int, host: str, transport: str) -> int:
 
 def main_stdio() -> int:
     """Entry point for STDIO transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="stdio")
+    return main.callback(
+        port={{ cookiecutter.server_port }}, host="127.0.0.1", transport="stdio",
+        stateless=False, json_response=False,
+    )
 
 def main_http() -> int:
     """Entry point for Streamable HTTP transport (convenience wrapper)."""
-    return main.callback(port={{ cookiecutter.server_port }}, transport="streamable-http")
+    return main.callback(
+        port={{ cookiecutter.server_port }}, host="127.0.0.1", transport="streamable-http",
+        stateless=False, json_response=False,
+    )
 
 if __name__ == "__main__":
     sys.exit(main())

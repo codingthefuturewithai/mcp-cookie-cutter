@@ -122,16 +122,22 @@ class StreamableHTTPServer:
                 self._cleanup_registered = False
     
     def _kill_port_processes(self) -> None:
-        """Kill any processes using the server's port."""
+        """Kill any processes using the server's port.
+
+        Uses net_connections() (psutil 6+); falls back to connections()
+        for older psutil versions.
+        """
         try:
-            for proc in psutil.process_iter(['pid', 'connections']):
+            for proc in psutil.process_iter(['pid']):
                 try:
-                    connections = proc.info.get('connections')
-                    if connections:
-                        for conn in connections:
-                            if hasattr(conn, 'laddr') and conn.laddr.port == self.port:
-                                proc.kill()
-                                break
+                    if hasattr(proc, 'net_connections'):
+                        connections = proc.net_connections(kind='inet')
+                    else:  # psutil < 6
+                        connections = proc.connections(kind='inet')
+                    for conn in connections:
+                        if hasattr(conn, 'laddr') and conn.laddr and conn.laddr.port == self.port:
+                            proc.kill()
+                            break
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
         except Exception as e:

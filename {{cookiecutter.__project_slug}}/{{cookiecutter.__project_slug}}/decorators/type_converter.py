@@ -12,6 +12,13 @@ The decorator:
 
 This is a RUNTIME conversion, not a schema modification. The schema remains
 unchanged to maintain MCP compatibility.
+
+NOTE (MCP SDK 1.28+): the official SDK now validates and coerces tool
+arguments with Pydantic before the tool function is called, which covers
+most string-to-type conversions natively. This decorator is retained as
+defense-in-depth for non-conformant clients and for values Pydantic's
+lenient mode does not coerce (e.g. "yes"/"on" booleans, bare strings to
+single-item lists). It passes correctly-typed values through untouched.
 """
 
 import inspect

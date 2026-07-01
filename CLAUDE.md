@@ -67,9 +67,11 @@ python -m build --wheel
 ## Architecture
 
 The template generates projects with this structure:
-- `server/app.py`: Unified MCP server supporting both stdio and Streamable HTTP transports
-- `client/app.py`: Test client for development (stdio only)
-- `tools/`: Directory for tool implementations (business logic)
+- `server/app.py`: Unified MCP server supporting both stdio and Streamable HTTP transports (with `--stateless` / `--json-response` flags for serverless deployments)
+- `client/app.py`: Test client for development (stdio only); demonstrates reading structured output
+- `tools/`: Directory for tool implementations (business logic), including per-tool titles and `ToolAnnotations`, plus a structured-output example (typed Pydantic return)
+- `resources/`: MCP resources (static URIs and resource templates)
+- `prompts/`: MCP prompts (reusable message templates)
 - `config.py`: Runtime configuration management
 - `logging_config.py`: OS-specific logging setup with file rotation
 
@@ -87,8 +89,8 @@ The template generates projects with this structure:
 
 ## Important Configuration
 
-- Python 3.11-3.13 required
-- Main dependencies: `mcp`, `anyio`, `starlette`, `uvicorn`
+- Python 3.11-3.14 required
+- Main dependencies: `mcp[cli]>=1.28.1,<2.0` (official MCP Python SDK; pinned below the 2.0 breaking rework), `anyio`, `starlette`, `uvicorn`
 - Default Streamable HTTP port: 3001 (configurable)
 - Logging: Writes to OS-specific locations with 10MB rotation
 
