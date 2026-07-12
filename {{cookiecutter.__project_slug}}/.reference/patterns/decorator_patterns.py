@@ -160,7 +160,9 @@ def type_converter_pattern(func):
     """
     PATTERN: Converts string parameters from MCP to correct Python types.
     
-    MCP sends ALL parameters as strings. This decorator:
+    Some legacy/non-conformant MCP clients send parameters as strings
+    (the modern SDK validates and coerces typed JSON via Pydantic before
+    the tool runs). This decorator adds defense-in-depth:
     - Inspects function signature
     - Converts string parameters to expected types
     - Handles: int, float, bool, List, Dict, Optional
@@ -396,7 +398,7 @@ KEY DECORATOR PRINCIPLES:
    - MCP needs to introspect parameter names
 
 5. TYPE CONVERSION:
-   - MCP sends all parameters as strings
+   - Legacy clients may send parameters as strings (SDK coerces typed JSON natively)
    - type_converter handles conversion automatically
    - Based on function's type hints
 

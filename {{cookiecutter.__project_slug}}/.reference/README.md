@@ -21,15 +21,12 @@ When you use commands like `/getting-started`, `/add-tool`, or `/generate-tests`
 ### `/patterns/` - Core Implementation Patterns
 
 - **tool_patterns.py** - All MCP tool patterns with detailed explanations
-- **integration_test_patterns.py** - MCP client integration test patterns  
+- **integration_test_patterns.py** - MCP client integration test patterns
 - **unit_test_patterns.py** - Unit test patterns for decorators
 - **decorator_patterns.py** - How decorators work and chain together
 
-### `/templates/` - Code Generation Templates
-
-- **new_tool_template.py.jinja** - Template for generating new tools
-- **integration_test_template.py.jinja** - Template for integration tests
-- **unit_test_template.py.jinja** - Template for unit tests
+For resources and prompts, follow the live examples in
+`resources/example_resources.py` and `prompts/example_prompts.py`.
 
 ## How It Works
 

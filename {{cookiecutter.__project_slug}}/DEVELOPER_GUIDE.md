@@ -95,7 +95,7 @@ from mcp.server.fastmcp import Context
 
 async def my_tool(
     param1: str,
-    param2: int = 10,  # Use defaults, never Optional
+    param2: int = 10,  # Concrete defaults preferred over Optional
     ctx: Context = None
 ) -> Dict[str, Any]:
     """Tool description for MCP."""
@@ -116,12 +116,14 @@ That's it! The decorators are applied automatically.
 
 ### Critical Rules for Tools
 
-⚠️ **NEVER use Optional parameters** - they break MCP clients
+⚠️ **Prefer concrete defaults over Optional parameters** - Optional works on
+modern MCP clients (SDK validates with Pydantic), but concrete defaults keep
+schemas simple and maximally compatible (see .reference/mcp-compatibility-critical.md)
 ```python
-# ❌ WRONG
-async def bad_tool(text: Optional[str] = None): ...
+# ⚠️ Works, but harder schemas for clients
+async def okay_tool(text: Optional[str] = None): ...
 
-# ✅ CORRECT
+# ✅ PREFERRED
 async def good_tool(text: str = ""): ...
 ```
 
@@ -252,7 +254,7 @@ Once you have your own tools working:
 - Restart the MCP Inspector
 
 ### Tests Failing
-- Check for Optional parameters (not allowed)
+- Check parameter defaults (concrete defaults preferred over Optional)
 - Verify async function signature
 - Ensure `ctx: Context = None` parameter exists
 

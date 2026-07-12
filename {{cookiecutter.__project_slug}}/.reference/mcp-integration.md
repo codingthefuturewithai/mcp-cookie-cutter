@@ -6,12 +6,13 @@ This document explains how decorators integrate with the MCP protocol in this te
 
 MCP has specific requirements:
 1. Tools must have inspectable signatures (not **kwargs)
-2. Parameters arrive as strings from clients
+2. Arguments are validated against the published input schema (the SDK
+   does this with Pydantic; some legacy clients still send strings)
 3. Errors must be properly formatted
 4. All operations should be logged
 
 The decorators add:
-1. Automatic type conversion
+1. Extra type conversion (defense-in-depth beyond the SDK's Pydantic layer)
 2. Comprehensive logging
 3. Exception handling
 4. Optional parallelization
@@ -41,13 +42,17 @@ tool → type_converter → parallelize → tool_logger → exception_handler �
 
 ### 1. type_converter Decorator
 
-**Purpose**: Handle MCP's string parameters automatically
+**Purpose**: Defense-in-depth conversion for non-conformant clients.
+The SDK (1.10+) already validates and coerces arguments with Pydantic
+before the tool runs; this decorator additionally covers conversions
+Pydantic's lenient mode does not (e.g. "yes"/"on" booleans, bare string
+to single-item list) and passes correctly-typed values through untouched.
 
 ```python
-# MCP sends:
-{"message": "hello", "count": "5", "enabled": "true"}
+# Legacy client sends:
+{"message": "hello", "count": "5", "enabled": "yes"}
 
-# type_converter converts to:
+# After SDK coercion + type_converter:
 {"message": "hello", "count": 5, "enabled": True}
 ```
 
@@ -125,8 +130,13 @@ def register_tools(mcp_server: FastMCP, config: ServerConfig) -> None:
             )
         )
         
-        # Register with MCP
-        mcp_server.tool(name=tool_func.__name__)(decorated)
+        # Register with MCP, including title + annotations metadata
+        metadata = TOOL_METADATA.get(tool_func.__name__, {})
+        mcp_server.tool(
+            name=tool_func.__name__,
+            title=metadata.get("title"),
+            annotations=metadata.get("annotations"),
+        )(decorated)
 ```
 
 ### Why This Works
@@ -243,10 +253,11 @@ async def test_decorator_chain():
 When working with MCP integration:
 
 1. **Never manually apply decorators in tools** - Server does this
-2. **Always put type_converter first** - It handles MCP's strings
+2. **Always put type_converter first** - Innermost in the chain
 3. **Expect re-raised exceptions** - This is correct behavior
 4. **Preserve Context parameter** - It's optional but important
 5. **Test with real MCP client** - Not just unit tests
+6. **Add a TOOL_METADATA entry** - Title + annotations for every new tool
 
 ## Key Takeaways
 

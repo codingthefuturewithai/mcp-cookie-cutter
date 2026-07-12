@@ -275,7 +275,7 @@ decorated = exception_handler(tool_logger(parallelize(your_tool)))
 
 ### Pattern 1: Type Conversion with Context
 
-MCP passes parameters as strings. Handle conversion in your tools and always include the Context parameter:
+The MCP SDK validates and coerces arguments with Pydantic before your tool runs (type_converter adds defense-in-depth for legacy clients). Always include the Context parameter:
 
 ```python
 from mcp.server.fastmcp import Context

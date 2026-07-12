@@ -67,5 +67,10 @@ def exception_handler(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awai
             # Re-raise the exception for MCP to handle properly
             # This ensures MCP returns a proper error response to the client
             raise
-    
+
+    # Python 3.14 (PEP 649): functools.wraps no longer materializes
+    # __annotations__ on the wrapper, which breaks FastMCP's Context
+    # parameter detection. Propagate explicitly.
+    wrapper.__annotations__ = dict(getattr(func, "__annotations__", {}))
+
     return wrapper

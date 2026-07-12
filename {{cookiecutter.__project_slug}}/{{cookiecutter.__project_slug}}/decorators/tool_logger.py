@@ -159,7 +159,12 @@ def tool_logger(func: Callable[..., Awaitable[Any]] = None, config: dict = None)
             finally:
                 # Clear correlation ID after tool execution
                 clear_correlation_id()
-        
+
+        # Python 3.14 (PEP 649): functools.wraps no longer materializes
+        # __annotations__ on the wrapper, which breaks FastMCP's Context
+        # parameter detection. Propagate explicitly.
+        wrapper.__annotations__ = dict(getattr(f, "__annotations__", {}))
+
         return wrapper
     
     # Handle being called as @tool_logger (without parentheses)

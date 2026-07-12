@@ -22,6 +22,12 @@ Tools are Python functions that DO things:
 - Control applications
 - Perform calculations
 
+MCP has two more primitives this template also supports:
+- **Resources**: read-only data the client can fetch by URI (like GET
+  endpoints) - see `resources/example_resources.py`
+- **Prompts**: reusable message templates users trigger (many clients show
+  them as slash commands) - see `prompts/example_prompts.py`
+
 ### 2. Server vs Client Architecture
 
 **MCP Server** (what you're building):
@@ -129,13 +135,14 @@ async def get_time(
 
 ## Common Beginner Mistakes
 
-### Mistake 1: Using Optional Types
+### Mistake 1: Overusing Optional Types
 ```python
-# ❌ WRONG - Optional breaks MCP
+# ⚠️ Works on modern clients, but makes schemas harder to satisfy
 async def my_tool(text: Optional[str] = None):
     ...
 
-# ✅ RIGHT - Use concrete defaults
+# ✅ Preferred - concrete defaults keep schemas simple and maximally
+# compatible (see .reference/mcp-compatibility-critical.md)
 async def my_tool(text: str = ""):
     ...
 ```

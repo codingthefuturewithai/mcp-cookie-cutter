@@ -31,8 +31,11 @@ import asyncio
 def type_converter(func: Callable) -> Callable:
     """Convert string parameters to their proper types based on function annotations.
     
-    This decorator performs runtime type conversion for MCP tools. Many MCP clients
-    send all parameters as strings, requiring server-side conversion to the proper types.
+    This decorator performs runtime type conversion for MCP tools as
+    defense-in-depth: the modern SDK already validates and coerces typed
+    JSON arguments via Pydantic, but some legacy/non-conformant clients
+    send parameters as strings or in formats Pydantic's lenient mode
+    does not accept.
     
     Supported conversions:
     - str -> int

@@ -1,79 +1,72 @@
-# MCP Compatibility - CRITICAL RULES
+# MCP Compatibility - Parameter Type Rules
 
-## ⚠️ MANDATORY: Never Use Optional Types in Parameters
+## Current Status (SDK 1.28+, July 2026)
 
-**This is the #1 cause of MCP client failures!**
+**`Optional[...]` parameters work correctly with the modern MCP SDK.** This was
+empirically verified against `mcp==1.28.1`:
 
-### ❌ NEVER DO THIS:
+- `Optional[str] = None` / `str | None = None` parameters produce a valid
+  `anyOf: [{type}, {"type": "null"}]` JSON schema
+- Calls with the parameter omitted, provided, or explicitly `null` all succeed
+- The SDK validates and coerces arguments with Pydantic *before* the tool
+  function is called — string inputs like `"10"` for an `int` parameter are
+  coerced natively, without any custom decorator
+
+The hard "NEVER use Optional" rule that previous versions of this document
+stated was a workaround for early-2025 MCP clients that sent all parameters
+as strings and mishandled `anyOf`/null schemas. Conformant modern clients
+(Claude Code, Claude Desktop, Cursor, MCP Inspector) send typed JSON and
+handle Optional schemas correctly.
+
+## Template Convention (Recommended, Not Required)
+
+This template's example tools still prefer **concrete defaults** over Optional:
+
 ```python
-from typing import Optional
-
 async def my_tool(
-    param1: Optional[str] = None,           # ❌ BREAKS MCP!
-    param2: Optional[int] = None,           # ❌ BREAKS MCP!
-    param3: Optional[List[str]] = None,     # ❌ BREAKS MCP!
-    param4: Optional[Dict[str, Any]] = None # ❌ BREAKS MCP!
-) -> str:
+    param1: str = "",                    # instead of Optional[str] = None
+    param2: int = 0,                     # instead of Optional[int] = None
+    param3: list[str] = [],              # instead of Optional[list] = None
+) -> dict:
     ...
 ```
 
-### ✅ ALWAYS DO THIS:
-```python
-async def my_tool(
-    param1: str = "",                    # ✅ Empty string default
-    param2: int = 0,                     # ✅ Zero default
-    param3: List[str] = None,           # ✅ None default (becomes [])
-    param4: Dict[str, Any] = None       # ✅ None default (becomes {})
-) -> str:
-    # Handle defaults in function body
-    if param3 is None:
-        param3 = []
-    if param4 is None:
-        param4 = {}
-    ...
-```
+Why keep the convention:
 
-## Why This Matters
+1. **Maximal client compatibility** — non-conformant or older MCP clients
+   still exist; simple scalar schemas are the lowest common denominator
+2. **Simpler schemas** — a plain `{"type": "string"}` is easier for a model
+   to satisfy than an `anyOf` union
+3. **No None-handling branches** — concrete defaults remove a class of
+   `if x is None` boilerplate
 
-MCP clients (like Claude Desktop) send ALL parameters as strings over the wire. The type_converter decorator handles conversion, but Optional types cause the conversion to fail silently, resulting in:
+When Optional is the honest signature (e.g. "not provided" differs in meaning
+from an empty value — see `threshold: float | None` style filters), use it.
+It works.
 
-- Parameters not being passed correctly
-- Tools receiving None when they expect values
-- Cryptic errors in MCP Inspector
-- Silent failures in production
+## Defense-in-Depth: type_converter
 
-## The Rule Is Simple
-
-**NEVER use Optional[...] in tool parameters. EVER.**
-
-Use concrete types with sensible defaults instead:
-- `str = ""` instead of `Optional[str]`
-- `int = 0` or `int = -1` instead of `Optional[int]`
-- `float = 0.0` instead of `Optional[float]`
-- `bool = False` instead of `Optional[bool]`
-- `List[...] = None` (handle in function) instead of `Optional[List[...]]`
-- `Dict[...] = None` (handle in function) instead of `Optional[Dict[...]]`
+The template's `type_converter` decorator predates the SDK's Pydantic
+validation and remains as defense-in-depth for non-conformant clients. It
+passes correctly-typed values through untouched and additionally handles
+conversions Pydantic's lenient mode does not (e.g. `"yes"`/`"on"` booleans,
+bare string → single-item list).
 
 ## Testing for Compatibility
 
-Before releasing any tool:
+Before releasing a tool:
 
-1. Check that NO Optional types exist in parameters
-2. Test in MCP Inspector with missing parameters
-3. Verify type conversion works correctly
-4. Ensure defaults are handled properly
+1. Test in MCP Inspector with parameters omitted, provided, and (for
+   Optional) explicitly null
+2. Verify the generated `inputSchema` in `tools/list` looks reasonable
+3. If you target older/unknown clients, prefer concrete defaults
 
-## Common Pitfalls
+## History
 
-### Pitfall 1: IDE Auto-imports
-Many IDEs automatically add `from typing import Optional` when you type `Optional`. Delete these imports immediately.
-
-### Pitfall 2: Copy-Paste from Web
-Most Python examples online use Optional. You MUST convert them to use concrete defaults for MCP.
-
-### Pitfall 3: Assuming None Handling
-Even if your function handles None correctly, the MCP transport layer may not. Always use concrete types.
-
-## Remember
-
-This is not a style preference. This is a HARD REQUIREMENT for MCP compatibility. Violating this rule WILL cause your tools to fail in production.
+- **Pre-2025-06 (this doc's original guidance):** several MCP clients sent
+  all parameters as strings and failed on Optional/anyOf schemas — Optional
+  was a genuine production hazard, hence the original hard rule
+- **SDK 1.10+ / mid-2025 onward:** Pydantic-based argument validation and
+  coercion made typed and Optional parameters reliable on conformant clients
+- **July 2026 (this revision):** rule downgraded from hard requirement to
+  convention, verified against mcp 1.28.1
