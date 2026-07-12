@@ -47,7 +47,7 @@ Reading .reference/patterns/unit_test_patterns.py for unit test patterns...
 Reading .reference/mcp-compatibility-critical.md for MANDATORY compatibility rules...
 
 **🚨 CRITICAL COMPATIBILITY RULE**:
-- NEVER generate tests with Optional[...] parameters
+- Prefer concrete values over None in test parameters
 - Use empty defaults instead (empty string, 0, empty list)
 - This prevents MCP client failures
 
@@ -56,21 +56,21 @@ Key patterns I'll follow:
 - Always use try/finally with cleanup()
 - Check `result.isError` based on expected behavior
 - Test both success and error cases
-- NO Optional types in test parameters
+- Prefer concrete values in test parameters
 
 ## Step 2: Analyze the Tool to Test
 
 Looking for the tool: "$ARGUMENTS"
 
-**MANDATORY CHECK - Verify NO Optional Parameters:**
+**CHECK - Parameter Conventions:**
 ```
 Checking tool parameters...
-❌ FAIL if ANY Optional[...] found
+⚠️ Flag Optional[...] usage (works on modern clients, but concrete defaults are the template convention)
 ✅ PASS if all optional params use concrete defaults
 ```
 
 Reading the tool implementation to understand:
-- Parameters (NO Optional types allowed!)
+- Parameters (concrete defaults preferred over Optional)
 - Return type
 - Error conditions
 - Validation logic
@@ -92,7 +92,7 @@ Creating comprehensive integration tests following the pattern from .reference/p
 async def test_[tool_name]_[scenario]():
     session, cleanup = await create_test_session()
     try:
-        # NEVER use Optional in test parameters!
+        # Concrete values preferred in test parameters
         result = await session.call_tool("[tool_name]", arguments={
             "directories": [],  # NOT Optional[List[str]]
             "max_count": 10,    # NOT Optional[int]
@@ -190,7 +190,7 @@ uv run pytest tests/integration/test_[your_module].py::TestClassName::test_metho
 
 Based on the patterns in .reference/:
 - When exceptions are raised in tools, `result.isError` will be `True`
-- MCP sends all parameters as strings - test type conversion
+- The SDK validates/coerces typed JSON arguments via Pydantic - test that string inputs still coerce (legacy-client compatibility)
 - Parallel tools expect `kwargs_list` parameter
 - Always extract content with helper methods, don't assume structure
 

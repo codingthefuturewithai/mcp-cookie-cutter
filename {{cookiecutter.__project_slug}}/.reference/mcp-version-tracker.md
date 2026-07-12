@@ -2,22 +2,21 @@
 
 This document tracks the relationship between MCP specification versions, Python SDK versions, and what this cookie cutter template actually implements.
 
-## Current Versions (August 2025)
+## Current Versions (July 2026)
 
 ### MCP Specification
-- **Latest Protocol Version**: `2025-06-18` (defined in spec)
-- **Default Negotiated Version**: `2025-03-26` (when client doesn't specify)
+- **Latest Protocol Version**: `2025-06-18` (2026-07-28 spec in release-candidate stage)
 - **Specification URL**: https://modelcontextprotocol.io/specification
 
 ### Python SDK
-- **Package**: `mcp>=1.0.0`
+- **Package**: `mcp[cli]>=1.28.1,<2.0` (v2.x is a breaking rework for the 2026 spec - do not upgrade without migration)
 - **GitHub**: https://github.com/modelcontextprotocol/python-sdk
 - **PyPI**: https://pypi.org/project/mcp/
 
 ### Cookie Cutter Template
-- **Template Version**: 1.0.0
-- **Last SDK Sync**: August 2025
-- **Implementation Level**: Basic (Tools + Context only)
+- **Template Version**: 1.1.0
+- **Last SDK Sync**: July 2026 (SDK 1.28.1)
+- **Implementation Level**: Tools + Structured Output + Annotations + Resources + Prompts + Elicitation
 
 ## Feature Implementation Matrix
 
@@ -32,12 +31,15 @@ This document tracks the relationship between MCP specification versions, Python
 | Streamable HTTP | ✅ Full | ✅ Yes | Stable |
 | WebSocket | ✅ Full | ❌ No | Available |
 | **Advanced** | | | |
-| Resources | ✅ Full | ❌ No | Stable |
-| Prompts | ✅ Full | ❌ No | Stable |
+| Structured Output | ✅ Full | ✅ Yes | Stable |
+| Tool Annotations/Titles | ✅ Full | ✅ Yes | Stable |
+| Resources | ✅ Full | ✅ Yes | Stable |
+| Prompts | ✅ Full | ✅ Yes | Stable |
+| Stateless HTTP | ✅ Full | ✅ Optional (--stateless) | Stable |
 | Completions | ✅ Full | ❌ No | Stable |
-| Elicitation | ✅ Full | ❌ No | New |
-| Sampling | ✅ Full | ❌ No | Experimental |
-| OAuth/Auth | ✅ Full | ❌ No | New |
+| Elicitation | ✅ Full | ✅ Yes | Stable |
+| Sampling | ✅ Full | ❌ No | Stable |
+| OAuth/Auth | ✅ Full | ❌ No | Stable |
 | Roots | ✅ Full | ❌ No | Stable |
 
 ## What This Template Actually Uses
@@ -54,10 +56,12 @@ from mcp import types  # Type definitions
 ```
 
 ### FastMCP Methods Used
-- `FastMCP()` - Constructor
-- `server.tool()` - Tool registration
+- `FastMCP(name, instructions=..., transport_security=...)` - Constructor
+- `server.tool(name=..., title=..., annotations=...)` - Tool registration with metadata
+- `server.resource(uri, title=..., mime_type=...)` - Resource registration (incl. templates)
+- `server.prompt(title=...)` - Prompt registration
 - `server.run_stdio_async()` - STDIO transport
-- `server.run_streamable_http_async()` - Streamable HTTP transport
+- `server.run_streamable_http_async()` - Streamable HTTP transport (settings: `stateless_http`, `json_response`)
 
 ### Context Methods Used
 - `ctx.info()`, `ctx.debug()`, `ctx.warning()`, `ctx.error()` - Logging
@@ -66,8 +70,8 @@ from mcp import types  # Type definitions
 ## Version Compatibility
 
 ### Minimum Requirements
-- Python: 3.11+
-- MCP SDK: 1.0.0+
+- Python: 3.11 - 3.14
+- MCP SDK: 1.28.1+ (<2.0)
 - UV: 0.5.0+ (package manager)
 
 ### Breaking Changes to Watch
@@ -147,6 +151,15 @@ When helping users:
 5. **Test compatibility before suggesting updates**
 
 ## Version History
+
+### July 2026
+- Synced to MCP SDK 1.28.1 (pinned <2.0; v2 beta tracks the 2026 spec rework)
+- Added structured output example (typed Pydantic tool return)
+- Added tool titles + ToolAnnotations (readOnly/destructive/idempotent/openWorld hints)
+- Added resources (static + template) and prompts examples
+- Added --stateless / --json-response flags for Streamable HTTP
+- Server now sends `instructions` at initialize
+- Python range widened to 3.11-3.14
 
 ### August 2025
 - Current stable release

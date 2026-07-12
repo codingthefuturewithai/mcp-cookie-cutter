@@ -302,7 +302,7 @@ If you encounter dependency conflicts when using `uvx`:
 
 ## Requirements
 
-- Python 3.11 or 3.12
+- Python 3.11 - 3.14
 - Operating Systems: Linux, macOS, Windows
 
 **[➡️ REPLACE: Add any additional requirements specific to your MCP server:]

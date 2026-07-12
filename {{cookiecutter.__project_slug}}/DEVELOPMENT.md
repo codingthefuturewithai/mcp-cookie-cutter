@@ -6,7 +6,7 @@ This guide covers development practices, architecture, and contribution guidelin
 
 ### Prerequisites
 
-- Python 3.11-3.12
+- Python 3.11-3.14
 - uv (recommended) or pip
 - Git for version control
 - Docker (optional, for containerized deployment)
@@ -66,7 +66,9 @@ The MCP Server Project is built with a modular architecture featuring:
 ### Core Components
 
 - **Server (`server/app.py`)**: Main MCP server with multi-transport support
-- **Tools (`tools/`)**: Individual tool implementations
+- **Tools (`tools/`)**: Individual tool implementations (with titles, annotations, and structured output)
+- **Resources (`resources/`)**: MCP resources - read-only data addressed by URI (static + templates)
+- **Prompts (`prompts/`)**: MCP prompts - reusable message templates surfaced by hosts
 - **Decorators (`decorators/`)**: Function decorators for cross-cutting concerns
 - **Log System (`log_system/`)**: Unified logging with correlation tracking
 - **UI (`ui/`)**: Streamlit-based web interface
@@ -88,6 +90,14 @@ The MCP Server Project is built with a modular architecture featuring:
 │   ├── client/                   # Test client
 │   │   ├── __init__.py
 │   │   └── app.py               # STDIO test client
+│   │
+│   ├── resources/                # MCP resources
+│   │   ├── __init__.py
+│   │   └── example_resources.py # Static + template resource examples
+│   │
+│   ├── prompts/                  # MCP prompts
+│   │   ├── __init__.py
+│   │   └── example_prompts.py   # Prompt template examples
 │   │
 │   ├── tools/                    # Tool implementations
 │   │   ├── __init__.py

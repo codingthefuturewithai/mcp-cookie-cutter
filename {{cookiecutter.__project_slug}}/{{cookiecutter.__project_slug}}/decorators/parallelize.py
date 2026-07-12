@@ -60,7 +60,8 @@ def _set_parallelized_signature_and_annotations(
         ctx_param = inspect.Parameter(
             name='ctx',
             kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=Context
+            annotation=Context,
+            default=None
         )
         params.append(ctx_param)
     

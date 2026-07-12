@@ -4,11 +4,15 @@ A cookie cutter template for creating new MCP (Model Context Protocol) servers. 
 
 ## Features
 
-- **Multi-Transport Support**: stdio and streamable HTTP in a single implementation
+- **Official MCP SDK 1.28+**: Built on the official `mcp` Python SDK (pinned `<2.0`)
+- **Multi-Transport Support**: stdio and streamable HTTP in a single implementation, with optional stateless/JSON-response modes for serverless deployments
+- **All Three MCP Primitives**: Tools, resources (static + templates), and prompts
+- **Structured Output**: Typed Pydantic tool returns with auto-generated output schemas
+- **Tool Metadata**: Human-readable titles and behavior annotations (read-only, destructive, idempotent, open-world hints)
 - **Automatic Decorators**: Exception handling, logging, type conversion, and parallelization
 - **Unified Logging System**: SQLite-based logging with correlation IDs and extensible destinations
 - **Web Management UI**: Streamlit-based interface for configuration, logs, and documentation
-- **Example Tools**: Ready-to-use example tools with best practices
+- **Example Tools**: Ready-to-use example tools with best practices (including elicitation, progress, and notification demos)
 - **Full MCP Inspector Compatibility**: Easy testing and debugging
 - **Proper Absolute Imports**: Clean package structure throughout
 - **DevFlow Integration**: Built-in JIRA workflow commands (plan-work, implement, security-review, complete)

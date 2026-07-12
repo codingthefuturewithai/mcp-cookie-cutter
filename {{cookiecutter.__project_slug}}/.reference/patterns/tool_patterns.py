@@ -61,8 +61,9 @@ async def tool_with_defaults_pattern(
     - Dictionary return type for structured data
     - Context ALWAYS comes last
     
-    IMPORTANT: MCP sends all parameters as strings, but the type_converter
-    decorator handles conversion automatically.
+    NOTE: The MCP SDK validates and coerces arguments with Pydantic before
+    the tool runs; the type_converter decorator adds defense-in-depth for
+    non-conformant clients.
     
     Args:
         required_param: Required string parameter
@@ -297,10 +298,28 @@ WHAT DECORATORS DO:
    - Preserves parameter introspection for documentation
 
 4. @type_converter:
-   - Converts string parameters from MCP to correct Python types
-   - Handles: int, float, bool, List, Dict, Optional types
+   - Defense-in-depth conversion for non-conformant clients (the SDK's
+     Pydantic layer already coerces standard cases like "10" -> 10)
+   - Handles: int, float, bool, List, Dict, Optional types, plus
+     conversions Pydantic's lenient mode skips ("yes"/"on" booleans)
    - Applied automatically by the server to ALL tools
    - You don't manually apply this decorator
+
+STRUCTURED OUTPUT (SDK 1.10+):
+
+Return a typed Pydantic model instead of a plain dict and the SDK will
+publish an outputSchema in tools/list and return validated
+structured_content alongside the text content. See get_weather in
+tools/example_tools.py. Prefer this for any tool whose output is consumed
+programmatically.
+
+TOOL METADATA (title + annotations):
+
+Every tool should have an entry in TOOL_METADATA (tools/example_tools.py)
+providing a human-readable title and ToolAnnotations behavior hints
+(readOnlyHint, destructiveHint, idempotentHint, openWorldHint). Hosts use
+these for permission UX and display. They are advisory - never rely on
+them for security.
 
 PARAMETER RULES:
 

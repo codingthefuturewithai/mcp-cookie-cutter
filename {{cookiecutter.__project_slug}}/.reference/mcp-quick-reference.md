@@ -5,10 +5,14 @@
 You know MCP. Here's what's unique about this implementation:
 
 ### What We Use
-- **FastMCP** server with STDIO/Streamable HTTP transports
-- **Tools** only (no resources, prompts, completions)
-- **Context** for logging and progress
-- **Type conversion** decorator handles string parameters
+- **FastMCP** server with STDIO/Streamable HTTP transports (plus
+  `--stateless` / `--json-response` for serverless)
+- **Tools** with titles, `ToolAnnotations`, and structured output
+  (typed Pydantic returns -> outputSchema + structuredContent)
+- **Resources** (static + templates) and **Prompts** (string + multi-message)
+- **Context** for logging, progress, and elicitation
+- **Type conversion** decorator as defense-in-depth (SDK's Pydantic layer
+  handles standard coercion natively)
 
 ### Decorator Chain
 ```python
@@ -16,17 +20,23 @@ tool → type_converter → tool_logger → exception_handler → MCP
 ```
 
 ### Key Differences
-1. **Automatic type conversion** from MCP's strings
-2. **SQLite logging** of all executions
-3. **Re-raise pattern** for error handling
-4. **Preserved signatures** for introspection
+1. **SQLite logging** of all executions with correlation IDs
+2. **Re-raise pattern** for error handling
+3. **Preserved signatures** for introspection
+4. **Per-tool metadata** via TOOL_METADATA (title + annotations)
+5. **Extra type conversion** beyond the SDK's own Pydantic coercion
 
 ### Quick Tool Pattern
 ```python
 async def your_tool(param: str, count: int, ctx: Context = None) -> dict:
     """Your tool description."""
-    # MCP sends strings, type_converter handles conversion
+    # SDK validates/coerces arguments via Pydantic before this runs
     return {"result": param * count}
+
+# Structured output variant: return a typed model and the SDK publishes
+# an outputSchema and returns validated structuredContent
+async def typed_tool(city: str, ctx: Context = None) -> WeatherReport:
+    ...
 ```
 
 ## For Beginners (New to MCP)
@@ -39,7 +49,7 @@ Protocol that lets AI assistants (like Claude) use external tools to perform act
 2. **Must be async** (`async def`)
 3. **Need type hints** (`param: str`)
 4. **Return JSON-compatible** data
-5. **Parameters arrive as strings** (handled automatically)
+5. **Arguments are validated** against your type hints automatically
 
 ### Your First Tool
 ```python
@@ -67,7 +77,9 @@ http://localhost:6274
 ```
 your_project/
 ├── server/app.py        # Main server (don't modify decorators)
-├── tools/               # YOUR tools go here
+├── tools/               # YOUR tools go here (+ TOOL_METADATA)
+├── resources/           # YOUR resources (static + templates)
+├── prompts/             # YOUR prompts (message templates)
 ├── decorators/          # Decorator system (don't modify)
 └── tests/              # Integration tests
 ```
@@ -79,19 +91,22 @@ your_project/
 4. `/dev-server` - Run and test
 5. `/remove-examples` - Clean up for production
 
-### What You Don't Need
-- Resources (file serving)
-- Prompts (templates)
+### Also Included (Beyond Tools)
+- Resources - read-only data addressed by URI (`resources/`)
+- Prompts - reusable message templates, surfaced as slash commands (`prompts/`)
+
+### What You Don't Need (Not in Template)
 - OAuth/Authentication
-- WebSocket transport
+- Completions, Sampling
 
 ## Version Note
 
 This template tracks:
-- **MCP Python SDK**: 1.0.0+
-- **What we use**: ~20% of MCP features
-- **What's stable**: Tool registration, Context, transports
-- **What changes**: New features we don't use yet
+- **MCP Python SDK**: 1.28.1+ (<2.0 - v2 is a breaking rework)
+- **What we use**: tools (+ annotations + structured output), resources,
+  prompts, elicitation, progress, stateless HTTP
+- **What's stable**: All of the above
+- **Not yet used**: completions, sampling, OAuth
 
 ## Need More?
 

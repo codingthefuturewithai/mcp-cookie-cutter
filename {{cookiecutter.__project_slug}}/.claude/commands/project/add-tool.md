@@ -43,9 +43,11 @@ If processes found for this project: "I need to kill these processes before we m
 cat .reference/mcp-compatibility-critical.md
 ```
 
-**KEY RULE: NEVER use Optional[...] - it breaks MCP clients!**
-- ❌ NEVER: `Optional[List[str]]`, `Optional[int]`, `Optional[str]`, `Optional[bool]`
-- ✅ ALWAYS: Use concrete types with defaults: `[]`, `0`, `""`, `False`
+**KEY RULE: Prefer concrete defaults over Optional[...] parameters.**
+- ✅ PREFER: concrete types with defaults: `[]`, `0`, `""`, `False`
+- ⚠️ Optional[...] works on modern MCP clients (SDK 1.28+ validates via
+  Pydantic), but concrete defaults keep schemas simpler and maximally
+  compatible - see .reference/mcp-compatibility-critical.md
 
 ## Step 1: MANDATORY - Check for Context7 Research Tool
 
@@ -117,10 +119,11 @@ I'll analyze what libraries and frameworks this will need.
 ```
 Reading .reference/mcp-compatibility-critical.md for MANDATORY compatibility rules...
 
-KEY RULE: NEVER use Optional[...] types - they break MCP clients!
+KEY RULE: Prefer concrete defaults over Optional[...] types (convention):
 - Use empty string defaults instead of Optional[str]
 - Use 0 or -1 instead of Optional[int]
 - Use empty list [] instead of Optional[List]
+(Optional works on modern clients; concrete defaults maximize compatibility)
 ```
 
 Based on your requirements AND my research, here's what I'll create:
@@ -128,7 +131,7 @@ Based on your requirements AND my research, here's what I'll create:
 ### Tool Overview
 - **Name**: [tool_name]
 - **Purpose**: [what it does]
-- **Parameters**: [list with types AND defaults - NO Optional!]
+- **Parameters**: [list with types AND defaults - prefer concrete defaults over Optional]
 - **Returns**: [specific return type and structure]
 
 ### Technical Implementation
@@ -189,7 +192,7 @@ If the user suggests changes, revise the plan and ask again.
 
 **MANDATORY COMPATIBILITY REQUIREMENT:**
 1. You MUST read .reference/mcp-compatibility-critical.md FIRST
-2. NEVER use Optional[...] types - they BREAK MCP clients
+2. Prefer concrete defaults over Optional[...] types (template convention)
 3. Use empty defaults instead (empty string, 0, empty list)
 4. Test the generated code follows compatibility rules
 
@@ -206,22 +209,33 @@ If the user suggests changes, revise the plan and ask again.
 
 **⚠️ This section only executes AFTER user approves the plan above**
 
-**FINAL CHECK - NO Optional PARAMETERS:**
+**FINAL CHECK - PARAMETER CONVENTIONS:**
 Before writing any code, verify:
-- ❌ NO `Optional[...]` anywhere in parameters
+- ⚠️ Concrete defaults preferred over `Optional[...]` in parameters
 - ✅ ALL optional parameters use concrete defaults
-- ✅ Example: `directories: List[str] = []` NOT `Optional[List[str]]`
+- ✅ Example: `directories: List[str] = []` preferred over `Optional[List[str]]`
 
 ### Implementation Guidelines
 Following the pattern from .reference/patterns/tool_patterns.py:
 - Must be an async function
 - Must include `ctx: Context = None` as the last parameter
-- Must have type hints for all parameters (NO Optional!)
+- Must have type hints for all parameters (concrete defaults preferred)
 - Must have a comprehensive docstring
 
 Creating the tool in an appropriate module...
 
 ## Step 6: Register the Tool
+
+Two registration touchpoints:
+
+1. Add the tool function to the appropriate list in
+   `{{cookiecutter.__project_slug}}/tools/example_tools.py` (or your own
+   tools module) so `register_tools()` picks it up.
+2. Add a `TOOL_METADATA` entry for the tool (same file): a human-readable
+   `title` and `ToolAnnotations` behavior hints (`readOnlyHint`,
+   `destructiveHint`, `idempotentHint`, `openWorldHint`). Hosts use these
+   for permission UX and display. Also consider a typed Pydantic return
+   for structured output (see `get_weather`).
 
 Updating {{cookiecutter.__project_slug}}/server/app.py to register the new tool with appropriate decorators:
 - For regular tools: @exception_handler → @tool_logger

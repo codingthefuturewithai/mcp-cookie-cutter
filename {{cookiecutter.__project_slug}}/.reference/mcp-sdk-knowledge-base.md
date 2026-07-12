@@ -3,9 +3,9 @@
 This document provides a comprehensive reference for the MCP (Model Context Protocol) SDK features that are actually used in this cookie cutter template. It is designed to be read by AI assistants to understand the current state of MCP as implemented in this template.
 
 ## Document Version
-- **MCP Python SDK Version**: 1.0.0+ (as of August 2025)
-- **Cookie Cutter Version**: MCP Server Cookie Cutter v1.0
-- **Last Updated**: August 2025
+- **MCP Python SDK Version**: 1.28.1+ (<2.0) (as of July 2026)
+- **Cookie Cutter Version**: MCP Server Cookie Cutter v1.1
+- **Last Updated**: July 2026
 
 ## What This Cookie Cutter Uses from MCP
 
@@ -13,15 +13,20 @@ This document provides a comprehensive reference for the MCP (Model Context Prot
 
 1. **FastMCP Server** (`from mcp.server.fastmcp import FastMCP`)
    - High-level server interface
-   - Dual transport support (STDIO and Streamable HTTP)
-   - Tool registration and management
-   - Not using: Resources, Prompts, Completions
+   - Dual transport support (STDIO and Streamable HTTP, with optional
+     stateless / JSON-response modes for serverless deployments)
+   - Tool registration with titles and `ToolAnnotations`
+   - Resource registration (static URIs and templates)
+   - Prompt registration (string and multi-message)
+   - Server `instructions` sent to clients at initialize
+   - Not using: Completions, Sampling, OAuth
 
 2. **Context Object** (`from mcp.server.fastmcp import Context`)
    - Provides access to MCP capabilities in tools
    - Logging to client (`ctx.info()`, `ctx.debug()`, etc.)
    - Progress reporting (`ctx.report_progress()`)
-   - Not using: Resource reading, Elicitation
+   - Elicitation (`ctx.elicit()` - interactive user input, see elicit_example)
+   - Not using: Resource reading from within tools
 
 3. **MCP Types** (`from mcp import types`)
    - Tool definitions and schemas
@@ -33,18 +38,25 @@ This document provides a comprehensive reference for the MCP (Model Context Prot
    - **Streamable HTTP**: Modern unified HTTP transport with session management
    - Not using: WebSocket
 
+### Features Implemented in This Template
+
+1. **Tools**: with titles, `ToolAnnotations` behavior hints, and structured
+   output (typed Pydantic returns publish an `outputSchema` and return
+   validated `structuredContent` - see `get_weather` in example_tools)
+2. **Resources**: static URIs and parameterized templates (`resources/`)
+3. **Prompts**: reusable message templates (`prompts/`)
+4. **Elicitation**: interactive user input mid-tool (`ctx.elicit`)
+5. **Progress + client logging**: via Context
+6. **Stateless Streamable HTTP**: `--stateless` / `--json-response` flags
+
 ### Features NOT Implemented in This Template
 
 The following MCP features exist in the SDK but are NOT used in this cookie cutter:
 
-1. **Resources**: File/data serving capabilities
-2. **Prompts**: Prompt templates and management
-3. **Completions**: Auto-completion support
-4. **OAuth/Auth**: Authentication mechanisms
-5. **WebSocket**: WebSocket transport (not implemented)
-6. **Elicitation**: Interactive user input during tool execution
-7. **Sampling**: LLM integration for message generation
-8. **Roots**: File system access management
+1. **Completions**: Auto-completion support for prompt/resource arguments
+2. **OAuth/Auth**: Authentication mechanisms (resource-server token verification)
+3. **Sampling**: Server-initiated LLM calls (`ctx.session.create_message`)
+4. **Roots**: File system access management
 
 ## How MCP Works in This Template
 
@@ -81,12 +93,20 @@ All MCP tools MUST:
 
 ### 4. Parameter Handling
 
-**Critical**: MCP passes ALL parameters as strings from the client. The template handles this with a `type_converter` decorator that automatically converts string parameters to the expected types based on function annotations.
+Modern MCP clients send **typed JSON** matching the tool's published input
+schema, and the SDK (1.10+) validates and coerces arguments with Pydantic
+before the tool function is called - a string `"10"` sent for an `int`
+parameter is coerced natively.
+
+The template's `type_converter` decorator remains as **defense-in-depth**
+for non-conformant clients and for conversions Pydantic's lenient mode does
+not perform (e.g. `"yes"`/`"on"` booleans, bare string -> single-item list).
+It passes correctly-typed values through untouched.
 
 ```python
-# MCP sends: {"n": "10"}  (string)
-# Tool expects: n: int
-# type_converter handles: "10" → 10
+# Conformant client sends: {"n": 10}          -> passed through
+# Legacy client sends:     {"n": "10"}        -> SDK/Pydantic coerces to 10
+# Odd client sends:        {"flag": "yes"}    -> type_converter handles it
 ```
 
 ### 5. Error Handling
@@ -114,10 +134,13 @@ The template uses a re-raise pattern:
 
 ### Why These Features?
 
-1. **Tools Only**: Most MCP servers primarily need tool functionality
-2. **Dual Transport**: Covers CLI and web use cases
+1. **All Three Primitives**: Tools for actions, resources for read-only
+   context, prompts for user-triggered workflows
+2. **Dual Transport**: Covers CLI and web use cases (plus stateless mode
+   for serverless)
 3. **Context for Logging**: Essential for debugging and user feedback
-4. **No Resources/Prompts**: Complexity not needed for most use cases
+4. **Annotations Everywhere**: Behavior hints let hosts build safer
+   permission UX (advisory only - never rely on them for security)
 
 ### Decorator Integration Pattern
 
@@ -132,8 +155,9 @@ This preserves function signatures for MCP introspection while adding functional
 ## Common Pitfalls and Solutions
 
 ### 1. Parameter Type Mismatch
-**Problem**: MCP sends strings, tools expect typed parameters
-**Solution**: `type_converter` decorator handles conversion automatically
+**Problem**: A non-conformant client sends strings where the schema says int/bool
+**Solution**: SDK-level Pydantic coercion handles most cases; the
+`type_converter` decorator covers the rest
 
 ### 2. Synchronous Functions
 **Problem**: MCP requires async functions
@@ -186,10 +210,12 @@ mcp dev path/to/server/app.py
 
 When helping users with this template:
 
-1. **Assume**: Only tools, no resources/prompts
-2. **Remember**: All parameters arrive as strings
-3. **Enforce**: Async functions only
-4. **Check**: Return types are JSON-serializable
-5. **Consider**: Context parameter for logging
+1. **Assume**: Tools, resources, AND prompts are all available patterns
+2. **Remember**: Clients send typed JSON; the SDK validates with Pydantic
+3. **Enforce**: Async functions only (template convention)
+4. **Check**: Return types are JSON-serializable; prefer typed Pydantic
+   models for structured output
+5. **Consider**: Context parameter for logging/progress/elicitation
+6. **Add**: A TOOL_METADATA entry (title + annotations) for every new tool
 
 This knowledge base represents the ACTUAL MCP implementation in this template, not the full MCP specification. Focus on these features when assisting users.
